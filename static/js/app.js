@@ -131,6 +131,11 @@ function switchTab(tabId) {
   else if (tabId === 'tab-inbox') { loadDiscordInbox(); }
   else if (tabId === 'tab-accounts') { loadMultiAccounts(); }
   else if (tabId === 'tab-voice-afk') { checkVoiceStatus(); }
+
+  // Đồng bộ Realtime tài khoản đa token ngay lập tức khi đổi tab
+  if (typeof syncMultiTokensRealtime === 'function') {
+    syncMultiTokensRealtime();
+  }
 }
 
 // ============================================================
@@ -2673,6 +2678,9 @@ async function switchAccount(accId) {
       showToast(d.message, 'success');
       loadMultiAccounts();
       fetchAccountInfo();
+      if (typeof syncMultiTokensRealtime === 'function') {
+        syncMultiTokensRealtime();
+      }
     } else {
       showToast(d.message || 'Lỗi chuyển đổi tài khoản', 'error');
     }
@@ -2694,6 +2702,9 @@ async function deleteAccount(accId) {
       showToast(d.message, 'info');
       loadMultiAccounts();
       fetchAccountInfo();
+      if (typeof syncMultiTokensRealtime === 'function') {
+        syncMultiTokensRealtime();
+      }
     } else {
       showToast(d.message || 'Lỗi khi xóa', 'error');
     }
@@ -3125,9 +3136,8 @@ async function handleConfirmAddSubToken() {
     if (d.success) {
       showToast(d.message || 'Đã nạp Token phụ thành công!', 'success');
       toggleAddTokenModal(false);
-      loadMultiAccounts();
-      fetchAccountInfo();
-      initAllMultiTokenWidgets();
+      await syncMultiTokensRealtime();
+      await fetchAccountInfo();
     } else {
       showToast(d.message || 'Lỗi khi nạp token', 'error');
     }
@@ -3207,36 +3217,56 @@ async function fetchAllAvailableAccounts() {
   try {
     const res = await fetch('/api/accounts/list');
     const data = await res.json();
-    const subAccs = data.accounts || [];
+    const subAccs = (data && data.success && Array.isArray(data.accounts)) ? data.accounts : [];
+    allAvailableAccounts = subAccs;
+    return subAccs;
+  } catch (e) {
+    allAvailableAccounts = [];
+    return [];
+  }
+}
 
-    const resInfo = await fetch('/api/account/info');
-    const info = await resInfo.json();
+async function syncMultiTokensRealtime() {
+  try {
+    const accs = await fetchAllAvailableAccounts();
+    const hasAccounts = accs && accs.length > 0;
 
-    const result = [];
-    if (info.success && info.discord_id) {
-      result.push({
-        id: 'main',
-        discord_id: info.discord_id,
-        discord_username: info.discord_username || info.username,
-        discord_avatar: info.discord_avatar || info.avatar_url || 'https://cdn.discordapp.com/embed/avatars/0.png',
-        is_main: true
-      });
-    }
-
-    subAccs.forEach(a => {
-      result.push({
-        id: a.id,
-        discord_id: a.discord_id,
-        discord_username: a.discord_username,
-        discord_avatar: a.discord_avatar || 'https://cdn.discordapp.com/embed/avatars/0.png',
-        is_main: false
-      });
+    // 1. Cập nhật trạng thái hiển thị của các Warning Banner ở tất cả các tab
+    ['rpc', 'status', 'lyric', 'voice', 'quest'].forEach(key => {
+      const banner = document.getElementById(`${key}-token-notice`);
+      if (banner) {
+        if (hasAccounts) {
+          banner.classList.add('d-none');
+        } else {
+          banner.classList.remove('d-none');
+        }
+      }
     });
 
-    allAvailableAccounts = result;
-    return result;
+    // 2. Đồng bộ widget slots trên từng tab
+    const scopes = ['lyric', 'rpc', 'status', 'yt', 'sc', 'sp', 'voice'];
+    const validIds = new Set(accs.map(a => String(a.id)));
+
+    scopes.forEach(s => {
+      // Giữ lại các tài khoản còn tồn tại
+      if (selectedMultiAccounts[s] && selectedMultiAccounts[s].length > 0) {
+        selectedMultiAccounts[s] = selectedMultiAccounts[s].filter(a => validIds.has(String(a.id)));
+      }
+      // Nếu chưa chọn hoặc đang rỗng mà hệ thống có tài khoản -> mặc định chọn tài khoản active hoặc đầu tiên
+      if ((!selectedMultiAccounts[s] || selectedMultiAccounts[s].length === 0) && hasAccounts) {
+        const activeAcc = accs.find(a => a.is_active === 1) || accs[0];
+        selectedMultiAccounts[s] = [activeAcc];
+      }
+      renderMultiTokenSlots(s);
+    });
+
+    // 3. Nếu đang mở tab Quản Lý Tài Khoản thì tự động refresh danh sách cards
+    const accPanel = document.getElementById('tab-accounts');
+    if (accPanel && !accPanel.classList.contains('d-none')) {
+      loadMultiAccounts();
+    }
   } catch (e) {
-    return [];
+    console.error('Lỗi khi đồng bộ Multi-Tokens Realtime:', e);
   }
 }
 
@@ -3253,7 +3283,7 @@ async function openMultiTokenPicker(scope) {
   if (!accounts || accounts.length === 0) {
     container.innerHTML = `
       <div style="text-align:center; padding: 1.5rem; color:#94a3b8;">
-        <p>Chưa có tài khoản Discord nào được lưu.</p>
+        <p>Chưa có tài khoản Discord Token phụ nào được lưu.</p>
         <button type="button" class="rpc-btn rpc-btn-start mt-2" onclick="closeMultiTokenPicker(); toggleAddTokenModal(true);">+ Thêm Token Phụ Mới</button>
       </div>
     `;
@@ -3263,12 +3293,14 @@ async function openMultiTokenPicker(scope) {
   const selectedSet = new Set((selectedMultiAccounts[currentPickerScope] || []).map(a => String(a.id)));
   container.innerHTML = accounts.map(acc => {
     const isSel = selectedSet.has(String(acc.id));
+    const av = acc.discord_avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
+    const name = acc.discord_username || 'Discord User';
     return `
       <div class="mtp-acc-row ${isSel ? 'selected' : ''}" data-acc-id="${acc.id}" onclick="togglePickerAccRow(this)">
-        <img src="${acc.discord_avatar}" class="mtp-acc-avatar" alt="">
+        <img src="${av}" class="mtp-acc-avatar" alt="${name}">
         <div class="mtp-acc-info">
-          <div class="mtp-acc-name">${acc.discord_username} ${acc.is_main ? '<span style="color:#38bdf8; font-size:0.75rem;">(Chính)</span>' : '<span style="color:#a855f7; font-size:0.75rem;">(Phụ)</span>'}</div>
-          <div class="mtp-acc-sub">ID: ${acc.discord_id}</div>
+          <div class="mtp-acc-name">${name} <span style="color:#a855f7; font-size:0.75rem;">(Phụ)</span></div>
+          <div class="mtp-acc-sub">ID: ${acc.discord_id || '---'}</div>
         </div>
         <div class="mtp-acc-check">${isSel ? '✓' : ''}</div>
       </div>
@@ -3313,13 +3345,17 @@ function renderMultiTokenSlots(scope) {
   const accounts = selectedMultiAccounts[scope] || [];
   if (counter) counter.textContent = accounts.length;
 
-  const itemsHtml = accounts.map(acc => `
-    <div class="mtt-slot-item">
-      <img src="${acc.discord_avatar}" class="mtt-slot-avatar" alt="${acc.discord_username}">
-      <button type="button" class="mtt-slot-remove" onclick="removeAccountFromScope('${scope}', '${acc.id}')" title="Bỏ chọn">×</button>
-      <div class="mtt-slot-tooltip">${acc.discord_username}</div>
-    </div>
-  `).join('');
+  const itemsHtml = accounts.map(acc => {
+    const av = acc.discord_avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
+    const name = acc.discord_username || 'Discord User';
+    return `
+      <div class="mtt-slot-item">
+        <img src="${av}" class="mtt-slot-avatar" alt="${name}">
+        <button type="button" class="mtt-slot-remove" onclick="removeAccountFromScope('${scope}', '${acc.id}')" title="Bỏ chọn">×</button>
+        <div class="mtt-slot-tooltip">${name}</div>
+      </div>
+    `;
+  }).join('');
 
   grid.innerHTML = itemsHtml + `
     <button type="button" class="mtt-slot-add-btn" onclick="openMultiTokenPicker('${scope}')" title="Bấm để chọn tài khoản Discord">
@@ -3334,13 +3370,7 @@ function removeAccountFromScope(scope, id) {
 }
 
 async function initAllMultiTokenWidgets() {
-  await fetchAllAvailableAccounts();
-  ['lyric', 'rpc', 'status', 'yt', 'sc', 'sp', 'voice'].forEach(s => {
-    if (selectedMultiAccounts[s].length === 0 && allAvailableAccounts.length > 0) {
-      selectedMultiAccounts[s] = [allAvailableAccounts[0]];
-    }
-    renderMultiTokenSlots(s);
-  });
+  await syncMultiTokensRealtime();
 }
 
 // ============================================================
