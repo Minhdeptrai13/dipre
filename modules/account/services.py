@@ -12,7 +12,6 @@ def fetch_discord_profile(token: str, target_user_id: str = None):
     
     target_id = str(target_user_id).strip() if target_user_id else None
     
-    # Lấy thông tin user
     res = requests.get('https://discord.com/api/v9/users/@me', headers=headers, timeout=8)
     if (res.status_code != 200 or (target_id and res.json().get('id') != target_id)) and target_id:
         res2 = requests.get(f'https://discord.com/api/v9/users/{target_id}', headers=headers, timeout=8)
@@ -84,7 +83,6 @@ def fetch_discord_profile(token: str, target_user_id: str = None):
     except Exception:
         pass
 
-    # Nếu chưa có badge từ profile, lấy qua public flags
     flags = data.get('flags', 0) or data.get('public_flags', 0)
     if 'HypeSquad Balance' not in seen_badge_names and (flags & (1 << 8)):
         badges.append({'name': 'HypeSquad Balance', 'icon': 'https://cdn.discordapp.com/badge-icons/3aa41de486fa12454c3761e8e223442e.png?size=64'})

@@ -1,13 +1,11 @@
 import os
 import sys
 
-# Đảm bảo UTF-8 encoding trên console Windows
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 if hasattr(sys.stderr, 'reconfigure'):
     sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
-# Monkey-patch cho discord.py-self để tránh lỗi đóng loop và cho phép tạo app bot
 import discord.http
 
 def _patched_create_app(self, name: str, team_id=None):
@@ -23,7 +21,6 @@ def _safe_http_del(self):
 
 discord.http.HTTPClient.__del__ = _safe_http_del
 
-# Cấu hình đường dẫn và hằng số
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 ENV_PATH = os.path.join(BASE_DIR, '.env')
 
@@ -47,8 +44,6 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'discord_rpc_master_secret_key_fixed')
 
-# CLOUDFLARE TURNSTILE CAPTCHA CONFIG (FREE 100%, BẢO MẬT KHÔNG GIỚI HẠN)
-# Mặc định sử dụng Official Cloudflare Test Key (Always Passes) để dev/test tức thì
 CLOUDFLARE_TURNSTILE_SITE_KEY = os.environ.get('CLOUDFLARE_TURNSTILE_SITE_KEY', '1x00000000000000000000AA')
 CLOUDFLARE_TURNSTILE_SECRET_KEY = os.environ.get('CLOUDFLARE_TURNSTILE_SECRET_KEY', '1x0000000000000000000000000000000AA')
 

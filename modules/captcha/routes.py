@@ -11,10 +11,8 @@ def verify_turnstile(token: str, remote_ip: str = None) -> bool:
     """Xác thực token Cloudflare Turnstile với máy chủ Cloudflare."""
     if not token:
         return False
-    # Nếu token là fallback do mạng người dùng không thể kết nối tới Cloudflare
     if token.startswith('cf_network_bypass_') or token.startswith('cf_fallback_ready_'):
         return True
-    # Nếu đang dùng test key của Cloudflare và chạy local, kiểm tra nhanh
     if CLOUDFLARE_TURNSTILE_SECRET_KEY.startswith('1x0000000000000000000000000000000'):
         return True
     try:
@@ -30,7 +28,6 @@ def verify_turnstile(token: str, remote_ip: str = None) -> bool:
         outcome = resp.json()
         return bool(outcome.get('success', False))
     except Exception:
-        # Nếu timeout hoặc lỗi mạng ra ngoài Cloudflare khi dev, pass nếu có token
         return bool(token)
 
 @captcha_bp.route('/api/captcha/config')
@@ -58,7 +55,6 @@ def api_captcha_verify():
         session['captcha_verified'] = False
         return jsonify({'success': False, 'message': 'Xác thực không thành công, vui lòng thử lại.'}), 400
 
-# Đăng ký tiểu mục Captcha vào Mục Lớn Security trong Core Registry
 registry.register_module(SubModule(
     key='captcha',
     category_key='security',

@@ -45,7 +45,6 @@ def get_avatar_info(username: str, avatar_url: str = '', auth_provider: str = 'l
             'gradient': ''
         }
     
-    # Tính toán Initials Zalo-style (1 hoặc 2 chữ cái đầu)
     clean_name = (username or 'User').strip()
     words = [w for w in clean_name.replace('_', ' ').replace('-', ' ').split() if w]
     if len(words) >= 2:
@@ -57,7 +56,6 @@ def get_avatar_info(username: str, avatar_url: str = '', auth_provider: str = 'l
     else:
         initials = 'D'
     
-    # Bảng màu Luxury Cyber Gradient
     gradients = [
         'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)', # Indigo Purple
         'linear-gradient(135deg, #0284c7 0%, #2563eb 100%)', # Sky Blue
@@ -104,7 +102,6 @@ def index():
     custom_status = (acc['custom_status'] if (acc and acc['custom_status']) else (u['custom_status'] if (u and u['custom_status']) else 'nắng biển?'))
     bio = (u['bio'] if (u and u['bio']) else '')
     
-    # Lấy badges list
     badges_list = []
     if u and u['badges']:
         try:
@@ -112,7 +109,6 @@ def index():
         except Exception:
             badges_list = []
 
-    # Nếu chưa có profile_effect hoặc avatar_decoration mà có discord_id, thử sync realtime
     d_id = u['discord_id'] if u else None
     showcase_token = os.environ.get('DISCORD_SHOWCASE_TOKEN', '')
     if d_id and showcase_token and (not profile_effect or not avatar_decoration):
@@ -129,7 +125,6 @@ def index():
                     badges_list = p_live['badges']
                 if not bio and p_live.get('bio'):
                     bio = p_live['bio']
-                # Cập nhật ngược lại vào DB
                 with get_db() as conn:
                     c = conn.cursor()
                     c.execute('UPDATE users SET profile_effect = ?, avatar_decoration = ?, banner = ?, badges = ?, bio = ? WHERE id = ?',
@@ -276,14 +271,12 @@ def login():
             flash('Tên đăng nhập hoặc mật khẩu không chính xác.', 'error')
             return redirect(url_for('login'))
             
-    # Lấy thông tin Showcase Profile trực tiếp từ Discord API nếu có Token
     showcase_token = (
         os.environ.get('DISCORD_SHOWCASE_TOKEN') or 
         os.environ.get('DISCORD_TOKEN') or 
         os.environ.get('DISCORD_BOT_TOKEN') or ''
     ).strip()
     
-    # Nếu chưa có trong .env, thử tìm token đầu tiên trong database để tự động fetch
     if not showcase_token:
         try:
             with get_db() as conn:
@@ -304,7 +297,6 @@ def login():
     if showcase_token:
         try:
             from modules.account.services import fetch_discord_profile
-            # Target ID của Minh: 1412818296033775707
             showcase_profile = fetch_discord_profile(showcase_token, target_user_id='1412818296033775707')
         except Exception as e:
             print(f"[SHOWCASE ERROR] Failed to fetch Discord profile: {e}")
@@ -453,7 +445,6 @@ def auth_discord_callback():
                                   WHERE id = ?''',
                                (d_id, d_username, avatar_url, avatar_url, 'discord', avatar_decoration, banner_url, profile_effect, badges_json, bio, custom_status, user_id))
             
-            # Tài khoản chính Discord OAuth2 tuyệt đối không đưa vào Multi-Token Switcher (discord_accounts)
             cursor.execute('DELETE FROM discord_accounts WHERE user_id = ? AND (discord_id = ? OR token = ?)', (user_id, d_id, access_token))
             conn.commit()
 
@@ -570,7 +561,6 @@ def register_auth_endpoints(app):
     app.add_url_rule('/auth/google/callback', endpoint='auth_google_callback', view_func=auth_google_callback)
     app.add_url_rule('/api/live/status', endpoint='api_live_status', view_func=api_live_status)
 
-# Đăng ký tiểu mục Auth vào Mục Lớn Account & Auth trong Core Registry
 registry.register_module(SubModule(
     key='auth',
     category_key='account',

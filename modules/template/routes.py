@@ -35,7 +35,6 @@ def get_templates():
         except Exception as e:
             print(f"[Supabase Templates] Error: {e}, falling back to SQLite")
 
-    # SQLite fallback
     with get_db() as conn:
         cursor = conn.cursor()
         sql = 'SELECT * FROM rpc_templates WHERE is_public = 1'
@@ -63,7 +62,6 @@ def get_templates():
             except Exception:
                 pass
                 
-        # Filter tag in-memory for SQLite if requested
         if tag:
             rows = [r for r in rows if tag in [t.lower() for t in r.get('tags', [])]]
             
@@ -110,7 +108,6 @@ def create_template():
         except Exception as e:
             print(f"[Supabase Create Template] Error: {e}, falling back to SQLite")
 
-    # SQLite
     with get_db() as conn:
         cursor = conn.cursor()
         cursor.execute('''
@@ -178,7 +175,6 @@ def get_user_bots():
         cursor.execute('SELECT * FROM discord_bots WHERE user_id = ? ORDER BY id DESC', (user_id,))
         rows = [dict(r) for r in cursor.fetchall()]
         
-    # Mặc định thêm các bot thông dụng nếu chưa có bot nào
     if not rows:
         default_apps = [
             {'app_id': '1118182981329244241', 'bot_name': 'DIPRE Studio RPC', 'bot_avatar_url': 'https://cdn.discordapp.com/app-icons/1118182981329244241/a_123.png'},

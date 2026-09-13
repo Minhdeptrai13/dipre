@@ -26,7 +26,6 @@ def resolve_profile_effect(effect_id: str) -> dict:
     eff_id_str = str(effect_id).strip()
     effects = load_effects()
     
-    # 1. Tìm trực tiếp theo SKU ID
     if eff_id_str in effects:
         item = effects[eff_id_str]
         return {
@@ -37,7 +36,6 @@ def resolve_profile_effect(effect_id: str) -> dict:
             'reduced': item.get('reduced')
         }
         
-    # 2. Tìm theo title hoặc từ khóa
     for k, v in effects.items():
         if eff_id_str.lower() in v.get('title', '').lower():
             return {
@@ -48,7 +46,6 @@ def resolve_profile_effect(effect_id: str) -> dict:
                 'reduced': v.get('reduced')
             }
             
-    # 3. Fallback hiệu ứng mặc định nếu là URL CDN trực tiếp
     if eff_id_str.startswith('http'):
         return {
             'id': 'custom',

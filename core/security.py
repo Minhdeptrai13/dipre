@@ -5,9 +5,6 @@ from flask import Flask, request, jsonify, session, redirect, url_for, flash
 from core.logger import log_event
 from core.database import get_db
 
-# ==============================================================================
-# DIPRE CYBER SHIELD: MULTI-LAYER ANTI-DDOS & BRUTE-FORCE PROTECTION
-# ==============================================================================
 IP_REQUEST_HISTORY: Dict[str, List[float]] = {}
 IP_FAILED_ATTEMPTS: Dict[str, List[float]] = {}
 IP_BLACKLIST: Dict[str, float] = {}  # ip -> ban_until timestamp
@@ -60,7 +57,6 @@ def init_security(app: Flask):
         ip = get_client_ip()
         now = time.time()
 
-        # 1. Kiểm tra danh sách tạm giam (Jail)
         if is_ip_jailed(ip):
             ban_remain = int(IP_BLACKLIST.get(ip, now) - now)
             if request.path.startswith('/api/'):
@@ -79,7 +75,6 @@ def init_security(app: Flask):
             </body></html>
             """, 429
 
-        # 2. In-Memory Sliding Window Rate Limiter
         is_sensitive = request.path in ['/login', '/register'] or request.path.startswith('/api/captcha')
         limit = RATE_LIMIT_SENSITIVE if is_sensitive else RATE_LIMIT_GLOBAL
 
@@ -95,7 +90,6 @@ def init_security(app: Flask):
             history.append(now)
             IP_REQUEST_HISTORY[ip] = history
 
-        # 3. KIỂM TRA TÍNH TOÀN VẸN CỦA TÀI KHOẢN TRONG DATABASE
         if 'user_id' in session:
             user_exists = False
             try:

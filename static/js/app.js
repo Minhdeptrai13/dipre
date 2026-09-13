@@ -82,9 +82,6 @@ let questLogInterval = null;
 let questLogLastCount = 0;
 let currentQuestId = null;
 
-// ============================================================
-// TAB NAVIGATION (SPA ZERO-LAG)
-// ============================================================
 
 const TAB_TITLES = {
   'tab-home': 'DASHBOARD COMMAND CENTER',
@@ -113,18 +110,15 @@ function switchTab(tabId) {
   const btn = document.querySelector(`[data-tab="${tabId}"]`);
   if (btn) btn.classList.add('active');
 
-  // Cập nhật Breadcrumb trên Topbar
   const topTitle = document.getElementById('topbar-tab-title');
   if (topTitle && TAB_TITLES[tabId]) {
     topTitle.textContent = TAB_TITLES[tabId];
   }
 
-  // Lưu hash URL để khi F5 không bị mất tab
   if (window.location.hash !== `#${tabId}`) {
     history.replaceState(null, null, `#${tabId}`);
   }
 
-  // Khởi động các module tương ứng
   if (tabId === 'tab-home') { loadDashboardStats(); checkQuestOvernightNotification(); }
   else if (tabId === 'tab-rpc') { startLogPolling(); }
   else if (tabId === 'tab-quest') { loadAvailableQuests(); startLogPolling('quest'); checkQuestOvernightNotification(); }
@@ -132,15 +126,11 @@ function switchTab(tabId) {
   else if (tabId === 'tab-accounts') { loadMultiAccounts(); }
   else if (tabId === 'tab-voice-afk') { checkVoiceStatus(); }
 
-  // Đồng bộ Realtime tài khoản đa token ngay lập tức khi đổi tab
   if (typeof syncMultiTokensRealtime === 'function') {
     syncMultiTokensRealtime();
   }
 }
 
-// ============================================================
-// TOAST NOTIFICATIONS
-// ============================================================
 
 function showToast(msg, type = 'info', duration = 4000) {
   const container = document.getElementById('toast-container');
@@ -156,9 +146,6 @@ function showToast(msg, type = 'info', duration = 4000) {
   }, duration);
 }
 
-// ============================================================
-// ACCOUNT MODAL
-// ============================================================
 
 function toggleAccountModal(show) {
   const bd = document.getElementById('account-modal-backdrop');
@@ -188,7 +175,6 @@ function copyTokenScript() {
   const script = `window.webpackChunkdiscord_app.push([[Math.random()],{},(e)=>{for(const n of Object.values(e.c)){try{const e=n?.exports?.default;if(e?.getToken){const t=e.getToken();copy(t);console.log("%c[SUCCESS] Token copied!","color:#22c55e;font-size:16px;font-weight:bold");return}}catch{}}}]);`;
   navigator.clipboard.writeText(script).then(() => showToast('Đã sao chép Script lấy Token — Vào Discord Web > F12 > Console > Dán & Enter', 'success'))
     .catch(() => {
-      // Fallback
       const ta = document.createElement('textarea');
       ta.value = script;
       document.body.appendChild(ta);
@@ -344,7 +330,6 @@ function updateAccountUI(data) {
     ? (data.discord_avatar || data.avatar_url || '') 
     : (data.avatar_url || data.google_avatar || data.discord_avatar || '');
 
-  // 1. Sidebar Account Bottom Selector
   const sadName = document.getElementById('sad-name');
   const sadTag = document.getElementById('sad-tag');
   const sadImg = document.getElementById('sad-avatar-img');
@@ -362,7 +347,6 @@ function updateAccountUI(data) {
     if (sadLocked) sadLocked.style.display = 'flex';
   }
 
-  // 2. Modal Quản Lý Tài Khoản
   const accName = document.getElementById('account-view-name');
   const accStatus = document.getElementById('account-view-status');
   const accAvatar = document.getElementById('account-view-avatar');
@@ -380,7 +364,6 @@ function updateAccountUI(data) {
     if (accAvatarLocked) accAvatarLocked.classList.remove('d-none');
   }
 
-  // 3. Tab Lyric Sync
   const lscUser = document.getElementById('lsc-username');
   const lscAv = document.getElementById('lsc-avatar');
   const lscAvLocked = document.getElementById('lsc-avatar-locked');
@@ -390,7 +373,6 @@ function updateAccountUI(data) {
     if (lscAvLocked) lscAvLocked.classList.add('d-none');
   }
 
-  // 4. Tab RPC Live Preview Card
   const pvDisp = document.getElementById('pv-display-name');
   const pvHandle = document.getElementById('pv-handle');
   const pvAv = document.getElementById('pv-avatar');
@@ -402,7 +384,6 @@ function updateAccountUI(data) {
     if (pvAvLocked) pvAvLocked.classList.add('d-none');
   }
 
-  // 5. CẬP NHẬT THẺ PROFILE ĐỘNG Ở HERO (DASHBOARD COMMAND CENTER)
   const cardWrap = document.getElementById('discord-main-card');
   const heroName = document.getElementById('hero-profile-name');
   const heroTag = document.getElementById('hero-profile-tag');
@@ -430,7 +411,6 @@ function updateAccountUI(data) {
   }
 
   if (authProvider === 'google' && !isLinked) {
-    // Chế độ Google Popout Card (Ảnh 2)
     const gadEmail = document.querySelector('.gad-email');
     const gadGreeting = document.querySelector('.gad-greeting');
     const gadImg = document.querySelector('.gad-avatar-img');
@@ -438,7 +418,6 @@ function updateAccountUI(data) {
     if (gadGreeting && data.username) gadGreeting.textContent = `Chào ${data.username.split('@')[0]},`;
     if (gadImg && avatar) gadImg.src = avatar;
   } else {
-    // Chế độ Discord Card 1:1 (Ảnh 3 & 4)
     if (decorUrl && heroDecor) {
       heroDecor.src = decorUrl;
       heroDecor.classList.remove('d-none');
@@ -458,12 +437,10 @@ function updateAccountUI(data) {
     }
   }
 
-  // Banner
   if (heroBanner && data.banner) {
     heroBanner.style.backgroundImage = `url('${data.banner}')`;
   }
 
-  // 6. THAY VÌ BẬT OVERLAY ĐEN, ĐIỀU KHIỂN TOKEN NOTICE BANNER
   const rpcNotice = document.getElementById('rpc-token-notice');
   const lyricNotice = document.getElementById('lyric-token-notice');
   const statusNotice = document.getElementById('status-token-notice');
@@ -482,9 +459,6 @@ function updateAccountUI(data) {
   }
 }
 
-// ============================================================
-// RPC CONTROLS
-// ============================================================
 
 function buildRPCConfig() {
   const actType = document.getElementById('select-activity-type')?.value || 'playing';
@@ -511,7 +485,6 @@ function buildRPCConfig() {
   if (btn1Label && btn1Url) buttons.push({ label: btn1Label, url: btn1Url });
   if (btn2Label && btn2Url) buttons.push({ label: btn2Label, url: btn2Url });
 
-  // Lấy toàn bộ danh sách account_ids từ multi-token widget nếu người dùng chọn
   let accountIds = [];
   let accountId = null;
   if (window.selectedMultiAccounts && window.selectedMultiAccounts['rpc'] && window.selectedMultiAccounts['rpc'].length > 0) {
@@ -634,9 +607,6 @@ async function handleStopRPC() {
 
 
 
-// ============================================================
-// LIVE PREVIEW
-// ============================================================
 
 function updateLivePreview() {
   const actType = document.getElementById('select-activity-type')?.value || 'playing';
@@ -654,7 +624,6 @@ function updateLivePreview() {
   const el = (id) => document.getElementById(id);
   if (el('pv-activity-type-header')) el('pv-activity-type-header').textContent = typeMap[actType] || 'PLAYING A GAME';
 
-  // Lấy giá trị ảnh lớn
   const largeImgVal = document.getElementById('input-large-img')?.value.trim() || 
                       document.getElementById('input-large-image')?.value.trim() || 
                       currentLargeImageUrl;
@@ -697,7 +666,6 @@ function updateLivePreview() {
     dotEl.style.background = cols[userStatus] || '#3ba55c';
   }
 
-  // Đồng bộ hiển thị ảnh lớn cả trên ô Form Settings và Discord Card 1:1
   const pvLarge = document.getElementById('pv-large-img');
   const boxLarge = document.getElementById('box-large-preview');
   if (largeImgVal) {
@@ -721,7 +689,6 @@ function updateLivePreview() {
     }
   }
 
-  // Đồng bộ hiển thị ảnh nhỏ
   const smallImgVal = document.getElementById('input-small-img')?.value.trim() || 
                       document.getElementById('input-small-image')?.value.trim() || 
                       currentSmallImageUrl;
@@ -742,9 +709,6 @@ function updateLivePreview() {
   }
 }
 
-// ============================================================
-// TIMER
-// ============================================================
 
 function startTimer() {
   stopTimer();
@@ -765,9 +729,6 @@ function stopTimer() {
   if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
 }
 
-// ============================================================
-// LED / STATUS
-// ============================================================
 
 function setLed(state) {
   const led = document.getElementById('led-indicator');
@@ -788,9 +749,6 @@ function setLed(state) {
   }
 }
 
-// ============================================================
-// LOG ENGINES (RPC, LYRIC, QUEST ISOLATED)
-// ============================================================
 
 function startLogPolling() {
   if (logPollingInterval) { clearInterval(logPollingInterval); logPollingInterval = null; }
@@ -808,7 +766,6 @@ async function fetchRPCLogs() {
     if (d.logs.length > existing) {
       const newLogs = d.logs.slice(existing);
       newLogs.forEach(log => {
-        // Filter out quest or lyric specific lines if any
         if (log.message && (log.message.includes('[QUEST]') || log.message.includes('[LYRIC]'))) return;
         const div = document.createElement('div');
         const lvl = log.level || 'info';
@@ -854,9 +811,6 @@ function escapeHtml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-// ============================================================
-// PRESETS
-// ============================================================
 
 async function loadPresets() {
   try {
@@ -943,9 +897,6 @@ async function deletePreset(id) {
   } catch (e) { }
 }
 
-// ============================================================
-// ACTIVITY TYPE CHANGE
-// ============================================================
 
 function onActivityTypeChange() {
   const val = document.getElementById('select-activity-type')?.value;
@@ -954,9 +905,6 @@ function onActivityTypeChange() {
   updateLivePreview();
 }
 
-// ============================================================
-// IMAGE HANDLING
-// ============================================================
 
 function triggerUpload(type) {
   document.getElementById(`file-upload-${type}`)?.click();
@@ -1088,9 +1036,6 @@ function clearSmallImage() {
   showToast('Da go anh nho — xem truoc chi con 1 anh lon', 'info');
 }
 
-// ============================================================
-// GALLERY GRID
-// ============================================================
 
 function buildVisualGallery() {
   const grid = document.getElementById('visual-gallery-grid');
@@ -1111,9 +1056,6 @@ function buildVisualGallery() {
   });
 }
 
-// ============================================================
-// ANIMATED GIF PRESETS HANDLER
-// ============================================================
 
 function selectGifPreset(url, name) {
   if (!url) return;
@@ -1137,7 +1079,6 @@ function selectGifPreset(url, name) {
   const lbl = document.getElementById('lbl-large-source');
   if (lbl) lbl.textContent = name || 'Animated GIF';
 
-  // Highlight active GIF item
   document.querySelectorAll('#rpc-gif-grid .rgb-item').forEach(el => {
     el.classList.remove('active');
   });
@@ -1150,9 +1091,6 @@ function selectGifPreset(url, name) {
   showToast(`Đã áp dụng ảnh động GIF: ${name || 'GIF'}!`, 'success', 2500);
 }
 
-// ============================================================
-// PORTAL / BOT SCANNING
-// ============================================================
 
 async function scanPortalApps(silent = false) {
   if (!silent) showToast('Dang quet Developer Portal...', 'info', 2500);
@@ -1223,9 +1161,6 @@ async function useDevPortalAvatar() {
   applyDetectedAvatar();
 }
 
-// ============================================================
-// ROTATOR
-// ============================================================
 
 function toggleRotator() {
   const on = document.getElementById('check-rotator')?.checked;
@@ -1244,13 +1179,7 @@ function toggleRotator() {
   }
 }
 
-// ============================================================
-// SOUNDCLOUD WIDGET
-// ============================================================
 
-// ============================================================
-// DIPRE NCT & LRCLIB HTML5 AUDIO PLAYER
-// ============================================================
 
 let dipreAudio = new Audio();
 let lastSyncedLine = '';
@@ -1355,7 +1284,6 @@ async function selectSongForSync(song) {
     const artist = song.artist || 'Nghệ sĩ';
     const cover = song.cover || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&auto=format&fit=crop&q=80';
 
-    // 1. Cập nhật thẻ trình phát HTML5
     const dapTitle = document.getElementById('dap-title');
     const dapArtist = document.getElementById('dap-artist');
     const dapArt = document.getElementById('dap-art');
@@ -1363,7 +1291,6 @@ async function selectSongForSync(song) {
     if (dapArtist) dapArtist.textContent = `${artist} • NhacCuaTui Synced`;
     if (dapArt) dapArt.src = cover;
 
-    // 2. Tải lời bài hát đồng bộ từ API
     showToast(`Đang nạp lời bài hát: ${title}...`, 'info');
     let lyricsLoaded = false;
 
@@ -1378,7 +1305,6 @@ async function selectSongForSync(song) {
     }
 
     if (!lyricsLoaded) {
-      // Fallback tìm kiếm qua NCT service
       const res = await fetch(`/api/lyrics/song?q=${encodeURIComponent(title)}`);
       const data = await res.json();
       if (data.success && data.track && data.track.lyrics) {
@@ -1388,11 +1314,9 @@ async function selectSongForSync(song) {
       }
     }
 
-    // Đổi hiển thị sang đã chọn thành công
     document.querySelectorAll('.nct-song-card-item').forEach(el => el.classList.remove('active'));
     showToast(`Đã chọn: ${title}! Sẵn sàng đồng bộ Status.`, 'success');
 
-    // Tự động cuộn xuống trình phát nhạc
     const playerSec = document.querySelector('.dipre-player-section');
     if (playerSec) playerSec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
@@ -1536,7 +1460,6 @@ function updateLyricDisplay(line, sec) {
   }
   if (emojiEl) emojiEl.textContent = emoji;
 
-  // Active line highlight & auto-scroll
   let activeIdx = -1;
   for (let i = 0; i < currentLyrics.length; i++) {
     if (sec >= currentLyrics[i].t) activeIdx = i;
@@ -1636,10 +1559,6 @@ function parseLRC(raw) {
   return lines.sort((a, b) => a.t - b.t);
 }
 
-// ============================================================
-// ============================================================
-// QUEST
-// ============================================================
 
 async function loadAvailableQuests() {
   const container = document.getElementById('quests-list-container');
@@ -1662,9 +1581,6 @@ async function loadAvailableQuests() {
   }
 }
 
-// ============================================================
-// QUEST LOG TERMINAL
-// ============================================================
 
 const QUEST_LOG_LEVEL_COLOR = {
   'success': '#4ade80',
@@ -1682,9 +1598,7 @@ function appendQuestLog(entry) {
   const color = QUEST_LOG_LEVEL_COLOR[entry.level] || '#a5b4fc';
   line.innerHTML = `<span class="log-time" style="color:#64748b;">[${entry.time}]</span> <span class="log-msg" style="color:${color};">${escapeHtml(entry.message)}</span>`;
   screen.appendChild(line);
-  // Auto-scroll to bottom
   screen.scrollTop = screen.scrollHeight;
-  // Trim old entries (keep max 100 lines visible)
   while (screen.children.length > 120) {
     screen.removeChild(screen.firstChild);
   }
@@ -1703,7 +1617,6 @@ async function fetchQuestLogs() {
     if (!d.success || !d.logs) return;
     const logs = d.logs;
     if (logs.length > questLogLastCount) {
-      // Append only new entries
       for (let i = questLogLastCount; i < logs.length; i++) {
         appendQuestLog(logs[i]);
       }
@@ -1782,7 +1695,6 @@ async function handleStartAutoQuest() {
   const stopBtn = document.getElementById('btn-quest-stop');
   if (stopBtn) stopBtn.disabled = false;
 
-  // Clear console and start log polling
   clearQuestLog();
   await fetch('/api/quests/logs', { method: 'DELETE' });
   questLogLastCount = 0;
@@ -1828,7 +1740,6 @@ async function handleStartQuest(id, name, game, imgUrl, taskType, targetSec) {
   const stopBtn = document.getElementById('btn-quest-stop');
   if (stopBtn) stopBtn.disabled = false;
 
-  // Clear console and start log polling
   clearQuestLog();
   await fetch('/api/quests/logs', { method: 'DELETE' });
   questLogLastCount = 0;
@@ -1921,7 +1832,6 @@ function startQuestProgressPolling(id, targetSec) {
   }, 1200);
 }
 
-// Kiểm tra thông báo tổng kết Auto Quest qua đêm khi mở trang hoặc chuyển tab
 async function checkQuestOvernightNotification() {
   try {
     const res = await fetch('/api/quests/status');
@@ -2004,9 +1914,6 @@ async function handleStopQuest() {
   } catch (e) { showToast('Loi dung quest', 'error'); }
 }
 
-// ============================================================
-// HYPESQUAD
-// ============================================================
 
 async function handleClaimHypeSquad(house) {
   const names = { 1: 'Bravery', 2: 'Brilliance', 3: 'Balance' };
@@ -2023,11 +1930,8 @@ async function handleClaimHypeSquad(house) {
   } catch (e) { showToast('Loi ket noi', 'error'); }
 }
 
-// Fix typo in HTML for balance button
 function handleClaimHypeQuad(house) { handleClaimHypeSquad(house); }
 
-// ============================================================
-// INIT
 async function loadSavedConfig() {
   try {
     const r = await fetch('/api/get_config');
@@ -2067,9 +1971,6 @@ async function loadSavedConfig() {
   } catch (e) { }
 }
 
-// ============================================================
-// SOUNDCLOUD, YOUTUBE & SPOTIFY RPC HANDLERS
-// ============================================================
 
 function handleLoadSoundCloudTrack() {
   const url = document.getElementById('sc-track-url')?.value.trim();
@@ -2162,9 +2063,6 @@ async function handleApplySpotifyRPC() {
   showToast('Đã áp dụng Spotify RPC!', 'success');
 }
 
-// ============================================================
-// INBOX DISCORD HANDLER
-// ============================================================
 
 async function loadDiscordInbox() {
   const container = document.getElementById('inbox-channels-list');
@@ -2231,9 +2129,6 @@ async function fetchAccountInfo() {
   } catch (e) {}
 }
 
-// ============================================================
-// THEME SWITCHER (GUI SÁNG & GUI TỐI)
-// ============================================================
 
 const SVG_SUN = `<svg id="theme-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
 const SVG_MOON = `<svg id="theme-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
@@ -2264,9 +2159,6 @@ function toggleTheme() {
   }
 }
 
-// ============================================================
-// LIVE SYSTEM CLOCK
-// ============================================================
 
 function initSystemClock() {
   const clockEl = document.getElementById('system-clock');
@@ -2282,9 +2174,6 @@ function initSystemClock() {
   setInterval(updateClock, 1000);
 }
 
-// ============================================================
-// ANTI-DEVTOOLS & CHỐNG INSPECT ELEMENT
-// ============================================================
 
 function showAntiDevToolsShield() {
   const overlay = document.getElementById('anti-devtools-overlay');
@@ -2295,7 +2184,6 @@ function showAntiDevToolsShield() {
 }
 
 function initAntiInspect() {
-  // 1. Chặn phím tắt kỹ thuật: F12, Ctrl+Shift+I, J, C, Ctrl+U, Ctrl+S
   window.addEventListener('keydown', (e) => {
     const isF12 = e.keyCode === 123;
     const isCtrlShiftI = (e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.key === 'i');
@@ -2313,7 +2201,6 @@ function initAntiInspect() {
     }
   }, true);
 
-  // 2. Chặn chuột phải mặc định & mở Custom Context Menu
   const customMenu = document.getElementById('dipre-custom-menu');
   window.addEventListener('contextmenu', (e) => {
     e.preventDefault();
@@ -2336,7 +2223,6 @@ function initAntiInspect() {
     if (customMenu) customMenu.style.display = 'none';
   });
 
-  // 3. Cơ chế phát hiện DevTools bằng chênh lệch kích thước cửa sổ
   setInterval(() => {
     const threshold = 160;
     const widthDiff = window.outerWidth - window.innerWidth > threshold;
@@ -2347,9 +2233,6 @@ function initAntiInspect() {
   }, 1200);
 }
 
-// ============================================================
-// REALTIME STATUS ENGINE (ZERO-LAG SYNC)
-// ============================================================
 
 async function syncAllStatusNow() {
   try {
@@ -2365,11 +2248,9 @@ async function syncAllStatusNow() {
     if (data && data.status === 'ok') {
       const u = data.user;
       
-      // Cập nhật thẻ User System trên sidebar
       const sysName = document.getElementById('user-sys-name');
       if (sysName && u.username) sysName.textContent = u.username;
 
-      // Cập nhật avatar nếu là ảnh hoặc initials
       const avatarImg = document.getElementById('user-sys-avatar-img');
       const avatarInitials = document.getElementById('user-sys-avatar-initials');
       if (u.avatar) {
@@ -2389,7 +2270,6 @@ async function syncAllStatusNow() {
         }
       }
 
-      // Cập nhật trạng thái Discord active pill
       const sadName = document.getElementById('sad-name');
       const sadTag = document.getElementById('sad-tag');
       const sadAvatar = document.getElementById('sad-avatar-img');
@@ -2422,9 +2302,6 @@ async function syncAllStatusNow() {
   }
 }
 
-// ============================================================
-// DASHBOARD STATS & COMMAND CENTER ENGINE
-// ============================================================
 
 async function loadDashboardStats() {
   try {
@@ -2444,7 +2321,6 @@ async function loadDashboardStats() {
       if (mostUsedEl) mostUsedEl.textContent = s.most_used_feature || 'Custom RPC';
       if (totalRunsEl) totalRunsEl.textContent = `${s.total_runs || 0} lượt chạy`;
 
-      // Update Breakdown Progress Bars
       if (s.top_features && s.top_features.length > 0) {
         const total = s.total_runs || 1;
         s.top_features.forEach(f => {
@@ -2476,9 +2352,6 @@ async function loadDashboardStats() {
   } catch (e) {}
 }
 
-// ============================================================
-// CUSTOM STATUS & ROTATOR ENGINE
-// ============================================================
 
 function updateCustomStatusPreview() {
   const text = document.getElementById('input-custom-status-text')?.value.trim() || 'Đang trải nghiệm DIPRE Studio';
@@ -2580,9 +2453,6 @@ function toggleStatusRotator() {
   }
 }
 
-// ============================================================
-// VOICE 24/7 (AFK VOICE) ENGINE
-// ============================================================
 
 let voiceTimerInterval = null;
 let voiceElapsedSeconds = 0;
@@ -2687,9 +2557,6 @@ async function handleStopVoiceAFK() {
   }
 }
 
-// ============================================================
-// 1. YOUTUBE RPC SUITE
-// ============================================================
 async function handleFetchYouTubeMeta() {
   const url = document.getElementById('yt-video-url')?.value.trim();
   if (!url) {
@@ -2751,9 +2618,6 @@ async function handleApplyYouTubeRPC() {
   }
 }
 
-// ============================================================
-// 2. SOUNDCLOUD RPC SUITE
-// ============================================================
 function handleLoadSoundCloudTrack() {
   const url = document.getElementById('sc-track-url')?.value.trim();
   if (!url) {
@@ -2812,9 +2676,6 @@ async function handleApplySoundCloudRPC() {
   }
 }
 
-// ============================================================
-// 3. SPOTIFY RPC SUITE
-// ============================================================
 async function handleApplySpotifyRPC() {
   const trackName = document.getElementById('sp-track-name')?.value.trim() || 'Starboy';
   const artistName = document.getElementById('sp-artist-name')?.value.trim() || 'The Weeknd, Daft Punk';
@@ -2850,9 +2711,6 @@ async function handleApplySpotifyRPC() {
   }
 }
 
-// ============================================================
-// 4. QUẢN LÝ ĐA TOKEN (MULTI-TOKEN SWITCHER)
-// ============================================================
 async function loadMultiAccounts() {
   const grid = document.getElementById('multi-accounts-grid');
   if (!grid) return;
@@ -2947,9 +2805,6 @@ async function deleteAccount(accId) {
   }
 }
 
-// ============================================================
-// 5. INBOX DISCORD
-// ============================================================
 async function loadDiscordInbox() {
   const container = document.getElementById('inbox-channels-list');
   if (!container) return;
@@ -2978,9 +2833,6 @@ async function loadDiscordInbox() {
   }
 }
 
-// ============================================================
-// 6. DISCORD VOICE SOUNDBOARD ENGINE
-// ============================================================
 let audioCtx = null;
 let activeSoundSources = [];
 let soundboardMasterVolume = 0.85;
@@ -3016,7 +2868,6 @@ function triggerSoundboardPlay(soundId) {
   masterGain.gain.setValueAtTime(soundboardMasterVolume, now);
   masterGain.connect(ctx.destination);
 
-  // Thêm class active hiệu ứng cho card
   const card = event?.currentTarget || document.querySelector(`.sb-card[onclick*="${soundId}"]`);
   if (card) {
     card.classList.add('playing');
@@ -3024,7 +2875,6 @@ function triggerSoundboardPlay(soundId) {
   }
 
   if (soundId === 'airhorn') {
-    // Kèn hơi MLG đa âm
     const freqs = [370, 370, 370, 493, 440, 370];
     freqs.forEach((f, idx) => {
       const osc = ctx.createOscillator();
@@ -3040,7 +2890,6 @@ function triggerSoundboardPlay(soundId) {
       activeSoundSources.push(osc);
     });
   } else if (soundId === 'badumtss') {
-    // Ba Dum Tss
     const osc1 = ctx.createOscillator();
     const g1 = ctx.createGain();
     osc1.frequency.setValueAtTime(140, now);
@@ -3063,7 +2912,6 @@ function triggerSoundboardPlay(soundId) {
     osc2.start(now + 0.2);
     osc2.stop(now + 0.35);
 
-    // Tss Cymbal
     const bufSize = Math.floor(ctx.sampleRate * 0.4);
     const noiseBuf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
     const output = noiseBuf.getChannelData(0);
@@ -3082,7 +2930,6 @@ function triggerSoundboardPlay(soundId) {
     whiteNoise.start(now + 0.38);
     whiteNoise.stop(now + 0.8);
   } else if (soundId === 'quack') {
-    // Vịt quack
     const osc = ctx.createOscillator();
     const g = ctx.createGain();
     osc.type = 'sawtooth';
@@ -3095,7 +2942,6 @@ function triggerSoundboardPlay(soundId) {
     osc.start(now);
     osc.stop(now + 0.3);
   } else if (soundId === 'bruh') {
-    // Bruh
     const osc = ctx.createOscillator();
     const g = ctx.createGain();
     osc.type = 'triangle';
@@ -3108,7 +2954,6 @@ function triggerSoundboardPlay(soundId) {
     osc.start(now);
     osc.stop(now + 0.5);
   } else if (soundId === 'vineboom') {
-    // Vine Boom
     const osc = ctx.createOscillator();
     const g = ctx.createGain();
     osc.type = 'sine';
@@ -3121,7 +2966,6 @@ function triggerSoundboardPlay(soundId) {
     osc.start(now);
     osc.stop(now + 0.9);
   } else if (soundId === 'discordping') {
-    // Discord Ping
     const osc = ctx.createOscillator();
     const g = ctx.createGain();
     osc.type = 'sine';
@@ -3134,7 +2978,6 @@ function triggerSoundboardPlay(soundId) {
     osc.start(now);
     osc.stop(now + 0.25);
   } else {
-    // Tone tổng hợp vui nhộn
     const osc = ctx.createOscillator();
     const g = ctx.createGain();
     osc.type = 'sine';
@@ -3164,9 +3007,6 @@ function handleUploadCustomSound(input) {
   reader.readAsDataURL(file);
 }
 
-// ============================================================
-// 7. DISCORD ACCOUNT CLEANER ENGINE
-// ============================================================
 let cleanerRunning = false;
 let cleanerInterval = null;
 
@@ -3234,9 +3074,6 @@ function stopAccountCleaner() {
   showToast('Đã dừng tác vụ dọn dẹp', 'info');
 }
 
-// ============================================================
-// 8. LYRIC STATUS & DISCOVERY MOCKUP 1:1 ENGINE
-// ============================================================
 let currentLyricTracksList = [];
 let currentTrackIndex = 0;
 let htmlAudio = null;
@@ -3271,7 +3108,6 @@ async function searchNctLyrics(page = 1) {
   const query = input?.value.trim() || 'gửi em người bất tử';
   const grid = document.getElementById('lyric-song-cards-grid');
   
-  // Active pagination pill
   document.querySelectorAll('.lpg-btn').forEach(b => b.classList.remove('active'));
   const curPageBtn = document.getElementById(`lpg-${page}`);
   if (curPageBtn) curPageBtn.classList.add('active');
@@ -3329,9 +3165,6 @@ function escapeHtml(str) {
   return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 }
 
-// ============================================================
-// MODAL NẠP DISCORD USER TOKEN PHỤ CHUYÊN DỤNG
-// ============================================================
 function toggleAddTokenModal(show) {
   const modal = document.getElementById('token-add-modal-backdrop');
   if (!modal) return;
@@ -3413,11 +3246,9 @@ function toggleTokenVisibility(id) {
   const eyeBtn = document.getElementById('btn-eye-sub-token');
   if (eyeBtn) {
     if (isCurrentlyPass) {
-      // Currently showing plain text -> eye off icon
       eyeBtn.innerHTML = `<svg class="icon-eye-closed" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
       eyeBtn.setAttribute('title', 'Ẩn token');
     } else {
-      // Hidden -> eye open icon
       eyeBtn.innerHTML = `<svg class="icon-eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
       eyeBtn.setAttribute('title', 'Hiện token');
     }
@@ -3436,9 +3267,6 @@ function handleMultiTokenPickerBackdropClick(e) {
   }
 }
 
-// ============================================================
-// QUẢN LÝ Ô VUÔNG BO GÓC CHỌN ACC ĐA TOKEN (MULTI-TOKEN TARGET)
-// ============================================================
 const selectedMultiAccounts = {
   lyric: [],
   rpc: [],
@@ -3470,7 +3298,6 @@ async function syncMultiTokensRealtime() {
     const accs = await fetchAllAvailableAccounts();
     const hasAccounts = accs && accs.length > 0;
 
-    // 1. Cập nhật trạng thái hiển thị của các Warning Banner ở tất cả các tab
     ['rpc', 'status', 'lyric', 'voice', 'quest'].forEach(key => {
       const banner = document.getElementById(`${key}-token-notice`);
       if (banner) {
@@ -3482,16 +3309,13 @@ async function syncMultiTokensRealtime() {
       }
     });
 
-    // 2. Đồng bộ widget slots trên từng tab
     const scopes = ['lyric', 'rpc', 'status', 'yt', 'sc', 'sp', 'voice'];
     const validIds = new Set(accs.map(a => String(a.id)));
 
     scopes.forEach(s => {
-      // Giữ lại các tài khoản còn tồn tại
       if (selectedMultiAccounts[s] && selectedMultiAccounts[s].length > 0) {
         selectedMultiAccounts[s] = selectedMultiAccounts[s].filter(a => validIds.has(String(a.id)));
       }
-      // Nếu chưa chọn hoặc đang rỗng mà hệ thống có tài khoản -> mặc định chọn tài khoản active hoặc đầu tiên
       if ((!selectedMultiAccounts[s] || selectedMultiAccounts[s].length === 0) && hasAccounts) {
         const activeAcc = accs.find(a => a.is_active === 1) || accs[0];
         selectedMultiAccounts[s] = [activeAcc];
@@ -3499,7 +3323,6 @@ async function syncMultiTokensRealtime() {
       renderMultiTokenSlots(s);
     });
 
-    // 3. Nếu đang mở tab Quản Lý Tài Khoản thì tự động refresh danh sách cards
     const accPanel = document.getElementById('tab-accounts');
     if (accPanel && !accPanel.classList.contains('d-none')) {
       loadMultiAccounts();
@@ -3612,9 +3435,6 @@ async function initAllMultiTokenWidgets() {
   await syncMultiTokensRealtime();
 }
 
-// ============================================================
-// LYRIC STATUS (NHACCUATUI + MULTI-TOKEN SYNC)
-// ============================================================
 async function selectTrackCard(title, artist, thumb, trackId) {
   const emptyPrompt = document.getElementById('lyric-empty-prompt');
   const activeDetail = document.getElementById('lyric-active-track-detail');
@@ -3635,7 +3455,6 @@ async function selectTrackCard(title, artist, thumb, trackId) {
 
   showToast(`Đã chọn bài: ${title}`, 'success', 2000);
 
-  // Tải lời bài hát
   try {
     const url = trackId ? `/api/lyrics/song?id=${trackId}` : `/api/lyrics/song?q=${encodeURIComponent(title)}`;
     const res = await fetch(url);
@@ -3793,15 +3612,11 @@ function logLyric(msg) {
   el.scrollTop = el.scrollHeight;
 }
 
-// ============================================================
-// 9. DASHBOARD STATS & RECOVERY HELPERS
-// ============================================================
 async function loadDashboardStats() {
   try {
     const res = await fetch('/api/dashboard/stats');
     const d = await res.json();
     if (d.success && d.stats) {
-      // Cập nhật stats nếu có các thẻ thống kê
     }
   } catch (e) {}
 }
@@ -3891,9 +3706,6 @@ function syncAllStatusNow() {
   checkVoiceStatus();
 }
 
-// ============================================================
-// BILINGUAL LANGUAGE SYSTEM (VI / EN) FOR DASHBOARD
-// ============================================================
 
 const APP_I18N = {
   vi: {
@@ -3979,7 +3791,6 @@ function setAppLanguage(lang) {
   setTxt('status-text', dict.status_ready);
   setTxt('txt-topbar-accounts', dict.topbar_accounts);
 
-  // Nav buttons
   const navMap = {
     'tab-home': dict.nav_home,
     'tab-rpc': dict.nav_rpc,
@@ -4001,7 +3812,6 @@ function setAppLanguage(lang) {
     if (btn) btn.textContent = label;
   });
 
-  // Nav group titles
   const groups = document.querySelectorAll('.sidebar-group-title');
   if (groups.length >= 5) {
     if (groups[0]) groups[0].textContent = 'COMMAND CENTER';
@@ -4012,11 +3822,9 @@ function setAppLanguage(lang) {
     if (groups[5]) groups[5].textContent = dict.group_acc;
   }
 
-  // Logout button
   const logoutBtnSpan = document.querySelector('.sidebar-logout-btn span');
   if (logoutBtnSpan) logoutBtnSpan.textContent = dict.nav_logout;
 
-  // RPC action buttons (if not currently running)
   const btnStart = document.getElementById('btn-rpc-start');
   if (btnStart && !rpcRunning) btnStart.textContent = dict.btn_rpc_start;
   const btnStop = document.getElementById('btn-rpc-stop');
@@ -4033,11 +3841,9 @@ function init() {
   initSystemClock();
   initAntiInspect();
 
-  // Khởi tạo ngôn ngữ đã lưu
   const savedLang = localStorage.getItem('dipre_lang') || 'vi';
   setAppLanguage(savedLang);
 
-  // Khôi phục tab từ URL hash nếu có (ví dụ: #tab-spotify)
   if (window.location.hash) {
     const hashTab = window.location.hash.replace('#', '');
     if (TAB_TITLES[hashTab]) {
@@ -4065,10 +3871,8 @@ function init() {
   checkVoiceStatus();
   searchNctLyrics(1);
 
-  // Chạy background polling định kỳ 3.5s
   setInterval(syncAllStatusNow, 3500);
 }
 
 document.addEventListener('DOMContentLoaded', init);
-
 

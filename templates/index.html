@@ -17,7 +17,6 @@
 <body class="app-body dipre-theme">
   <div class="app-shell">
 
-    <!-- SIDEBAR NAVIGATION -->
     <aside class="sidebar dipre-sidebar">
       <div class="sidebar-brand">
         <div class="dipre-sidebar-logo-wrap">
@@ -35,7 +34,7 @@
       </div>
 
       <nav class="sidebar-nav">
-        <!-- MỤC CHÍNH: DASHBOARD -->
+        
         <div class="sidebar-group">
           <div class="sidebar-group-title">COMMAND CENTER</div>
           <div class="sidebar-group-items">
@@ -46,7 +45,6 @@
           </div>
         </div>
 
-        <!-- MỤC 1: DISCORD RPC -->
         <div class="sidebar-group">
           <div class="sidebar-group-title">RPC PRESENCE</div>
           <div class="sidebar-group-items">
@@ -69,7 +67,6 @@
           </div>
         </div>
 
-        <!-- MỤC 2: STATUS & LYRICS -->
         <div class="sidebar-group">
           <div class="sidebar-group-title">STATUS &amp; LYRIC</div>
           <div class="sidebar-group-items">
@@ -84,7 +81,6 @@
           </div>
         </div>
 
-        <!-- MỤC 3: VOICE AFK & AUDIO -->
         <div class="sidebar-group">
           <div class="sidebar-group-title">VOICE &amp; AUDIO</div>
           <div class="sidebar-group-items">
@@ -99,7 +95,6 @@
           </div>
         </div>
 
-        <!-- MỤC 4: AUTOMATION SCRIPTS -->
         <div class="sidebar-group">
           <div class="sidebar-group-title">AUTOMATION SCRIPT</div>
           <div class="sidebar-group-items">
@@ -114,7 +109,6 @@
           </div>
         </div>
 
-        <!-- MỤC 5: ACCOUNT & TOKENS -->
         <div class="sidebar-group">
           <div class="sidebar-group-title">ACCOUNT &amp; TOKENS</div>
           <div class="sidebar-group-items">
@@ -131,7 +125,7 @@
       </nav>
 
       <div class="sidebar-bottom">
-        <!-- SELECTOR TÀI KHOẢN DISCORD CON ĐANG ACTIVE -->
+        
         <div class="sidebar-active-discord-pill" id="sidebar-active-discord" onclick="switchTab('tab-accounts')" title="Chuyển đổi hoặc xem tài khoản Discord đang chạy">
           <div class="sad-left">
             {% if has_token and discord_avatar %}
@@ -148,7 +142,6 @@
           </span>
         </div>
 
-        <!-- THẺ TÀI KHOẢN HỆ THỐNG MẠNG XÃ HỘI (DIPRE PROFILE) -->
         <div class="sidebar-user-card" id="sidebar-user-profile" title="Tài khoản hệ thống: {{ username }}">
           <div class="user-avatar-wrap">
             {% if avatar_info and avatar_info.type == 'image' %}
@@ -180,10 +173,8 @@
       </div>
     </aside>
 
-    <!-- MAIN APP CONTENT -->
     <main class="app-main">
 
-      <!-- TOPBAR NAVIGATION & QUICK ACTIONS -->
       <header class="app-topbar">
         <div class="topbar-left">
           <div class="topbar-breadcrumb">
@@ -227,11 +218,9 @@
       </div>
       {% endif %}
 
-      <!-- TAB 1: DASHBOARD COMMAND CENTER -->
       <section class="tab-panel active" id="tab-home">
         <div class="dashboard-center-wrapper">
-          
-          <!-- BANNER CHÀO MỪNG & COMMAND CENTER HERO -->
+
           <div class="dashboard-hero-banner">
             <div class="dhb-header">
               <div>
@@ -255,7 +244,6 @@
             </div>
           </div>
 
-          <!-- LƯỚI THẺ CHỈ SỐ METRIC CARDS GRID -->
           <div class="metrics-stats-grid">
             <div class="metric-stat-card">
               <div class="msc-head">
@@ -310,10 +298,8 @@
             </div>
           </div>
 
-          <!-- COMMAND CENTER: 2 CỘT CHÍNH (HOẠT ĐỘNG VÀ DISCORD CARD 1:1) -->
           <div class="command-center-2col">
-            
-            <!-- CỘT TRÁI: BIỂU ĐỒ PHÂN BỔ HOẠT ĐỘNG & GỢI Ý 5 MỤC LỚN -->
+
             <div class="activity-breakdown-card">
               <div class="abc-header">
                 <div>
@@ -365,7 +351,6 @@
                 </div>
               </div>
 
-              <!-- Quick Launch Shortcuts -->
               <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.08);">
                 <div style="font-size:0.85rem; font-weight:700; color:var(--text-white); margin-bottom: 0.85rem;">Phím Tắt Kích Hoạt Nhanh 5 Mục</div>
                 <div style="display: flex; flex-wrap: wrap; gap: 0.6rem;">
@@ -379,7 +364,6 @@
               </div>
             </div>
 
-            <!-- CỘT PHẢI: DISCORD CARD 1:1 VỚI PROFILE EFFECT CHUẨN NGUYÊN BẢN -->
             <div>
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.75rem; padding: 0 0.5rem;">
                 <span style="font-size:0.85rem; font-weight:700; color:var(--text-white);">Discord Profile 1:1 Realtime</span>
@@ -387,7 +371,7 @@
               </div>
 
               {% if auth_provider == 'google' and not has_token %}
-              <!-- GOOGLE ACCOUNT CARD CHUẨN 1:1 THEO ẢNH 2 -->
+              
               <div class="google-account-dialog" id="google-main-card">
                 <div class="gad-header">
                   <span class="gad-email" title="{{ username }}">{{ username if '@' in username else (username + '@gmail.com') }}</span>
@@ -433,9 +417,9 @@
                 </div>
               </div>
               {% else %}
-              <!-- DISCORD PROFILE POPOUT CARD 1:1 REALISTIC (ẢNH 3 & ẢNH 4) -->
+              
               <div class="discord-card-1to1-wrap live-profile-popout" id="discord-main-card">
-                <!-- Hiệu ứng Nitro Profile Effect APNG động nguyên bản 100% từ Discord Shop CDN -->
+                
                 {% if profile_effect_data and profile_effect_data.loop %}
                 <div class="discord-nitro-pfx-container" title="{{ profile_effect_data.title }}">
                   <img src="{{ profile_effect_data.loop }}" class="discord-nitro-pfx-anim" alt="{{ profile_effect_data.title }}">
@@ -449,12 +433,10 @@
                 </div>
                 {% endif %}
 
-                <!-- Banner Profile Discord (Hỗ trợ GIF Nitro & Màu Hex) -->
                 <div class="dc1-banner nitro-animated-banner" id="hero-profile-banner" 
                      style="{% if banner and banner.startswith('http') %}background-image: url('{{ banner }}');{% elif banner and banner.startswith('#') %}background: {{ banner }};{% else %}background: #00e5ff;{% endif %}">
                 </div>
 
-                <!-- Avatar & Badges Row -->
                 <div class="dc1-avatar-row">
                   <div class="dc1-avatar-wrap">
                     <img src="{% if discord_avatar %}{{ discord_avatar }}{% elif avatar_url %}{{ avatar_url }}{% else %}https://cdn.discordapp.com/embed/avatars/0.png{% endif %}" 
@@ -466,12 +448,10 @@
                     <div class="dc1-status-dot dnd" id="hero-status-dot" title="Vui lòng không làm phiền"></div>
                   </div>
 
-                  <!-- Status Bubble kiểu Discord (nắng biển?) -->
                   <div class="dc1-status-bubble" id="hero-status-bubble">
                     <span>{{ custom_status or 'nắng biển?' }}</span>
                   </div>
 
-                  <!-- Hàng Badges Thật 100% Từ Discord CDN -->
                   <div class="dc1-badges-bar" id="hero-badges-row">
                     {% if badges and badges|length > 0 %}
                       {% for b in badges %}
@@ -485,7 +465,6 @@
                   </div>
                 </div>
 
-                <!-- Nội dung Thông tin Người Dùng -->
                 <div class="dc1-content">
                   <div class="dc1-global-name" id="hero-profile-name">{{ discord_username if discord_username else (username.split('@')[0] if '@' in username else username) }}</div>
                   
@@ -493,7 +472,6 @@
                     <span class="dc1-username" id="hero-profile-tag">{{ (discord_username if discord_username else username).lower().replace(' ', '') }}</span>
                   </div>
 
-                  <!-- Bio / Giới thiệu bản thân Discord 1:1 -->
                   <div style="font-size:0.86rem; color:#dbdee1; margin-top: 10px; font-weight:400; line-height: 1.5;" id="hero-profile-bio">
                     {{ bio or 'ai nhìn là lgbt' }}
                   </div>
@@ -505,7 +483,6 @@
 
           </div>
 
-          <!-- SECTION HƯỚNG DẪN LẤY DISCORD TOKEN & SCRIPT 1-CLICK -->
           <div class="home-guide-section">
             <div class="hgs-header">
               <div class="hgs-title">Khởi Tạo &amp; Lấy Discord User Token</div>
@@ -549,10 +526,8 @@
         </div>
       </section>
 
-      <!-- TAB 2: THEME RPC STUDIO & COMMUNITY FORUM -->
       <section class="tab-panel" id="tab-rpc">
 
-        <!-- 1. BOT APPLICATION SELECTOR -->
         <div class="bot-selector-wrap">
           <div class="bot-selector-header">
             <div class="bot-selector-title">
@@ -566,7 +541,7 @@
           </div>
 
           <div class="bot-selector-container" id="bot-selector-list">
-            <!-- Render động danh sách bot apps -->
+            
             <div class="bot-selector-card active" data-app-id="1118182981329244241" onclick="selectBotApp('1118182981329244241', 'DIPRE Studio RPC', this)">
               <div class="bot-card-avatar">
                 <img src="https://cdn.discordapp.com/embed/avatars/0.png" alt="DIPRE Bot" id="bot-avt-1118182981329244241">
@@ -603,7 +578,6 @@
           </div>
         </div>
 
-        <!-- 2. THEME RPC 3-TABS NAVIGATION PILL -->
         <div class="theme-rpc-nav">
           <button type="button" class="theme-tab-btn active" id="btn-subtab-forum" onclick="switchThemeSubTab('forum')">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
@@ -619,7 +593,6 @@
           </button>
         </div>
 
-        <!-- SUBTAB 1: DIỄN ĐÀN MẪU CỘNG ĐỒNG (SOLSTICE & ASAGI STYLE) -->
         <div id="theme-view-forum">
           <div class="forum-filter-bar">
             <div class="forum-search-box">
@@ -637,19 +610,17 @@
           </div>
 
           <div class="templates-grid" id="forum-templates-grid">
-            <!-- Render động các template card từ Supabase / SQLite -->
+            
             <div style="grid-column: 1 / -1; text-align:center; padding: 40px; color: var(--text-subtle);">
               Đang tải danh sách mẫu từ Diễn Đàn...
             </div>
           </div>
         </div>
 
-        <!-- SUBTAB 2 & 3: FORM RPC STUDIO VÀ KHO PRESET (LAYOUT 2 CỘT HIỆN TẠI) -->
         <div id="theme-view-editor" class="d-none">
           <div class="panel-2col-layout">
             <div class="panel-form-col panel-form-relative">
 
-            <!-- BANNER NHẮC NHỞ TOKEN KHI CHƯA CHỌN TOKEN -->
             <div class="token-notice-banner {% if has_token %}d-none{% endif %}" id="rpc-token-notice">
               <div class="tnb-left">
                 <div class="tnb-icon">
@@ -662,7 +633,6 @@
               <button type="button" class="tnb-cta" onclick="switchTab('tab-accounts')">Quản Lý Token</button>
             </div>
 
-            <!-- Presets Bar -->
             <div class="settings-section">
               <div class="settings-section-header">
                 <div class="ssh-title">Bộ Preset Mẫu &amp; Tùy Biến</div>
@@ -684,7 +654,6 @@
               </div>
             </div>
 
-            <!-- Activity Type & Details -->
             <div class="settings-section">
               <div class="settings-section-header">
                 <div class="ssh-title">A — Hoạt Động &amp; Chi Tiết</div>
@@ -736,7 +705,6 @@
               </div>
             </div>
 
-            <!-- Buttons Settings -->
             <div class="settings-section">
               <div class="settings-section-header">
                 <div class="ssh-title">B — Nút Bấm Tương Tác</div>
@@ -784,7 +752,6 @@
               </div>
             </div>
 
-            <!-- Assets / Images Settings -->
             <div class="settings-section">
               <div class="settings-section-header">
                 <div class="ssh-title">C — Hình Ảnh &amp; Biểu Tượng</div>
@@ -838,7 +805,6 @@
                 </div>
               </div>
 
-              <!-- Thư viện Ảnh Động / GIF Sống Động Cho RPC -->
               <div class="rpc-gif-presets-box" style="margin-top: 1rem; margin-bottom: 1rem;">
                 <div class="rgb-header">
                   <span class="rgb-badge">ANIMATED GIF</span>
@@ -875,7 +841,6 @@
                 </div>
               </div>
 
-              <!-- Thư viện icon phổ biến -->
               <div class="asset-picker-panel" id="asset-picker-panel">
                 <div class="app-header">
                   <span class="app-title">Thư viện icon phổ biến</span>
@@ -884,7 +849,6 @@
               </div>
             </div>
 
-            <!-- D — Chia Sẻ Lên Diễn Đàn Cộng Đồng -->
             <div class="settings-section">
               <div class="settings-section-header">
                 <div class="ssh-title">D — Chia Sẻ Lên Diễn Đàn Cộng Đồng</div>
@@ -914,7 +878,6 @@
               </div>
             </div>
 
-            <!-- Nút điều khiển RPC -->
             <div class="sf-action-row">
               <button type="button" class="rpc-btn rpc-btn-start" id="btn-rpc-start" onclick="handleStartRPC()">Bắt Đầu Presence</button>
               <button type="button" class="rpc-btn rpc-btn-stop" id="btn-rpc-stop" onclick="handleStopRPC()" disabled>Dừng</button>
@@ -924,7 +887,6 @@
 
           </div>
 
-          <!-- Cột Xem Trước Discord Profile Realtime -->
           <div class="panel-preview-col panel-form-relative">
 
             <div class="preview-sticky">
@@ -954,10 +916,8 @@
 
                   <div class="dpm-activity-label" id="pv-activity-type-header">PLAYING A GAME</div>
 
-                  <!-- Empty state khi chưa có hoạt động nào -->
                   <div class="dpm-empty-activity" id="pv-empty-activity">Chưa thiết lập hoạt động presence</div>
 
-                  <!-- Thẻ hoạt động presence -->
                   <div class="dpm-activity-card d-none" id="pv-activity-card">
                     <div class="dpm-act-row">
                       <div class="dpm-act-icons">
@@ -979,7 +939,6 @@
                 </div>
               </div>
 
-              <!-- Widget Ô Vuông Bo Góc Đa Token cho RPC -->
               <div class="multi-token-target-card mt-3">
                 <div class="mtt-card-header">
                   <div class="mtt-card-title">TÀI KHOẢN CHẠY PRESENCE</div>
@@ -993,7 +952,6 @@
                 <div class="mtt-slots-counter" id="rpc-slots-counter">Đã chọn: <b id="rpc-selected-count">0</b> tài khoản</div>
               </div>
 
-              <!-- Terminal Console riêng của RPC -->
               <div class="preview-terminal mt-3">
                 <div class="pt-header">
                   <div class="pt-dots"><span class="ptd red"></span><span class="ptd yellow"></span><span class="ptd green"></span></div>
@@ -1011,7 +969,6 @@
       </div>
       </section>
 
-      <!-- TAB 2.1: CUSTOM STATUS (STATUS ROTATOR & CUSTOM TEXT/EMOJI) -->
       <section class="tab-panel" id="tab-status-custom">
         <div class="panel-2col-layout">
           <div class="panel-form-col panel-form-relative">
@@ -1028,7 +985,6 @@
               <button type="button" class="tnb-cta" onclick="switchTab('tab-accounts')">Quản Lý Token</button>
             </div>
 
-            <!-- Thiết lập Custom Status -->
             <div class="settings-section">
               <div class="settings-section-header">
                 <div>
@@ -1076,7 +1032,6 @@
               </div>
             </div>
 
-            <!-- Bộ Xoay Vòng Trạng Thái (Status Rotator) -->
             <div class="settings-section mt-3">
               <div class="settings-section-header">
                 <div>
@@ -1102,7 +1057,6 @@
 
           </div>
 
-          <!-- Preview cột phải -->
           <div class="panel-preview-col">
             <div class="preview-sticky">
               <div class="preview-header">
@@ -1126,7 +1080,6 @@
                 </div>
               </div>
 
-              <!-- Widget Ô Vuông Bo Góc Đa Token cho Custom Status -->
               <div class="multi-token-target-card mt-3">
                 <div class="mtt-card-header">
                   <div class="mtt-card-title">TÀI KHOẢN ĐỔI STATUS</div>
@@ -1144,7 +1097,6 @@
         </div>
       </section>
 
-      <!-- TAB 2.2: LYRIC SYNC (NHACCUATUI + LRCLIB MODERN AUDIO PLAYER) -->
       <section class="tab-panel" id="tab-lyric">
         <div class="panel-2col-layout">
           <div class="panel-form-col panel-form-relative">
@@ -1161,17 +1113,14 @@
               <button type="button" class="tnb-cta" onclick="switchTab('tab-accounts')">Quản Lý Token</button>
             </div>
 
-            <!-- SUB-TABS & TÌM KIẾM BÀI HÁT THEO ẢNH MOCKUP 1:1 -->
             <div class="settings-section lyric-main-discovery-box">
-              
-              <!-- 3 Sub-Tabs trên đầu: Khám phá, Playlist, Lịch sử -->
+
               <div class="lyric-subtabs-wrap">
                 <button type="button" class="lyric-subtab-btn active" id="subtab-discover" onclick="switchLyricSubTab('discover')">Khám phá</button>
                 <button type="button" class="lyric-subtab-btn" id="subtab-playlist" onclick="switchLyricSubTab('playlist')">Playlist (2)</button>
                 <button type="button" class="lyric-subtab-btn" id="subtab-history" onclick="switchLyricSubTab('history')">Lịch sử</button>
               </div>
 
-              <!-- Thanh tìm kiếm to hình viên thuốc (Pill Search Input) -->
               <div class="lyric-pill-search-container">
                 <div class="lps-input-wrap">
                   <svg class="lps-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -1188,17 +1137,14 @@
                 </div>
               </div>
 
-              <!-- Tiêu đề Mục: KẾT QUẢ TÌM KIẾM -->
               <div class="lyric-section-title-label">KẾT QUẢ TÌM KIẾM</div>
 
-              <!-- Lưới 2 Cột Card Bài Hát (2-Column Responsive Card Grid) -->
               <div class="lyric-song-cards-grid" id="lyric-song-cards-grid">
                 <div style="grid-column: 1/-1; text-align:center; padding: 2rem; color: #94a3b8;">
                   Đang tải kết quả tìm kiếm NhacCuaTui realtime...
                 </div>
               </div>
 
-              <!-- Thanh Phân Trang Pagination (1, 2, 3) -->
               <div class="lyric-pagination-container">
                 <button type="button" class="lpg-btn active" id="lpg-1" onclick="searchNctLyrics(1)">1</button>
                 <button type="button" class="lpg-btn" id="lpg-2" onclick="searchNctLyrics(2)">2</button>
@@ -1207,16 +1153,14 @@
 
             </div>
 
-            <!-- KHỐI THÔNG TIN BÀI HÁT & AUDIO PLAYER TINH GỌN (NHACCUATUI SYNC) -->
             <div class="settings-section lyric-selected-track-box mt-3" id="lyric-selected-track-box">
-              <!-- Trạng thái khi chưa chọn bài hát -->
+              
               <div class="lyric-empty-track-prompt" id="lyric-empty-prompt">
                 <div class="letp-icon">🎵</div>
                 <div class="letp-title">Chưa chọn bài hát nào</div>
                 <div class="letp-sub">Hãy tìm kiếm bài hát trên NhacCuaTui ở trên và bấm chọn để mở thông tin &amp; đồng bộ lời Karaoke.</div>
               </div>
 
-              <!-- Thông tin bài hát được chọn -->
               <div class="lyric-active-track-detail d-none" id="lyric-active-track-detail">
                 <div class="latd-header">
                   <div class="latd-cover-wrap">
@@ -1234,7 +1178,6 @@
                   </div>
                 </div>
 
-                <!-- HTML5 Audio Controller Tinh Gọn -->
                 <audio id="html5-audio-element" preload="auto"></audio>
                 <div class="latd-player-strip mt-3">
                   <button type="button" class="latd-btn-play" id="btn-audio-play" onclick="handleToggleAudio()" title="Phát / Tạm dừng">
@@ -1255,7 +1198,6 @@
                   </div>
                 </div>
 
-                <!-- Dòng Lời Bài Hát Trực Tiếp -->
                 <div class="latd-lyrics-strip mt-2">
                   <div class="latd-lyric-cur" id="lsc-lyric-current">Chọn bài hát để bắt đầu hát Karaoke...</div>
                 </div>
@@ -1263,7 +1205,6 @@
             </div>
           </div>
 
-          <!-- CỘT BÊN PHẢI: Ô VUÔNG BO GÓC CHỌN ACC ĐA TOKEN (MULTI-TOKEN TARGET) -->
           <div class="panel-preview-col panel-form-relative">
             <div class="preview-sticky">
               <div class="multi-token-target-card">
@@ -1272,9 +1213,8 @@
                   <div class="mtt-card-sub">Các tài khoản trong ô này sẽ đồng loạt chạy cùng lúc realtime.</div>
                 </div>
 
-                <!-- Grid các Slot Tròn Tài Khoản -->
                 <div class="mtt-slots-grid" id="lyric-target-slots">
-                  <!-- Nút tròn dấu cộng viền neon -->
+                  
                   <button type="button" class="mtt-slot-add-btn" onclick="openMultiTokenPicker('lyric')" title="Bấm để chọn tài khoản Discord">
                     <span class="msab-plus">+</span>
                   </button>
@@ -1284,7 +1224,6 @@
                   Đã chọn: <b id="lyric-selected-count">0</b> tài khoản
                 </div>
 
-                <!-- Nút Hành Động Đồng Bộ -->
                 <div class="mtt-action-area mt-3">
                   <button type="button" class="rpc-btn rpc-btn-start w-100 mtt-btn-sync" id="btn-lyric-sync-toggle" onclick="handleToggleLyricSyncMulti()">
                     🚀 BẮT ĐẦU ĐỒNG BỘ ĐA TÀI KHOẢN
@@ -1295,7 +1234,6 @@
                   </div>
                 </div>
 
-                <!-- Terminal Nhật Ký Mini -->
                 <div class="preview-terminal mt-3">
                   <div class="pt-header">
                     <div class="pt-dots"><span class="ptd red"></span><span class="ptd yellow"></span><span class="ptd green"></span></div>
@@ -1312,7 +1250,6 @@
         </div>
       </section>
 
-      <!-- TAB 4: AUTO QUEST -->
       <section class="tab-panel" id="tab-quest">
         <div class="token-notice-banner {% if has_token %}d-none{% endif %}" id="quest-token-notice">
           <div class="tnb-left">
@@ -1326,7 +1263,6 @@
           <button type="button" class="tnb-cta" onclick="switchTab('tab-accounts')">Quản Lý Token</button>
         </div>
 
-        <!-- Thanh điều khiển Quest -->
         <div class="settings-section mb-3">
           <div class="settings-section-header flex-wrap gap-3">
             <div>
@@ -1347,7 +1283,6 @@
             </div>
           </div>
 
-          <!-- Thanh tiến trình Realtime -->
           <div class="quest-progress-box">
             <div class="qpb-head">
               <div class="qpb-title-wrap">
@@ -1366,9 +1301,8 @@
           </div>
         </div>
 
-        <!-- Layout 2 cột: Terminal Console + Quests List / HypeSquad -->
         <div class="quest-grid-layout">
-          <!-- Cột Console -->
+          
           <div class="quest-console-panel">
             <div class="quest-console-head">
               <div class="pt-dots"><span class="ptd red"></span><span class="ptd yellow"></span><span class="ptd green"></span></div>
@@ -1383,7 +1317,6 @@
             </div>
           </div>
 
-          <!-- Cột Danh Sách Nhiệm Vụ & HypeSquad -->
           <div class="quest-side-col">
             <div class="settings-section">
               <div class="settings-section-header">
@@ -1422,7 +1355,6 @@
         </div>
       </section>
 
-      <!-- TAB: SOUNDCLOUD RPC -->
       <section class="tab-panel" id="tab-rpc-soundcloud">
         <div class="panel-2col-layout">
           <div class="panel-form-col">
@@ -1485,7 +1417,6 @@
                 </div>
               </div>
 
-              <!-- Widget Ô Vuông Bo Góc Đa Token cho SoundCloud RPC -->
               <div class="multi-token-target-card mt-3">
                 <div class="mtt-card-header">
                   <div class="mtt-card-title">TÀI KHOẢN CHẠY SOUNDCLOUD</div>
@@ -1503,7 +1434,6 @@
         </div>
       </section>
 
-      <!-- TAB: YOUTUBE RPC -->
       <section class="tab-panel" id="tab-rpc-youtube">
         <div class="panel-2col-layout">
           <div class="panel-form-col">
@@ -1558,7 +1488,6 @@
                 </div>
               </div>
 
-              <!-- Widget Ô Vuông Bo Góc Đa Token cho YouTube RPC -->
               <div class="multi-token-target-card mt-3">
                 <div class="mtt-card-header">
                   <div class="mtt-card-title">TÀI KHOẢN CHẠY YOUTUBE</div>
@@ -1576,7 +1505,6 @@
         </div>
       </section>
 
-      <!-- TAB: SPOTIFY RPC -->
       <section class="tab-panel" id="tab-rpc-spotify">
         <div class="panel-2col-layout">
           <div class="panel-form-col">
@@ -1633,7 +1561,6 @@
                 </div>
               </div>
 
-              <!-- Widget Ô Vuông Bo Góc Đa Token cho Spotify RPC -->
               <div class="multi-token-target-card mt-3">
                 <div class="mtt-card-header">
                   <div class="mtt-card-title">TÀI KHOẢN CHẠY SPOTIFY</div>
@@ -1651,7 +1578,6 @@
         </div>
       </section>
 
-      <!-- TAB: INBOX DISCORD -->
       <section class="tab-panel" id="tab-inbox">
         <div class="settings-section">
           <div class="settings-section-header">
@@ -1667,7 +1593,6 @@
         </div>
       </section>
 
-      <!-- TAB: QUẢN LÝ NHIỀU TÀI KHOẢN (MULTI-TOKEN SWITCHER) -->
       <section class="tab-panel" id="tab-accounts">
         <div class="settings-section">
           <div class="settings-section-header">
@@ -1684,7 +1609,6 @@
         </div>
       </section>
 
-      <!-- TAB 3.1: TREO VOICE 24/7 (AFK VOICE) -->
       <section class="tab-panel" id="tab-voice-afk">
         <div class="panel-2col-layout">
           <div class="panel-form-col panel-form-relative">
@@ -1701,7 +1625,6 @@
               <button type="button" class="tnb-cta" onclick="switchTab('tab-accounts')">Quản Lý Token</button>
             </div>
 
-            <!-- Cấu hình Treo Voice 24/7 -->
             <div class="settings-section">
               <div class="settings-section-header">
                 <div>
@@ -1711,7 +1634,6 @@
                 <span class="ssh-badge">24/7 Non-Stop</span>
               </div>
 
-              <!-- Trạng thái kết nối Voice -->
               <div class="voice-connection-status" id="voice-status-box">
                 <span class="vcs-dot" id="voice-vcs-dot"></span>
                 <div class="vcs-info">
@@ -1761,7 +1683,6 @@
 
           </div>
 
-          <!-- Cột Preview & Hướng Dẫn -->
           <div class="panel-preview-col">
             <div class="preview-sticky">
               <div class="preview-header">
@@ -1790,7 +1711,6 @@
                 </div>
               </div>
 
-              <!-- Widget Ô Vuông Bo Góc Đa Token cho Treo Voice AFK -->
               <div class="multi-token-target-card mt-3">
                 <div class="mtt-card-header">
                   <div class="mtt-card-title">TÀI KHOẢN TREO VOICE</div>
@@ -1808,7 +1728,6 @@
         </div>
       </section>
 
-      <!-- TAB 3.2: VOICE SOUNDBOARD STUDIO -->
       <section class="tab-panel" id="tab-voice-coming">
         <div class="settings-section mb-3">
           <div class="settings-section-header flex-wrap gap-3">
@@ -1832,7 +1751,6 @@
             </div>
           </div>
 
-          <!-- LƯỚI NÚT ÂM THANH SOUNDBOARD ĐA DẠNG -->
           <div class="soundboard-cards-grid mt-3" id="soundboard-cards-grid">
             
             <div class="sb-card" onclick="triggerSoundboardPlay('airhorn')">
@@ -1981,7 +1899,6 @@
 
           </div>
 
-          <!-- TẢI LÊN FILE ÂM THANH RIÊNG (CUSTOM SOUND) -->
           <div class="modal-section-box mt-3">
             <div class="msb-title">TẢI LÊN FILE HIỆU ỨNG ÂM THANH RIÊNG (.MP3, .WAV)</div>
             <div class="sf-row mt-2">
@@ -1994,7 +1911,6 @@
         </div>
       </section>
 
-      <!-- TAB 4.2: DISCORD ACCOUNT CLEANER STUDIO -->
       <section class="tab-panel" id="tab-script-coming">
         <div class="settings-section mb-3">
           <div class="settings-section-header flex-wrap gap-3">
@@ -2012,10 +1928,8 @@
             </div>
           </div>
 
-          <!-- 4 CÔNG CỤ DỌN DẸP CHUYÊN DỤNG -->
           <div class="cleaner-tools-grid mt-3">
-            
-            <!-- Tool 1: DM Purge -->
+
             <div class="cleaner-tool-card">
               <div class="ctc-header">
                 <div class="ctc-icon red">🗑️</div>
@@ -2033,7 +1947,6 @@
               </button>
             </div>
 
-            <!-- Tool 2: Server Leaver -->
             <div class="cleaner-tool-card">
               <div class="ctc-header">
                 <div class="ctc-icon orange">🚪</div>
@@ -2051,7 +1964,6 @@
               </button>
             </div>
 
-            <!-- Tool 3: Friend Requests Cleaner -->
             <div class="cleaner-tool-card">
               <div class="ctc-header">
                 <div class="ctc-icon blue">👥</div>
@@ -2068,7 +1980,6 @@
               </button>
             </div>
 
-            <!-- Tool 4: Close Inactive DMs -->
             <div class="cleaner-tool-card">
               <div class="ctc-header">
                 <div class="ctc-icon purple">🧹</div>
@@ -2087,7 +1998,6 @@
 
           </div>
 
-          <!-- THANH TIẾN TRÌNH & CONSOLE TERMINAL -->
           <div class="quest-progress-box mt-3">
             <div class="qpb-head">
               <div class="qpb-title-wrap">
@@ -2118,7 +2028,6 @@
     </main>
   </div>
 
-  <!-- MODAL QUẢN LÝ HỒ SƠ TÀI KHOẢN DIPRE -->
   <div class="account-modal-backdrop d-none" id="account-modal-backdrop" onclick="handleBackdropClick(event)">
     <div class="account-modal-dialog dipre-modal">
       <div class="modal-header-clean">
@@ -2132,7 +2041,7 @@
         </button>
       </div>
       <div class="modal-body-scroll">
-        <!-- Card tổng quan tài khoản DIPRE -->
+        
         <div class="acc-discord-card">
           <div class="user-avatar-wrap" style="width: 52px; height: 52px;">
             {% if avatar_info and avatar_info.type == 'image' %}
@@ -2162,7 +2071,6 @@
           </div>
         </div>
 
-        <!-- Form Đổi Tên & Avatar DIPRE Độc Lập -->
         <div class="modal-section-box">
           <div class="msb-title">TÙY BIẾN HỒ SƠ DIPRE (KHÔNG ẢNH HƯỞNG TÀI KHOẢN LIÊN KẾT)</div>
           
@@ -2183,7 +2091,6 @@
           <button type="button" class="rpc-btn rpc-btn-start w-100" id="btn-save-dipre-profile" onclick="handleSaveDipreProfile()">Lưu Thay Đổi Hồ Sơ</button>
         </div>
 
-        <!-- Chuyển hướng tới Quản Lý Token Phụ -->
         <div class="modal-section-box mt-3" style="background: rgba(99, 102, 241, 0.05); border-color: rgba(99, 102, 241, 0.2);">
           <div class="msb-title">QUẢN LÝ DISCORD USER TOKEN PHỤ</div>
           <p style="font-size: 0.82rem; color: #cbd5e1; margin-bottom: 0.75rem;">
@@ -2198,7 +2105,6 @@
     </div>
   </div>
 
-  <!-- MODAL NẠP DISCORD USER TOKEN PHỤ CHUYÊN DỤNG -->
   <div class="account-modal-backdrop d-none" id="token-add-modal-backdrop" onclick="handleSubTokenBackdropClick(event)">
     <div class="account-modal-dialog dipre-modal" style="max-width: 520px;">
       <div class="modal-header-clean">
@@ -2239,7 +2145,6 @@
     </div>
   </div>
 
-  <!-- POPUP CHỌN TÀI KHOẢN ĐA TOKEN (REUSABLE PICKER MODAL) -->
   <div class="account-modal-backdrop d-none" id="multitoken-picker-modal" onclick="handleMultiTokenPickerBackdropClick(event)">
     <div class="account-modal-dialog dipre-modal" style="max-width: 480px;">
       <div class="modal-header-clean">
@@ -2253,7 +2158,7 @@
       </div>
       <div class="modal-body-scroll">
         <div id="mtp-accounts-list" class="mtp-accounts-list">
-          <!-- Render động danh sách tài khoản kèm checkbox -->
+          
           <div class="acc-grid-loading">Đang nạp danh sách tài khoản...</div>
         </div>
         <div class="mt-3">
@@ -2267,7 +2172,6 @@
 
   <div class="toast-container" id="toast-container"></div>
 
-  <!-- ANTI-DEVTOOLS / INSPECT SHIELD OVERLAY -->
   <div class="anti-devtools-overlay" id="anti-devtools-overlay">
     <div class="devtools-shield-card">
       <div class="dsc-icon">
@@ -2280,7 +2184,6 @@
     </div>
   </div>
 
-  <!-- CUSTOM CONTEXT MENU CHUYÊN NGHIỆP THAY CHO CHUỘT PHẢI MẶC ĐỊNH -->
   <div class="dipre-custom-menu" id="dipre-custom-menu">
     <div class="dcm-item" onclick="switchTab('tab-home')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg>

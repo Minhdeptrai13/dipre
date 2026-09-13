@@ -8,7 +8,6 @@ def normalize_rpc_config(data: dict) -> dict:
         return {}
     out = dict(data)
     
-    # Map snake_case to camelCase
     if 'name' in data and not data.get('activityName'):
         out['activityName'] = data['name']
     if 'activity_name' in data and not data.get('activityName'):
@@ -33,7 +32,6 @@ def normalize_rpc_config(data: dict) -> dict:
     if 'use_timestamp' in data and not data.get('hasTimestamp'):
         out['hasTimestamp'] = bool(data['use_timestamp'])
         
-    # Buttons
     buttons = data.get('buttons', [])
     if isinstance(buttons, list) and len(buttons) > 0:
         if len(buttons) >= 1 and isinstance(buttons[0], dict):

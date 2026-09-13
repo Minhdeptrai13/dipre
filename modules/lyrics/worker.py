@@ -48,7 +48,6 @@ class DiscordLyricWorker:
     def fetch_nct_lyrics(self, keyword: str) -> tuple[bool, str, list]:
         """Lấy lời bài hát đồng bộ từ LRCLIB / NhacCuaTui cho bài hát bất kỳ"""
         try:
-            # 1. Tìm kiếm trên LRCLIB (hỗ trợ hàng triệu bài hát quốc tế & V-Pop có timestamp chuẩn)
             url = f"https://lrclib.net/api/search?q={requests.utils.quote(keyword)}"
             headers = {"User-Agent": "DIPRE-Discord/1.0"}
             r = requests.get(url, headers=headers, timeout=6)
@@ -62,7 +61,6 @@ class DiscordLyricWorker:
                             name = f"{track.get('trackName', keyword)} - {track.get('artistName', '')}".strip(" -")
                             return True, name, parsed
                 
-                # 1b. Nếu không có syncedLyrics, dùng plainLyrics tự tạo nhịp thời gian
                 for track in tracks:
                     plain = track.get("plainLyrics")
                     if plain:
@@ -74,7 +72,6 @@ class DiscordLyricWorker:
                             name = f"{track.get('trackName', keyword)} - {track.get('artistName', '')}".strip(" -")
                             return True, name, parsed
 
-            # 2. Fallback tìm kiếm NCT
             search_url = f"https://www.nhaccuatui.com/tim-kiem/bai-hat.html?q={requests.utils.quote(keyword)}"
             r2 = requests.get(search_url, headers={"User-Agent": "Mozilla/5.0"}, timeout=6)
             if r2.status_code == 200:

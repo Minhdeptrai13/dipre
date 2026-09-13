@@ -477,7 +477,6 @@ class MultiDiscordRPCWorker:
 
             active_tokens = {c.get('token') for c in configs_list if c.get('token')}
             
-            # Dừng các tài khoản không còn nằm trong danh sách chọn
             for tok in list(self.workers.keys()):
                 if tok not in active_tokens:
                     try:
@@ -486,7 +485,6 @@ class MultiDiscordRPCWorker:
                         pass
                     del self.workers[tok]
 
-            # Khởi chạy các worker tương ứng
             for cfg in configs_list:
                 tok = cfg.get('token')
                 if not tok:
@@ -530,5 +528,4 @@ class MultiDiscordRPCWorker:
             res['status'] = 'running' if running else ('connecting' if any(w.status == 'connecting' for w in self.workers.values()) else 'stopped')
             return res
 
-# Singleton Worker đa tài khoản của module RPC
 rpc_worker = MultiDiscordRPCWorker()

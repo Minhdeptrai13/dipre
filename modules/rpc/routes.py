@@ -80,7 +80,6 @@ def api_start():
                     if r and r['token']:
                         tokens_list.append(r['token'])
 
-    # Nếu không có danh sách cụ thể, fallback lấy token theo thứ tự cũ
     if not tokens_list:
         if token:
             tokens_list.append(token)
@@ -113,7 +112,6 @@ def api_start():
     if not tokens_list:
         return (jsonify({'success': False, 'message': 'Chưa có token. Vui lòng liên kết Discord Token tại mục Quản Lý Tài Khoản trước!'}), 400)
 
-    # Loại bỏ token trùng lặp
     unique_tokens = list(dict.fromkeys(tokens_list))
 
     activity_name = data.get('activityName', '').strip() or 'Visual Studio Code'
@@ -350,7 +348,6 @@ def api_delete_preset(preset_id):
         conn.commit()
     return jsonify({'success': True, 'message': 'Đã xóa Preset'})
 
-# Đăng ký tiểu mục RPC vào Mục Lớn RPC trong Core Registry
 registry.register_module(SubModule(
     key='rich_presence',
     category_key='rpc',

@@ -5,7 +5,6 @@ import threading
 import webbrowser
 from flask import Flask
 
-# 1. Nạp Core Framework & Cấu hình
 from core.config import (
     BASE_DIR,
     UPLOAD_FOLDER,
@@ -15,7 +14,6 @@ from core.database import init_db
 from core.security import init_security
 from core.logger import log_event
 
-# 2. Nạp Modules chức năng (tự động đăng ký vào Core Registry)
 from modules import registry
 
 def create_app() -> Flask:
@@ -27,16 +25,12 @@ def create_app() -> Flask:
     app.config['TEMPLATES_AUTO_RELOAD'] = True
     app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
-    # Khởi tạo cơ sở dữ liệu SQLite & tự động migration
     init_db()
 
-    # Kích hoạt tường lửa bảo mật DIPRE Cyber Shield & Anti-DDoS
     init_security(app)
 
-    # Nạp toàn bộ các Blueprint và route từ Core Registry
     registry.bind_to_app(app)
 
-    # Hỗ trợ Reverse Proxy (Render, Cloudflare, Nginx) để nhận diện đúng HTTPS
     try:
         from werkzeug.middleware.proxy_fix import ProxyFix
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)

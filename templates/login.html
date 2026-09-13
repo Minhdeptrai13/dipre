@@ -10,13 +10,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <!-- Cloudflare Turnstile Official Script (FREE 100%, Thông Minh, Không Cần Giải Mã Lằng Nhằng) -->
+  
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 
 <body class="beyond-landing-body">
 
-  <!-- TOP HEADER CHUẨN XỊN VỚI LOGO DIPRE -->
   <header class="beyond-header">
     <div class="beyond-brand" onclick="window.location.href='/'">
       <img src="{{ url_for('static', filename='img/dipre_icon_clyde_silk.png') }}" alt="DIPRE Logo" class="beyond-brand-logo-img">
@@ -39,11 +38,9 @@
     </div>
   </header>
 
-  <!-- MAIN LANDING HERO (CÂU CHÂM NGÔN MỚI & THẺ DISCORD PROFILE THẬT 100%) -->
   <main class="beyond-hero-wrapper">
     <div class="beyond-hero-container">
-      
-      <!-- CỘT CHỮ BÊN TRÁI -->
+
       <div class="beyond-text-col">
         <h1 class="beyond-main-title" id="landing-hero-title">
           beyond the limits,<br>
@@ -57,11 +54,9 @@
         </div>
       </div>
 
-      <!-- CỘT PREVIEW DISCORD CARD THẬT 100% (ACC MINH 1412818296033775707) + HIỆU ỨNG PROFILE EFFECT -->
       <div class="beyond-cards-col">
         <div class="beyond-stage-3d" id="hero-cards-stage">
-          
-          <!-- Thẻ dài phía sau: Discord Card Shadow tạo chiều sâu 3D không gian -->
+
           <div class="beyond-card-back nitro-holo-card" id="floating-card-2">
             <div class="bcb-banner" style="background: linear-gradient(135deg, rgba(88, 101, 242, 0.4), rgba(34, 197, 94, 0.2), rgba(15, 23, 42, 0.9));"></div>
             <div class="bcb-avatar-row">
@@ -75,10 +70,8 @@
             </div>
           </div>
 
-          <!-- THẺ DISCORD POPOUT THẬT 1:1 CỦA MINH (1412818296033775707) - REALTIME DOM & DISCORD PROFILE EFFECT -->
           <div class="beyond-card-front dlp-popout-card" id="floating-card-1" title="Minh (@minh3003a) — Real Discord Profile">
-            
-            <!-- Lớp Hiệu Ứng Hồ Sơ Discord (Discord Authentic Profile Effect Layer: APNG động 1:1 hoặc Crystal Aura) -->
+
             {% if showcase and showcase.profile_effect_data and showcase.profile_effect_data.loop %}
             <div class="discord-nitro-pfx-container" title="{{ showcase.profile_effect_data.title }}" style="position:absolute; top:-14px; left:-14px; right:-14px; bottom:-14px; z-index:15; pointer-events:none; overflow:visible;">
               <img src="{{ showcase.profile_effect_data.loop }}" class="discord-nitro-pfx-anim" alt="{{ showcase.profile_effect_data.title }}" style="width:calc(100% + 28px); height:calc(100% + 28px); object-fit:fill;">
@@ -99,7 +92,7 @@
               <div class="dlp-pfx-crystal c3">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="url(#pfx-grad-pink)"><circle cx="12" cy="12" r="6"/></svg>
               </div>
-              <!-- SVG Gradients for profile effect -->
+              
               <svg width="0" height="0" class="d-none">
                 <defs>
                   <linearGradient id="pfx-grad-pink" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -115,16 +108,13 @@
             </div>
             {% endif %}
 
-            <!-- Banner Header Discord (Dark Minimalist Discord Nitro Theme) -->
             <div class="dlp-banner" {% if showcase and showcase.banner %}style="background-image: url('{{ showcase.banner }}'); background-size: cover; background-position: center;"{% endif %}></div>
 
-            <!-- Avatar & Badges Section -->
             <div class="dlp-avatar-section">
               <div class="dlp-avatar-wrapper">
-                <!-- Avatar thật từ Discord CDN nếu có Token, fallback ảnh trích xuất -->
-                <img src="{% if showcase and showcase.avatar %}{{ showcase.avatar }}{% else %}{{ url_for('static', filename='img/minh_avatar_pure.png') }}{% endif %}" alt="{{ showcase.username if showcase else 'Minh' }}" class="dlp-avatar-img">
                 
-                <!-- Discord Avatar Decoration Ring: Dùng APNG chính chủ nếu fetch được từ Discord, fallback vòng trang trí CSS -->
+                <img src="{% if showcase and showcase.avatar %}{{ showcase.avatar }}{% else %}{{ url_for('static', filename='img/minh_avatar_pure.png') }}{% endif %}" alt="{{ showcase.username if showcase else 'Minh' }}" class="dlp-avatar-img">
+
                 {% if showcase and showcase.decoration %}
                 <img src="{{ showcase.decoration }}" class="dlp-avatar-decor-img" alt="Decoration" style="position:absolute; top:-12px; left:-12px; width:100px; height:100px; pointer-events:none; z-index:6;">
                 {% else %}
@@ -133,12 +123,10 @@
                   <div class="dlp-decor-star">✦</div>
                 </div>
                 {% endif %}
-                
-                <!-- Discord Online Status Dot -->
+
                 <div class="dlp-status-dot online"></div>
               </div>
 
-              <!-- Nút Action Nhanh Tròn (Thêm bạn & Menu 3 chấm) -->
               <div class="dlp-quick-actions">
                 <div class="dlp-action-circle" title="Trạng thái hành động">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14.5 17.5L3 6V3H6L17.5 14.5L14.5 17.5Z"/><path d="M14.5 6.5L17.5 3.5L20.5 6.5L17.5 9.5L14.5 6.5Z"/><path d="M6.5 14.5L9.5 17.5L6.5 20.5L3.5 17.5L6.5 14.5Z"/></svg>
@@ -152,15 +140,13 @@
               </div>
             </div>
 
-            <!-- Profile Info Body -->
             <div class="dlp-body">
-              
-              <!-- Name & Discord Badges (Chính chủ từ Discord API) -->
+
               <div class="dlp-names-row">
                 <div class="dlp-display-name">{{ showcase.username if showcase else 'Minh' }}</div>
                 <div class="dlp-username-badges">
                   <span class="dlp-username">{{ showcase.tag if showcase else 'minh3003a' }}</span>
-                  <!-- Discord Badges Chuẩn (Từ Discord CDN thật) -->
+                  
                   <div class="dlp-badges-group">
                     {% if showcase and showcase.badges %}
                       {% for b in showcase.badges %}
@@ -180,7 +166,6 @@
                 </div>
               </div>
 
-              <!-- Hàng Bạn Chung & Máy Chủ Chung Thật Của Discord -->
               <div class="dlp-mutuals-row">
                 <div class="dlp-mutual-avatars">
                   <div class="dlp-mini-avatar a1"></div>
@@ -191,7 +176,6 @@
                 <span class="dlp-mutual-text">2 Bạn Chung • 5 Máy Chủ Chung</span>
               </div>
 
-              <!-- Thẻ Trạng Thái Rich Presence (Chỉ hiện khi tài khoản thực sự có hoạt động) -->
               {% if showcase and showcase.activity %}
               <div class="dlp-activity-card">
                 <div class="dlp-act-header">
@@ -218,11 +202,9 @@
         </div>
       </div>
 
-
     </div>
   </main>
 
-  <!-- MODAL ĐĂNG NHẬP / ĐĂNG KÝ (REDESIGN HIỆN ĐẠI, CYBERPUNK GLASSMORPHISM) -->
   <div class="auth-modal-backdrop {% if not get_flashed_messages() %}d-none{% endif %}" id="auth-modal-backdrop" onclick="handleAuthBackdropClick(event)">
     <div class="auth-modal-card">
       <button type="button" class="auth-modal-close-btn" onclick="closeAuthModal()" aria-label="Đóng">✕</button>
@@ -259,7 +241,6 @@
         </button>
       </div>
 
-      <!-- FORM ĐĂNG NHẬP -->
       <form id="form-login" method="POST" action="{{ url_for('login') }}" style="display: block;">
         <div class="form-row mb-3">
           <label class="form-label-clean" for="login-username">Tên tài khoản</label>
@@ -286,7 +267,6 @@
           </div>
         </div>
 
-        <!-- CLOUDFLARE TURNSTILE CAPTCHA (FREE 100%, TỰ ĐỘNG BẢO MẬT KHÔNG GIỚI HẠN) -->
         <div class="form-row mb-3" style="display: flex; justify-content: center;">
           <div class="cf-turnstile-wrapper">
             <div class="cf-turnstile" 
@@ -323,7 +303,6 @@
         </div>
       </form>
 
-      <!-- FORM ĐĂNG KÝ MỚI -->
       <form id="form-register" method="POST" action="{{ url_for('register') }}" style="display: none;">
         <div class="form-row mb-3">
           <label class="form-label-clean" for="reg-username">Tên tài khoản mới</label>
@@ -364,7 +343,6 @@
           </div>
         </div>
 
-        <!-- CLOUDFLARE TURNSTILE CAPTCHA (FREE 100%, CHO ĐĂNG KÝ) -->
         <div class="form-row mb-3" style="display: flex; justify-content: center;">
           <div class="cf-turnstile-wrapper">
             <div class="cf-turnstile" 
@@ -386,8 +364,6 @@
     </div>
   </div>
 
-
-  <!-- SCRIPT LOGIC BEYOND LANDING & CLOUDFLARE TURNSTILE -->
   <script>
     function openAuthModal(mode) {
       const modal = document.getElementById('auth-modal-backdrop');

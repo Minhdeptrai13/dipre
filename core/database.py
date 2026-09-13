@@ -100,7 +100,6 @@ def init_db():
             )
         ''')
         
-        # Tự động migrate các cột cho bảng users
         cursor.execute("PRAGMA table_info(users)")
         cols = [r['name'] for r in cursor.fetchall()]
         for col_name in ['discord_token', 'discord_id', 'discord_username', 'discord_avatar', 'config', 'auth_provider', 'avatar_url', 'google_avatar', 'profile_effect', 'avatar_decoration', 'banner', 'badges', 'custom_status', 'bio']:
@@ -110,7 +109,6 @@ def init_db():
                 except Exception:
                     pass
 
-        # Tự động migrate các cột cho bảng discord_accounts
         cursor.execute("PRAGMA table_info(discord_accounts)")
         d_cols = [r['name'] for r in cursor.fetchall()]
         for col_name in ['avatar_decoration', 'banner', 'custom_status', 'profile_effect', 'is_active']:
@@ -120,7 +118,6 @@ def init_db():
                 except Exception:
                     pass
 
-        # Đảm bảo dọn dẹp các tài khoản chính nếu lỡ bị ghi nhầm vào discord_accounts
         cursor.execute("DELETE FROM discord_accounts WHERE discord_id IN (SELECT discord_id FROM users WHERE discord_id != '' AND discord_id IS NOT NULL)")
         conn.commit()
 
@@ -144,19 +141,15 @@ def get_dashboard_stats(user_id: int) -> dict:
     """Lấy dữ liệu thống kê tổng hợp cho Dashboard của tài khoản"""
     with get_db() as conn:
         cursor = conn.cursor()
-        # Đếm số lượng tài khoản Discord token đã lưu
         cursor.execute('SELECT COUNT(*) as total FROM discord_accounts WHERE user_id = ?', (user_id,))
         token_count = cursor.fetchone()['total']
 
-        # Lấy tài khoản Discord đang active
         cursor.execute('SELECT * FROM discord_accounts WHERE user_id = ? AND is_active = 1', (user_id,))
         active_acc = cursor.fetchone()
 
-        # Thống kê tính năng thường dùng
         cursor.execute('SELECT feature_name, use_count FROM feature_usage WHERE user_id = ? ORDER BY use_count DESC LIMIT 5', (user_id,))
         top_features = [dict(r) for r in cursor.fetchall()]
 
-        # Tính tổng số lượt chạy tính năng
         cursor.execute('SELECT SUM(use_count) as total_runs FROM feature_usage WHERE user_id = ?', (user_id,))
         row_sum = cursor.fetchone()
         total_runs = row_sum['total_runs'] if row_sum and row_sum['total_runs'] else 0

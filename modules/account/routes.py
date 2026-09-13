@@ -142,7 +142,6 @@ def api_account_bind_token():
 
             main_discord_id = (u['discord_id'] if u else '') or ''
 
-            # Tuyệt đối không cho thêm tài khoản Discord chính vào danh sách đa token phụ
             if main_discord_id and str(profile.get('id')) == str(main_discord_id):
                 return jsonify({
                     'success': False,
@@ -195,7 +194,6 @@ def api_accounts_list():
         u_row = cursor.fetchone()
         main_discord_id = (u_row['discord_id'] if u_row else '') or ''
 
-        # Dọn sạch triệt để nếu tài khoản chính từng bị ghi nhầm vào discord_accounts
         if main_discord_id:
             cursor.execute('DELETE FROM discord_accounts WHERE user_id = ? AND discord_id = ?', (user_id, str(main_discord_id)))
             conn.commit()
@@ -348,7 +346,6 @@ def api_dashboard_stats():
     stats = get_dashboard_stats(user_id)
     return jsonify({'success': True, 'stats': stats})
 
-# Đăng ký tiểu mục Multi-Account vào Mục Lớn Account trong Core Registry
 registry.register_module(SubModule(
     key='multi_account',
     category_key='account',

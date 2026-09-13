@@ -94,7 +94,6 @@ def api_quests_start():
     runner = get_user_quest_runner(user_id)
     track_feature_use(user_id, 'auto_quest')
 
-    # Chế độ tự động hoàn toàn (Auto Completer)
     if data.get('auto', False) or data.get('quest_id') == 'auto':
         runner.start_auto(token)
         return jsonify({'success': True, 'message': 'Đã khởi động chế độ Tự Động Quét & Cày Tất Cả Nhiệm Vụ!'})
@@ -165,7 +164,6 @@ def api_hypesquad_claim():
     except Exception as e:
         return jsonify({'success': False, 'message': f'Lỗi kết nối: {str(e)}'}), 500
 
-# Đăng ký tiểu mục Auto Quest vào Mục Lớn Script trong Core Registry
 registry.register_module(SubModule(
     key='auto_quest',
     category_key='script',

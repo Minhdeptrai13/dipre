@@ -97,35 +97,29 @@ def api_lyrics_search():
                 t_lower = track_name.lower().strip()
 
                 cover_url = ''
-                # 1. Tìm trong itunes_cover_map
                 for k, img in itunes_cover_map.items():
                     if k in t_lower or t_lower in k:
                         cover_url = img
                         break
 
-                # 2. Tìm trong zing_cover_map
                 if not cover_url:
                     for k, img in zing_cover_map.items():
                         if k in t_lower or t_lower in k:
                             cover_url = img
                             break
 
-                # 3. Tìm trong nct_cover_map
                 if not cover_url:
                     for k, img in nct_cover_map.items():
                         if k in t_lower or t_lower in k:
                             cover_url = img
                             break
 
-                # 4. Fallback về itunes đầu tiên nếu có
                 if not cover_url and itunes_cover_map:
                     cover_url = list(itunes_cover_map.values())[0]
 
-                # 5. Fallback về zing đầu tiên nếu có
                 if not cover_url and zing_cover_map:
                     cover_url = list(zing_cover_map.values())[0]
 
-                # 6. Fallback về logo chính hãng DIPRE nếu hoàn toàn không có bìa
                 if not cover_url:
                     cover_url = '/static/img/dipre_logo.png'
 
@@ -197,11 +191,9 @@ def api_lyrics_sync():
     
     tokens_to_use = []
     
-    # 1. Nếu client truyền trực tiếp danh sách tokens
     if isinstance(data.get('tokens'), list):
         tokens_to_use = [t.strip() for t in data['tokens'] if t and isinstance(t, str) and len(t.strip()) > 20]
         
-    # 2. Nếu client truyền account_ids
     if not tokens_to_use and isinstance(data.get('account_ids'), list):
         ids = data['account_ids']
         with get_db() as conn:
@@ -220,7 +212,6 @@ def api_lyrics_sync():
                     if r['token'] and len(r['token']) > 20:
                         tokens_to_use.append(r['token'])
 
-    # 3. Fallback: lấy token active của user
     if not tokens_to_use:
         with get_db() as conn:
             cursor = conn.cursor()
@@ -364,7 +355,6 @@ def api_lyrics_transcribe():
         except Exception:
             pass
 
-# Đăng ký tiểu mục Lyric Sync vào Mục Lớn Status trong Core Registry
 registry.register_module(SubModule(
     key='lyric_sync',
     category_key='status',

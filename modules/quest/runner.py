@@ -330,7 +330,6 @@ class DiscordUserQuestRunner:
                             time.sleep(1)
 
                 if not actionable_enrolled:
-                    # TẤT CẢ NHIỆM VỤ ĐÃ CÀY XONG HOẶC KHÔNG CÒN NHIỆM VỤ NÀO KHẢ DỤNG
                     quest_log("══════════════════════════════════════════════════", "success")
                     quest_log("🎉 TẤT CẢ NHIỆM VỤ ĐÃ HOÀN THÀNH XUẤT SẮC!", "success")
                     quest_log(f"► Tổng cộng: {len(completed_quest_names)} nhiệm vụ đã cày xong.", "success")

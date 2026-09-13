@@ -62,7 +62,6 @@ class CoreRegistry:
     def register_module(self, submodule: SubModule) -> SubModule:
         """Một mục nhỏ gọi vào khai báo xin vào mục lớn tương ứng"""
         if submodule.category_key not in self.categories:
-            # Tự động tạo mục lớn nếu chưa khai báo trước
             self.register_category(submodule.category_key, submodule.category_key.upper())
         
         category = self.categories[submodule.category_key]
@@ -108,5 +107,4 @@ class CoreRegistry:
                         print(f"[CoreRegistry] Lỗi dừng worker {mod_key}: {e}")
 
 
-# Singleton Registry instance dùng chung toàn project
 registry = CoreRegistry()

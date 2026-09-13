@@ -8,13 +8,11 @@ let currentThemeSubTab = 'forum';
 let currentForumTag = '';
 let currentForumSearch = '';
 
-// Khởi chạy khi tài liệu sẵn sàng
 document.addEventListener('DOMContentLoaded', () => {
   loadUserBots();
   loadForumTemplates();
 });
 
-// 1. Chuyển đổi giữa các SubTab: Diễn đàn / Kho cá nhân / Xưởng tạo mẫu
 function switchThemeSubTab(subtab) {
   currentThemeSubTab = subtab;
   
@@ -44,7 +42,6 @@ function switchThemeSubTab(subtab) {
   }
 }
 
-// 2. Tải danh sách Application Bot của người dùng
 async function loadUserBots() {
   try {
     const res = await fetch('/api/portal/apps');
@@ -84,7 +81,6 @@ async function loadUserBots() {
   }
 }
 
-// 3. Chọn Application Bot để phát RPC
 function selectBotApp(appId, botName, el) {
   currentBotAppId = appId;
   document.querySelectorAll('.bot-selector-card').forEach(c => c.classList.remove('active'));
@@ -94,14 +90,12 @@ function selectBotApp(appId, botName, el) {
     showToast(`Đã chọn Bot Application: ${botName} (${appId})`, 'info');
   }
   
-  // Tự động gán App ID nếu input-client-id có sẵn trong DOM
   const clientInput = document.getElementById('input-client-id');
   if (clientInput) clientInput.value = appId;
   
   if (typeof updateLivePreview === 'function') updateLivePreview();
 }
 
-// 4. Thêm nhanh một Discord Bot Application ID mới
 async function promptAddNewBot() {
   const appId = prompt('Nhập Application ID từ Discord Developer Portal (chuỗi số 18-19 chữ số):');
   if (!appId || !appId.trim()) return;
@@ -126,7 +120,6 @@ async function promptAddNewBot() {
   }
 }
 
-// 5. Tải Template từ Diễn Đàn
 async function loadForumTemplates(tag = '', search = '', sort = 'newest') {
   const grid = document.getElementById('forum-templates-grid');
   if (!grid) return;
@@ -142,7 +135,6 @@ async function loadForumTemplates(tag = '', search = '', sort = 'newest') {
     const data = await res.json();
     
     if (!data.success || !data.templates || data.templates.length === 0) {
-      // Mock data cao cấp khởi đầu nếu DB chưa có template nào
       renderDefaultMockTemplates(grid);
       return;
     }
@@ -154,7 +146,6 @@ async function loadForumTemplates(tag = '', search = '', sort = 'newest') {
   }
 }
 
-// 6. Render các thẻ template phong cách Solstice x Asagi
 function renderTemplatesList(container, list) {
   let html = '';
   list.forEach(t => {
@@ -200,7 +191,6 @@ function renderTemplatesList(container, list) {
   container.innerHTML = html;
 }
 
-// 7. Kho mẫu mặc định phong phú sẵn sàng trải nghiệm
 function renderDefaultMockTemplates(container) {
   const defaultTemplates = [
     {
@@ -296,13 +286,11 @@ function renderDefaultMockTemplates(container) {
   renderTemplatesList(container, defaultTemplates);
 }
 
-// 8. Áp dụng template: điền tự động vào Form và chuyển sang tab Editor
 function applyTemplate(templateId, config) {
   if (typeof config === 'string') {
     try { config = JSON.parse(config); } catch (e) { config = {}; }
   }
   
-  // Gán giá trị vào form RPC
   if (config.activity_name) {
     const actInput = document.getElementById('input-activity-name');
     if (actInput) actInput.value = config.activity_name;
@@ -346,12 +334,10 @@ function applyTemplate(templateId, config) {
     if (b2u) b2u.value = config.button2_url;
   }
 
-  // Tăng lượt sử dụng trên backend
   if (templateId) {
     fetch(`/api/templates/${templateId}/use`, { method: 'POST' }).catch(() => {});
   }
 
-  // Chuyển sang Tab Tạo / Tùy Chỉnh để người dùng kiểm tra Live Preview
   switchThemeSubTab('editor');
   if (typeof updateLivePreview === 'function') {
     updateLivePreview();
@@ -362,7 +348,6 @@ function applyTemplate(templateId, config) {
   }
 }
 
-// 9. Thích / Bỏ thích Template
 async function toggleLikeTemplate(templateId, el) {
   try {
     const res = await fetch(`/api/templates/${templateId}/like`, { method: 'POST' });
@@ -385,7 +370,6 @@ async function toggleLikeTemplate(templateId, el) {
   }
 }
 
-// 10. Đăng cấu hình hiện tại lên Diễn Đàn
 async function handlePublishToForum() {
   const title = (document.getElementById('input-template-title')?.value || '').trim();
   if (!title) {
@@ -399,7 +383,6 @@ async function handlePublishToForum() {
   const tags = tagsStr ? tagsStr.split(',').map(s => s.trim()).filter(Boolean) : ['custom'];
   const isPublic = document.getElementById('check-template-public')?.checked ?? true;
 
-  // Lấy config hiện tại từ các input
   const config = {
     activity_name: document.getElementById('input-activity-name')?.value || '',
     details: document.getElementById('input-details')?.value || '',
@@ -439,7 +422,6 @@ async function handlePublishToForum() {
   }
 }
 
-// 11. Tìm kiếm và lọc theo tag
 function handleForumSearch() {
   const val = (document.getElementById('forum-search-input')?.value || '').trim();
   currentForumSearch = val;
