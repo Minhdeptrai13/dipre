@@ -409,7 +409,7 @@ function updateAccountUI(data) {
   const badgesList = isLinked ? (data.badges || []) : [];
 
   if (heroName) heroName.textContent = displayName;
-  if (heroTag) heroTag.textContent = `@${displayName.toLowerCase().replace(/\s+/g, '')}`;
+  if (heroTag) heroTag.textContent = (displayName || '').toLowerCase().replace(/\s+/g, '');
   if (heroStatusDot) {
     heroStatusDot.className = `dc1-status-dot ${isLinked ? 'online' : 'idle'}`;
   }
