@@ -125,9 +125,9 @@ function switchTab(tabId) {
   }
 
   // Khởi động các module tương ứng
-  if (tabId === 'tab-home') { loadDashboardStats(); }
+  if (tabId === 'tab-home') { loadDashboardStats(); checkQuestOvernightNotification(); }
   else if (tabId === 'tab-rpc') { startLogPolling(); }
-  else if (tabId === 'tab-quest') { loadAvailableQuests(); startLogPolling('quest'); }
+  else if (tabId === 'tab-quest') { loadAvailableQuests(); startLogPolling('quest'); checkQuestOvernightNotification(); }
   else if (tabId === 'tab-inbox') { loadDiscordInbox(); }
   else if (tabId === 'tab-accounts') { loadMultiAccounts(); }
   else if (tabId === 'tab-voice-afk') { checkVoiceStatus(); }
@@ -1879,7 +1879,23 @@ function startQuestProgressPolling(id, targetSec) {
       if (fillEl) fillEl.style.width = `${pct}%`;
       if (timeEl) timeEl.textContent = `${elapsed}s / ${target}s`;
 
-      if (st.status === 'completed') {
+      if (st.status === 'finished') {
+        clearInterval(questRunnerInterval);
+        questRunnerInterval = null;
+        stopQuestLogPolling();
+        await fetchQuestLogs();
+        const chip = document.getElementById('quest-status-chip');
+        if (chip) { chip.textContent = 'Hoàn Tất Tất Cả'; chip.className = 'quest-status-badge completed'; }
+        setLed('idle');
+        const stopBtn = document.getElementById('btn-quest-stop');
+        if (stopBtn) stopBtn.disabled = true;
+        if (st.completed_summary) {
+          showQuestOvernightModal(st.completed_summary);
+        } else {
+          showToast('Tất cả nhiệm vụ Discord đã được cày xong!', 'success', 6000);
+        }
+        loadAvailableQuests();
+      } else if (st.status === 'completed') {
         clearInterval(questRunnerInterval);
         questRunnerInterval = null;
         stopQuestLogPolling();
@@ -1903,6 +1919,73 @@ function startQuestProgressPolling(id, targetSec) {
       }
     } catch (e) { }
   }, 1200);
+}
+
+// Kiểm tra thông báo tổng kết Auto Quest qua đêm khi mở trang hoặc chuyển tab
+async function checkQuestOvernightNotification() {
+  try {
+    const res = await fetch('/api/quests/status');
+    const d = await res.json();
+    const st = d.status || {};
+    if (st.completed_summary && st.completed_summary.finished_at) {
+      const key = 'quest_summary_notified_' + st.completed_summary.finished_at;
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, 'true');
+        showQuestOvernightModal(st.completed_summary);
+      }
+    }
+  } catch (e) {}
+}
+
+function showQuestOvernightModal(summary) {
+  const existing = document.getElementById('quest-overnight-modal');
+  if (existing) existing.remove();
+
+  const questsList = (summary.quests || []).map(q => `
+    <li style="display:flex; align-items:center; gap:8px; margin-bottom:8px; padding:6px 10px; background:rgba(14,21,33,0.7); border-radius:8px; border:1px solid rgba(56,189,248,0.15);">
+      <span style="color:#38bdf8; font-weight:bold;">✓</span>
+      <span style="color:#f1f5f9; font-weight:600;">${escapeHtml(q)}</span>
+    </li>
+  `).join('');
+
+  const modalHtml = `
+    <div class="modal-overlay active" id="quest-overnight-modal" style="z-index: 99999; display:flex; align-items:center; justify-content:center; position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(8px);">
+      <div class="modal-dialog" style="max-width: 520px; width:90%; border: 1px solid rgba(56, 189, 248, 0.35); box-shadow: 0 20px 60px rgba(2, 132, 199, 0.45); background: #080d16; border-radius:18px; overflow:hidden;">
+        <div class="modal-header" style="padding:18px 22px; border-bottom: 1px solid rgba(56, 189, 248, 0.15); display:flex; align-items:center; justify-content:space-between;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span style="font-size:1.6rem;">🎉</span>
+            <div>
+              <div class="modal-title-text" style="color:#38bdf8; font-size:1.1rem; font-weight:800; letter-spacing:-0.01em;">TỔNG KẾT AUTO QUEST QUA ĐÊM</div>
+              <div class="modal-subtitle-text" style="font-size:0.78rem; color:#94a3b8;">Hoàn thành lúc: ${summary.finished_at || 'Vừa xong'}</div>
+            </div>
+          </div>
+          <button type="button" class="modal-close-btn" style="background:none; border:none; color:#94a3b8; font-size:1.2rem; cursor:pointer;" onclick="document.getElementById('quest-overnight-modal').remove()">✕</button>
+        </div>
+        <div class="modal-body" style="padding: 22px;">
+          <div style="background: linear-gradient(135deg, rgba(2, 132, 199, 0.18) 0%, rgba(56, 189, 248, 0.08) 100%); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 14px; padding: 14px 16px; margin-bottom: 16px;">
+            <div style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:4px;">
+              Đã hoàn thành ${summary.completed_count || 0} nhiệm vụ Discord!
+            </div>
+            <div style="font-size:0.82rem; color:#cbd5e1; line-height:1.45;">
+              Hệ thống đã tự động cày liên tục và dừng máy an toàn trong đêm để bạn yên tâm ngủ ngon mà không tốn công canh máy.
+            </div>
+          </div>
+
+          <div style="font-size:0.84rem; font-weight:700; color:#e2e8f0; margin-bottom: 10px;">Danh sách nhiệm vụ đã hoàn thành:</div>
+          <ul style="list-style:none; padding-left:0; margin-bottom:20px; max-height: 180px; overflow-y:auto; font-size:0.84rem;">
+            ${questsList || '<li style="color:#94a3b8; padding:8px;">Tất cả nhiệm vụ khả dụng đều đã hoàn tất.</li>'}
+          </ul>
+
+          <div>
+            <button type="button" class="rpc-btn rpc-btn-start w-100" style="background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); color:#06090e; font-weight:800; padding:12px; border-radius:12px; font-size:0.95rem; border:none; cursor:pointer;" onclick="document.getElementById('quest-overnight-modal').remove()">
+              Tuyệt Vời! Nhận Thưởng Discord Ngay
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
 
 async function handleStopQuest() {

@@ -24,6 +24,7 @@ class DiscordUserQuestRunner:
         self.target_seconds = 60
         self.elapsed_seconds = 0
         self.is_auto_mode = False
+        self.completed_summary = None
         self.thread = None
         self.stop_flag = threading.Event()
         self.lock = threading.Lock()
@@ -38,7 +39,8 @@ class DiscordUserQuestRunner:
                 'progress_pct': self.progress_pct,
                 'elapsed_seconds': self.elapsed_seconds,
                 'target_seconds': self.target_seconds,
-                'is_auto_mode': self.is_auto_mode
+                'is_auto_mode': self.is_auto_mode,
+                'completed_summary': self.completed_summary
             }
 
     def start_auto(self, token: str):
@@ -277,17 +279,19 @@ class DiscordUserQuestRunner:
         quest_log("══════════════════════════════════════════════════", "info")
 
         completed_ids = set()
+        completed_quest_names = []
         failed_enrollment_ids = set()
         cycle = 0
 
         while not self.stop_flag.is_set():
             cycle += 1
-            quest_log(f"─── Quét nhiệm vụ lần #{cycle} ───", "info")
+            quest_log(f"─── Quét nhiệm vụ Discord (Lần #{cycle}) ───", "info")
             raw_quests = self._fetch_quests(token)
             total = len(raw_quests)
 
             if not raw_quests:
                 quest_log("Không tìm thấy nhiệm vụ nào từ Discord.", "warning")
+                break
             else:
                 parsed_list = [parse_discord_quest_item(q) for q in raw_quests]
                 valid_quests = [q for q in parsed_list if q['completable']]
@@ -318,15 +322,28 @@ class DiscordUserQuestRunner:
                             quest_log(f"  -> Đã nhận thành công: {name}", "success")
                             p['enrolled'] = True
                             actionable_enrolled.append((q, p))
-                            time.sleep(3)
+                            time.sleep(2)
                             break
                         else:
                             failed_enrollment_ids.add(qid)
                             quest_log(f"  -> Bỏ qua quest {name} (chống dính rate limit Discord)", "warning")
-                            time.sleep(2)
+                            time.sleep(1)
 
                 if not actionable_enrolled:
-                    quest_log("Không có nhiệm vụ nào đủ điều kiện cần cày lúc này.", "info")
+                    # TẤT CẢ NHIỆM VỤ ĐÃ CÀY XONG HOẶC KHÔNG CÒN NHIỆM VỤ NÀO KHẢ DỤNG
+                    quest_log("══════════════════════════════════════════════════", "success")
+                    quest_log("🎉 TẤT CẢ NHIỆM VỤ ĐÃ HOÀN THÀNH XUẤT SẮC!", "success")
+                    quest_log(f"► Tổng cộng: {len(completed_quest_names)} nhiệm vụ đã cày xong.", "success")
+                    quest_log("► Hệ thống tự động dừng để bạn yên tâm ngủ qua đêm!", "success")
+                    quest_log("══════════════════════════════════════════════════", "success")
+                    with self.lock:
+                        self.status = 'finished'
+                        self.completed_summary = {
+                            'finished_at': datetime.now().strftime('%H:%M:%S - %d/%m/%Y'),
+                            'completed_count': len(completed_quest_names),
+                            'quests': list(completed_quest_names)
+                        }
+                    break
                 else:
                     for q, p in actionable_enrolled:
                         if self.stop_flag.is_set():
@@ -364,17 +381,14 @@ class DiscordUserQuestRunner:
                             self._complete_activity(token, qid, name, seconds_needed, seconds_done)
 
                         completed_ids.add(qid)
-                        time.sleep(2)
-
-            quest_log("Chờ 45s để quét lại đợt nhiệm vụ tiếp theo...", "info")
-            for _ in range(45):
-                if self.stop_flag.is_set():
-                    break
-                time.sleep(1)
+                        completed_quest_names.append(name)
+                        quest_log(f"✅ Hoàn thành '{name}'. Chuyển sang nhiệm vụ tiếp theo sau 3s...", "success")
+                        time.sleep(3)
 
         with self.lock:
-            self.status = 'stopped'
-            quest_log("⛔ Đã dừng Auto Quest Completer.", "warning")
+            if self.status != 'finished':
+                self.status = 'stopped'
+                quest_log("⛔ Đã dừng Auto Quest Completer.", "warning")
 
     def _run_quest_thread(self, token: str, quest_id: str, quest_name: str, task_type: str, target_seconds: int):
         quest_log(f'╔══ BẮT ĐẦU AUTO QUEST ══╗', 'info')
