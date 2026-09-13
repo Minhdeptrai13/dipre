@@ -1,4 +1,5 @@
 import requests
+from .discord_effects import resolve_profile_effect
 
 def fetch_discord_profile(token: str, target_user_id: str = None):
     """Lấy toàn bộ thông tin profile Discord chính chủ 100%: Avatar, Avatar Decoration APNG, Banner, Badges, Username, Profile Effect"""
@@ -9,16 +10,14 @@ def fetch_discord_profile(token: str, target_user_id: str = None):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
     }
     
-    # Nếu có target_user_id, lấy thông tin của user đó qua profile endpoint
     target_id = str(target_user_id).strip() if target_user_id else None
     
-    # Nếu có target_user_id, kiểm tra xem có phải chính tài khoản của token không
-    target_id = str(target_user_id).strip() if target_user_id else None
-    
-    # Luôn lấy thông tin chính tài khoản qua @me trước (chuẩn User Token không bị 403)
+    # Lấy thông tin user
     res = requests.get('https://discord.com/api/v9/users/@me', headers=headers, timeout=8)
-    if res.status_code != 200 and target_id:
-        res = requests.get(f'https://discord.com/api/v9/users/{target_id}', headers=headers, timeout=8)
+    if (res.status_code != 200 or (target_id and res.json().get('id') != target_id)) and target_id:
+        res2 = requests.get(f'https://discord.com/api/v9/users/{target_id}', headers=headers, timeout=8)
+        if res2.status_code == 200:
+            res = res2
         
     if res.status_code != 200:
         return None
@@ -44,11 +43,14 @@ def fetch_discord_profile(token: str, target_user_id: str = None):
     if banner_hash:
         b_ext = 'gif' if banner_hash.startswith('a_') else 'png'
         banner_url = f"https://cdn.discordapp.com/banners/{d_id}/{banner_hash}.{b_ext}?size=600"
+    elif data.get('accent_color'):
+        banner_url = f"#{data.get('accent_color'):06x}"
 
     badges = []
     seen_badge_names = set()
     profile_effect = ''
     bio = data.get('bio', '')
+    custom_status = ''
     
     try:
         p_res = requests.get(f'https://discord.com/api/v9/users/{d_id}/profile?with_mutual_guilds=false', headers=headers, timeout=6)
@@ -89,6 +91,8 @@ def fetch_discord_profile(token: str, target_user_id: str = None):
     if 'Active Developer' not in seen_badge_names and (flags & (1 << 22)):
         badges.append({'name': 'Active Developer', 'icon': 'https://cdn.discordapp.com/badge-icons/6bdc42827b30f498e4a0713f64455d80.png?size=64'})
 
+    profile_effect_data = resolve_profile_effect(profile_effect) if profile_effect else None
+
     return {
         'id': d_id,
         'username': username,
@@ -98,5 +102,7 @@ def fetch_discord_profile(token: str, target_user_id: str = None):
         'banner': banner_url,
         'badges': badges,
         'profile_effect': profile_effect,
-        'bio': bio
+        'profile_effect_data': profile_effect_data,
+        'bio': bio,
+        'custom_status': custom_status
     }

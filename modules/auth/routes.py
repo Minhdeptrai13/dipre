@@ -1,6 +1,7 @@
 import os
 import uuid
 import sqlite3
+import json
 import requests
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -11,6 +12,8 @@ from core.config import CLOUDFLARE_TURNSTILE_SITE_KEY
 from core.registry import registry, SubModule
 from modules.auth.helpers import login_required
 from modules.captcha.routes import verify_turnstile
+from modules.account.discord_effects import resolve_profile_effect
+from modules.account.services import fetch_discord_profile
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -78,9 +81,9 @@ def index():
     user_id = session['user_id']
     with get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute('SELECT username, discord_token, discord_id, discord_username, discord_avatar, avatar_url, google_avatar, auth_provider FROM users WHERE id = ?', (user_id,))
+        cursor.execute('SELECT username, discord_token, discord_id, discord_username, discord_avatar, avatar_url, google_avatar, auth_provider, profile_effect, avatar_decoration, banner, badges, custom_status, bio FROM users WHERE id = ?', (user_id,))
         u = cursor.fetchone()
-        cursor.execute('SELECT avatar_decoration, banner, profile_effect, discord_username, discord_avatar FROM discord_accounts WHERE user_id = ? AND is_active = 1 LIMIT 1', (user_id,))
+        cursor.execute('SELECT avatar_decoration, banner, profile_effect, discord_username, discord_avatar, custom_status FROM discord_accounts WHERE user_id = ? AND is_active = 1 LIMIT 1', (user_id,))
         acc = cursor.fetchone()
         cursor.execute('SELECT COUNT(*) as cnt FROM discord_accounts WHERE user_id = ?', (user_id,))
         acc_cnt_row = cursor.fetchone()
@@ -92,13 +95,50 @@ def index():
     d_avatar = (acc['discord_avatar'] if (acc and acc['discord_avatar']) else (u['discord_avatar'] if (u and u['discord_avatar']) else None))
     auth_prov = (u['auth_provider'] if u and u['auth_provider'] else 'local')
     
-    # Ưu tiên avatar_url của hệ thống, nếu không có thì fallback discord_avatar
     raw_avatar = (u['avatar_url'] or u['google_avatar'] or u['discord_avatar'] or '').strip() if u else ''
     avatar_info = get_avatar_info(username, raw_avatar, auth_prov)
     
-    avatar_decoration = acc['avatar_decoration'] if acc and acc['avatar_decoration'] else None
-    banner = acc['banner'] if acc and acc['banner'] else None
-    profile_effect = acc['profile_effect'] if acc and acc['profile_effect'] else None
+    avatar_decoration = (acc['avatar_decoration'] if (acc and acc['avatar_decoration']) else (u['avatar_decoration'] if (u and u['avatar_decoration']) else None))
+    banner = (acc['banner'] if (acc and acc['banner']) else (u['banner'] if (u and u['banner']) else None))
+    profile_effect = (acc['profile_effect'] if (acc and acc['profile_effect']) else (u['profile_effect'] if (u and u['profile_effect']) else None))
+    custom_status = (acc['custom_status'] if (acc and acc['custom_status']) else (u['custom_status'] if (u and u['custom_status']) else 'nắng biển?'))
+    bio = (u['bio'] if (u and u['bio']) else '')
+    
+    # Lấy badges list
+    badges_list = []
+    if u and u['badges']:
+        try:
+            badges_list = json.loads(u['badges']) if isinstance(u['badges'], str) else u['badges']
+        except Exception:
+            badges_list = []
+
+    # Nếu chưa có profile_effect hoặc avatar_decoration mà có discord_id, thử sync realtime
+    d_id = u['discord_id'] if u else None
+    showcase_token = os.environ.get('DISCORD_SHOWCASE_TOKEN', '')
+    if d_id and showcase_token and (not profile_effect or not avatar_decoration):
+        try:
+            p_live = fetch_discord_profile(showcase_token, d_id)
+            if p_live:
+                if not profile_effect and p_live.get('profile_effect'):
+                    profile_effect = p_live['profile_effect']
+                if not avatar_decoration and p_live.get('decoration'):
+                    avatar_decoration = p_live['decoration']
+                if not banner and p_live.get('banner'):
+                    banner = p_live['banner']
+                if not badges_list and p_live.get('badges'):
+                    badges_list = p_live['badges']
+                if not bio and p_live.get('bio'):
+                    bio = p_live['bio']
+                # Cập nhật ngược lại vào DB
+                with get_db() as conn:
+                    c = conn.cursor()
+                    c.execute('UPDATE users SET profile_effect = ?, avatar_decoration = ?, banner = ?, badges = ?, bio = ? WHERE id = ?',
+                              (profile_effect or '', avatar_decoration or '', banner or '', json.dumps(badges_list, ensure_ascii=False), bio, user_id))
+                    conn.commit()
+        except Exception:
+            pass
+
+    profile_effect_data = resolve_profile_effect(profile_effect) if profile_effect else None
 
     return render_template('index.html',
                            username=username,
@@ -111,6 +151,10 @@ def index():
                            avatar_decoration=avatar_decoration,
                            banner=banner,
                            profile_effect=profile_effect,
+                           profile_effect_data=profile_effect_data,
+                           badges=badges_list,
+                           custom_status=custom_status,
+                           bio=bio,
                            sub_accounts_count=sub_count)
 
 @auth_bp.route('/api/live/status')
@@ -120,14 +164,31 @@ def api_live_status():
     user_id = session.get('user_id')
     with get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute('SELECT username, discord_token, discord_username, discord_avatar, avatar_url, auth_provider FROM users WHERE id = ?', (user_id,))
+        cursor.execute('SELECT username, discord_token, discord_username, discord_avatar, avatar_url, auth_provider, avatar_decoration, banner, profile_effect, badges, custom_status, bio FROM users WHERE id = ?', (user_id,))
         u = cursor.fetchone()
+        cursor.execute('SELECT avatar_decoration, banner, profile_effect, discord_username, discord_avatar, custom_status FROM discord_accounts WHERE user_id = ? AND is_active = 1 LIMIT 1', (user_id,))
+        acc = cursor.fetchone()
     if not u:
         return jsonify({'status': 'unauthorized'}), 401
     
     raw_avatar = (u['avatar_url'] or u['discord_avatar'] or '').strip()
     avatar_info = get_avatar_info(u['username'], raw_avatar, u['auth_provider'] or 'local')
-    has_token = bool(u['discord_token'] and len(u['discord_token']) > 20)
+    has_token = bool((u['discord_token'] and len(u['discord_token']) > 20) or acc)
+
+    avatar_decoration = (acc['avatar_decoration'] if (acc and acc['avatar_decoration']) else (u['avatar_decoration'] if u['avatar_decoration'] else ''))
+    banner = (acc['banner'] if (acc and acc['banner']) else (u['banner'] if u['banner'] else ''))
+    profile_effect = (acc['profile_effect'] if (acc and acc['profile_effect']) else (u['profile_effect'] if u['profile_effect'] else ''))
+    custom_status = (acc['custom_status'] if (acc and acc['custom_status']) else (u['custom_status'] if u['custom_status'] else 'nắng biển?'))
+    bio = u['bio'] or ''
+
+    badges_list = []
+    if u['badges']:
+        try:
+            badges_list = json.loads(u['badges']) if isinstance(u['badges'], str) else u['badges']
+        except Exception:
+            badges_list = []
+
+    profile_effect_data = resolve_profile_effect(profile_effect) if profile_effect else None
     
     return jsonify({
         'status': 'ok',
@@ -136,8 +197,15 @@ def api_live_status():
             'username': u['username'],
             'auth_provider': u['auth_provider'] or 'local',
             'has_token': has_token,
-            'discord_username': u['discord_username'] or '',
-            'avatar': avatar_info
+            'discord_username': (acc['discord_username'] if acc and acc['discord_username'] else u['discord_username']) or '',
+            'avatar': avatar_info,
+            'avatar_decoration': avatar_decoration,
+            'banner': banner,
+            'profile_effect': profile_effect,
+            'profile_effect_data': profile_effect_data,
+            'badges': badges_list,
+            'custom_status': custom_status,
+            'bio': bio
         }
     })
 
@@ -325,7 +393,49 @@ def auth_discord_callback():
         d_id = str(u_data.get('id'))
         d_username = u_data.get('global_name') or u_data.get('username') or 'Discord User'
         avatar_hash = u_data.get('avatar')
-        avatar_url = f"https://cdn.discordapp.com/avatars/{d_id}/{avatar_hash}.png?size=256" if avatar_hash else "https://cdn.discordapp.com/embed/avatars/0.png"
+        ext = 'gif' if (avatar_hash and avatar_hash.startswith('a_')) else 'png'
+        avatar_url = f"https://cdn.discordapp.com/avatars/{d_id}/{avatar_hash}.{ext}?size=256" if avatar_hash else "https://cdn.discordapp.com/embed/avatars/0.png"
+
+        decor_data = u_data.get('avatar_decoration_data')
+        avatar_decoration = f"https://cdn.discordapp.com/avatar-decoration-presets/{decor_data['asset']}.png?size=256&passthrough=true" if (decor_data and decor_data.get('asset')) else ''
+
+        banner_hash = u_data.get('banner')
+        b_ext = 'gif' if (banner_hash and banner_hash.startswith('a_')) else 'png'
+        banner_url = f"https://cdn.discordapp.com/banners/{d_id}/{banner_hash}.{b_ext}?size=600" if banner_hash else (f"#{u_data.get('accent_color'):06x}" if u_data.get('accent_color') else '')
+
+        profile_effect = ''
+        bio = u_data.get('bio', '')
+        custom_status = 'nắng biển?'
+        badges = []
+
+        showcase_token = os.environ.get('DISCORD_SHOWCASE_TOKEN', '')
+        if showcase_token:
+            try:
+                p_info = fetch_discord_profile(showcase_token, d_id)
+                if p_info:
+                    if p_info.get('profile_effect'):
+                        profile_effect = p_info['profile_effect']
+                    if p_info.get('decoration') and not avatar_decoration:
+                        avatar_decoration = p_info['decoration']
+                    if p_info.get('banner') and not banner_url:
+                        banner_url = p_info['banner']
+                    if p_info.get('badges'):
+                        badges = p_info['badges']
+                    if p_info.get('bio'):
+                        bio = p_info['bio']
+                    if p_info.get('custom_status'):
+                        custom_status = p_info['custom_status']
+            except Exception:
+                pass
+
+        if not badges:
+            flags = u_data.get('flags', 0) or u_data.get('public_flags', 0)
+            if flags & (1 << 8):
+                badges.append({'name': 'HypeSquad Balance', 'icon': 'https://cdn.discordapp.com/badge-icons/3aa41de486fa12454c3761e8e223442e.png?size=64'})
+            if flags & (1 << 22):
+                badges.append({'name': 'Active Developer', 'icon': 'https://cdn.discordapp.com/badge-icons/6bdc42827b30f498e4a0713f64455d80.png?size=64'})
+
+        badges_json = json.dumps(badges, ensure_ascii=False)
 
         with get_db() as conn:
             cursor = conn.cursor()
@@ -333,19 +443,36 @@ def auth_discord_callback():
             user = cursor.fetchone()
             if not user:
                 pwd_dummy = generate_password_hash(uuid.uuid4().hex)
-                cursor.execute('INSERT INTO users (username, password_hash, discord_id, discord_username, discord_avatar, avatar_url, auth_provider) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                               (d_username, pwd_dummy, d_id, d_username, avatar_url, avatar_url, 'discord'))
+                cursor.execute('''INSERT INTO users (username, password_hash, discord_id, discord_username, discord_avatar, avatar_url, auth_provider, avatar_decoration, banner, profile_effect, badges, bio, custom_status) 
+                                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                               (d_username, pwd_dummy, d_id, d_username, avatar_url, avatar_url, 'discord', avatar_decoration, banner_url, profile_effect, badges_json, bio, custom_status))
                 user_id = cursor.lastrowid
             else:
                 user_id = user['id']
-                cursor.execute('UPDATE users SET discord_id = ?, discord_username = ?, discord_avatar = ?, avatar_url = ?, auth_provider = ? WHERE id = ?',
-                               (d_id, d_username, avatar_url, avatar_url, 'discord', user_id))
+                cursor.execute('''UPDATE users SET discord_id = ?, discord_username = ?, discord_avatar = ?, avatar_url = ?, auth_provider = ?, avatar_decoration = ?, banner = ?, profile_effect = ?, badges = ?, bio = ?, custom_status = ? 
+                                  WHERE id = ?''',
+                               (d_id, d_username, avatar_url, avatar_url, 'discord', avatar_decoration, banner_url, profile_effect, badges_json, bio, custom_status, user_id))
+            
+            # Cập nhật hoặc lưu vào danh sách discord_accounts
+            cursor.execute('SELECT id FROM discord_accounts WHERE user_id = ? AND (discord_id = ? OR token = ?)', (user_id, d_id, access_token))
+            d_acc = cursor.fetchone()
+            if not d_acc:
+                cursor.execute('''INSERT INTO discord_accounts (user_id, token, discord_id, discord_username, discord_avatar, avatar_decoration, banner, profile_effect, custom_status, is_active)
+                                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)''',
+                               (user_id, access_token, d_id, d_username, avatar_url, avatar_decoration, banner_url, profile_effect, custom_status))
+            else:
+                cursor.execute('''UPDATE discord_accounts SET discord_username = ?, discord_avatar = ?, avatar_decoration = ?, banner = ?, profile_effect = ?, custom_status = ?, is_active = 1
+                                  WHERE id = ?''',
+                               (d_username, avatar_url, avatar_decoration, banner_url, profile_effect, custom_status, d_acc['id']))
             conn.commit()
 
         session['user_id'] = user_id
         session['username'] = d_username
         session['discord_username'] = d_username
         session['discord_avatar'] = avatar_url
+        session['discord_avatar_decoration'] = avatar_decoration
+        session['discord_banner'] = banner_url
+        session['discord_profile_effect'] = profile_effect
         clear_failed_attempts(get_client_ip())
         flash(f'Đăng nhập Discord OAuth2 thành công! Chào mừng {d_username}.', 'success')
         return redirect(url_for('index'))

@@ -78,7 +78,12 @@
           <!-- THẺ DISCORD POPOUT THẬT 1:1 CỦA MINH (1412818296033775707) - REALTIME DOM & DISCORD PROFILE EFFECT -->
           <div class="beyond-card-front dlp-popout-card" id="floating-card-1" title="Minh (@minh3003a) — Real Discord Profile">
             
-            <!-- Lớp Hiệu Ứng Hồ Sơ Discord (Discord Authentic Profile Effect Layer: Hiệu Ứng Tinh Thể/Sakura Aura Chuẩn Discord) -->
+            <!-- Lớp Hiệu Ứng Hồ Sơ Discord (Discord Authentic Profile Effect Layer: APNG động 1:1 hoặc Crystal Aura) -->
+            {% if showcase and showcase.profile_effect_data and showcase.profile_effect_data.loop %}
+            <div class="discord-nitro-pfx-container" title="{{ showcase.profile_effect_data.title }}" style="position:absolute; top:-14px; left:-14px; right:-14px; bottom:-14px; z-index:15; pointer-events:none; overflow:visible;">
+              <img src="{{ showcase.profile_effect_data.loop }}" class="discord-nitro-pfx-anim" alt="{{ showcase.profile_effect_data.title }}" style="width:calc(100% + 28px); height:calc(100% + 28px); object-fit:fill;">
+            </div>
+            {% else %}
             <div class="dlp-profile-effect-wrap">
               <div class="dlp-pfx-ambient-glow"></div>
               <div class="dlp-pfx-particle p1"></div>
@@ -108,6 +113,7 @@
                 </defs>
               </svg>
             </div>
+            {% endif %}
 
             <!-- Banner Header Discord (Dark Minimalist Discord Nitro Theme) -->
             <div class="dlp-banner" {% if showcase and showcase.banner %}style="background-image: url('{{ showcase.banner }}'); background-size: cover; background-position: center;"{% endif %}></div>

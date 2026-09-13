@@ -10773,6 +10773,388 @@ body.light-theme .dcm-item:hover {
 }
 
 /* ==========================================================================
+   AUTHENTIC GOOGLE ACCOUNT POPOUT CARD (ẢNH 2 CHUẨN 100%)
+   ========================================================================== */
+.google-account-dialog {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  background: #1f1f1f;
+  border-radius: 28px;
+  padding: 16px 18px 20px 18px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  font-family: 'Roboto', 'Google Sans', sans-serif;
+  color: #e3e3e3;
+  position: relative;
+  transition: all var(--trans-smooth);
+}
+
+.google-account-dialog:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.gad-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.gad-email {
+  font-size: 13px;
+  font-weight: 500;
+  color: #e3e3e3;
+  letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 270px;
+}
+
+.gad-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #282a2c;
+  border: none;
+  color: #c4c7c5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.gad-close-btn:hover {
+  background: #3c4043;
+  color: #ffffff;
+}
+
+.gad-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.gad-avatar-wrapper {
+  position: relative;
+  width: 86px;
+  height: 86px;
+  margin-bottom: 12px;
+}
+
+.gad-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  padding: 4px;
+  background: conic-gradient(
+    #ea4335 0deg 90deg,
+    #4285f4 90deg 180deg,
+    #34a853 180deg 270deg,
+    #fbbc05 270deg 360deg
+  );
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.gad-camera-badge {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #1f1f1f;
+  border: 2px solid #282a2c;
+  color: #c4c7c5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.gad-camera-badge:hover {
+  background: #3c4043;
+  color: #ffffff;
+}
+
+.gad-greeting {
+  font-size: 20px;
+  font-weight: 500;
+  color: #e3e3e3;
+  margin-bottom: 16px;
+  letter-spacing: -0.01em;
+}
+
+.gad-manage-btn {
+  width: 100%;
+  padding: 10px 20px;
+  border-radius: 100px;
+  border: 1px solid #747775;
+  background: transparent;
+  color: #e3e3e3;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gad-manage-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #8e918f;
+  color: #ffffff;
+}
+
+.gad-action-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 18px;
+}
+
+.gad-pill-btn {
+  background: #282a2c;
+  border-radius: 20px;
+  padding: 12px 14px;
+  color: #e3e3e3;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s, color 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.gad-pill-btn:hover {
+  background: #37393b;
+  color: #ffffff;
+}
+
+.gad-footer {
+  font-size: 12px;
+  color: #8e918f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 14px;
+  margin-top: 4px;
+}
+
+.gad-footer a {
+  color: #8e918f;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.gad-footer a:hover {
+  color: #c4c7c5;
+}
+
+.gad-dot {
+  font-size: 10px;
+  color: #5e6160;
+}
+
+/* ==========================================================================
+   DISCORD 1:1 NITRO PROFILE EFFECT & ADVANCED POPOUT (ẢNH 3 & 4 CHUẨN 100%)
+   ========================================================================== */
+.discord-nitro-pfx-container {
+  position: absolute;
+  top: -16px;
+  left: -16px;
+  right: -16px;
+  bottom: -16px;
+  z-index: 15;
+  pointer-events: none;
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.discord-nitro-pfx-anim {
+  width: calc(100% + 32px);
+  height: calc(100% + 32px);
+  object-fit: fill;
+  pointer-events: none;
+}
+
+/* Status Bubble Chat kiểu Discord (nắng biển?) */
+.dc1-status-bubble {
+  position: absolute;
+  top: 75px;
+  left: 96px;
+  background: #313338;
+  border-radius: 12px;
+  padding: 5px 12px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #dbdee1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 10;
+  max-width: 190px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dc1-status-bubble::before {
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-right: 6px solid #313338;
+}
+
+/* Dot DND Do Not Disturb (hình tròn đỏ gạch ngang trắng như ảnh 3, 4) */
+.dc1-status-dot.dnd {
+  background: #f23f43 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dc1-status-dot.dnd::after {
+  content: "";
+  width: 8px;
+  height: 2px;
+  background: #ffffff;
+  border-radius: 1px;
+}
+
+/* Badge Tag CODE */
+.dc1-tag-code {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #4ade80;
+  padding: 1px 7px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* Role Pills như ảnh 4 (Owner đỏ, Member xám, +) */
+.dc1-roles-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.dc1-role-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  background: #2b2d31;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #dbdee1;
+}
+
+.dc1-role-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dc1-role-dot.red {
+  background: #f43f5e;
+}
+
+.dc1-role-dot.gray {
+  background: #94a3b8;
+}
+
+.dc1-role-pill.add {
+  padding: 3px 7px;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+/* Discord Menu Items (như ảnh 3) */
+.dc1-menu-section {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dc1-menu-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  background: #2b2d31;
+  border-radius: 8px;
+  color: #dbdee1;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.dc1-menu-btn:hover {
+  background: #35373c;
+  color: #ffffff;
+}
+
+.dc1-menu-btn.primary-btn {
+  background: #5865f2;
+  color: #ffffff;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.dc1-menu-btn.primary-btn:hover {
+  background: #4752c4;
+}
+
+.dc1-badge-new {
+  background: #f23f43;
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+
+/* ==========================================================================
    VOICE 24/7 COMPONENT STYLES
    ========================================================================== */
 .voice-connection-status {

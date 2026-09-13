@@ -381,106 +381,171 @@
                 <span class="msc-tag active">Live Card</span>
               </div>
 
-              <div class="discord-card-1to1-wrap live-profile-popout {% if auth_provider == 'google' and not has_token %}google-profile-card{% endif %}" id="discord-main-card">
-                <!-- Lớp Profile Effect Discord / Google Aura -->
+              {% if auth_provider == 'google' and not has_token %}
+              <!-- GOOGLE ACCOUNT CARD CHUẨN 1:1 THEO ẢNH 2 -->
+              <div class="google-account-dialog" id="google-main-card">
+                <div class="gad-header">
+                  <span class="gad-email" title="{{ username }}">{{ username if '@' in username else (username + '@gmail.com') }}</span>
+                  <button type="button" class="gad-close-btn" title="Đóng">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                  </button>
+                </div>
+
+                <div class="gad-body">
+                  <div class="gad-avatar-wrapper">
+                    <img src="{{ avatar_url or 'https://lh3.googleusercontent.com/a/default-user' }}" 
+                         alt="Avatar" class="gad-avatar-img">
+                    <div class="gad-camera-badge" title="Đổi ảnh đại diện">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="12" r="3.2"/>
+                        <path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
+                      </svg>
+                    </div>
+                  </div>
+
+                  <div class="gad-greeting">Chào {{ username.split('@')[0] }},</div>
+
+                  <a href="https://myaccount.google.com" target="_blank" class="gad-manage-btn">
+                    Quản lý Tài khoản Google của bạn
+                  </a>
+
+                  <div class="gad-action-buttons">
+                    <a href="{{ url_for('account_bp.account_settings') }}" class="gad-pill-btn" title="Nạp Token Discord vào tài khoản">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                      <span>Thêm tài khoản</span>
+                    </a>
+                    <a href="{{ url_for('auth_bp.logout') }}" class="gad-pill-btn">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                      <span>Đăng xuất</span>
+                    </a>
+                  </div>
+                </div>
+
+                <div class="gad-footer">
+                  <a href="https://policies.google.com/privacy" target="_blank">Chính sách quyền riêng tư</a>
+                  <span class="gad-dot">•</span>
+                  <a href="https://policies.google.com/terms" target="_blank">Điều khoản dịch vụ</a>
+                </div>
+              </div>
+              {% else %}
+              <!-- DISCORD PROFILE POPOUT CARD 1:1 REALISTIC (ẢNH 3 & ẢNH 4) -->
+              <div class="discord-card-1to1-wrap live-profile-popout" id="discord-main-card">
+                <!-- Hiệu ứng Nitro Profile Effect APNG động nguyên bản 100% từ Discord Shop CDN -->
+                {% if profile_effect_data and profile_effect_data.loop %}
+                <div class="discord-nitro-pfx-container" title="{{ profile_effect_data.title }}">
+                  <img src="{{ profile_effect_data.loop }}" class="discord-nitro-pfx-anim" alt="{{ profile_effect_data.title }}">
+                </div>
+                {% else %}
                 <div class="discord-profile-effect-layer" id="dc1-pfx-layer">
                   <div class="pfx-particle p1"></div>
                   <div class="pfx-particle p2"></div>
                   <div class="pfx-particle p3"></div>
                   <div class="pfx-particle p4"></div>
-                  <div class="pfx-sparkle-petal" style="top:10%; left:12%;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#ec4899"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm1 14.5c0 .8-.7 1.5-1.5 1.5s-1.5-.7-1.5-1.5.7-1.5 1.5-1.5 1.5.7 1.5 1.5zm0-4c0 .6-.4 1-1 1s-1-.4-1-1V7c0-.6.4-1 1-1s1 .4 1 1v5.5z"></path></svg>
-                  </div>
-                  <div class="pfx-sparkle-petal" style="top:32%; right:14%; animation-delay: 2.2s;">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="#a855f7"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                  </div>
-                  <div class="pfx-sparkle-petal" style="bottom:22%; left:16%; animation-delay: 4.5s;">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="#38bdf8"><circle cx="12" cy="12" r="6"></circle></svg>
-                  </div>
                 </div>
+                {% endif %}
 
-                <!-- Banner Profile -->
-                <div class="dc1-banner nitro-animated-banner" id="hero-profile-banner" {% if banner %}style="background-image: url('{{ banner }}');"{% endif %}></div>
+                <!-- Banner Profile Discord (Hỗ trợ GIF Nitro & Màu Hex) -->
+                <div class="dc1-banner nitro-animated-banner" id="hero-profile-banner" 
+                     style="{% if banner and banner.startswith('http') %}background-image: url('{{ banner }}');{% elif banner and banner.startswith('#') %}background: {{ banner }};{% else %}background: #00e5ff;{% endif %}">
+                </div>
 
                 <!-- Avatar & Badges Row -->
                 <div class="dc1-avatar-row">
-                  <div class="dc1-avatar-wrap {% if auth_provider == 'google' and not has_token %}google-one-ring{% endif %}">
-                    <img src="{% if has_token and discord_avatar %}{{ discord_avatar }}{% elif avatar_url %}{{ avatar_url }}{% else %}https://cdn.discordapp.com/embed/avatars/0.png{% endif %}" 
+                  <div class="dc1-avatar-wrap">
+                    <img src="{% if discord_avatar %}{{ discord_avatar }}{% elif avatar_url %}{{ avatar_url }}{% else %}https://cdn.discordapp.com/embed/avatars/0.png{% endif %}" 
                          alt="Avatar" class="dc1-avatar-img" id="hero-avatar-img">
-                    <img src="{{ avatar_decoration if (has_token and avatar_decoration) else '' }}" 
-                         alt="" class="dc1-avatar-decor {% if not (has_token and avatar_decoration) %}d-none{% endif %}" id="hero-avatar-decoration">
-                    <div class="dc1-status-dot {% if has_token %}online{% else %}idle{% endif %}" id="hero-status-dot"></div>
+                    {% if avatar_decoration %}
+                    <img src="{{ avatar_decoration }}" 
+                         alt="Decoration" class="dc1-avatar-decor" id="hero-avatar-decoration">
+                    {% endif %}
+                    <div class="dc1-status-dot dnd" id="hero-status-dot" title="Vui lòng không làm phiền"></div>
                   </div>
 
-                  <!-- Hàng Badges Thông Minh: Không bao giờ vỡ ảnh hoặc hiện ... -->
+                  <!-- Status Bubble kiểu Discord (nắng biển?) -->
+                  <div class="dc1-status-bubble" id="hero-status-bubble">
+                    <span>{{ custom_status or 'nắng biển?' }}</span>
+                  </div>
+
+                  <!-- Hàng Badges Thật 100% Từ Discord CDN -->
                   <div class="dc1-badges-bar" id="hero-badges-row">
-                    {% if auth_provider == 'google' and not has_token %}
-                    <span class="google-badge-pill">
-                      <svg width="12" height="12" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
-                      Google Verified
-                    </span>
-                    <span class="google-badge-pill ultra">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                      Google One Ultra
-                    </span>
-                    {% elif has_token %}
-                    <span class="google-badge-pill" style="background:rgba(88,101,242,0.18); border-color:rgba(88,101,242,0.4); color:#818cf8;">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
-                      Active Discord
-                    </span>
-                    <span class="google-badge-pill" style="background:rgba(6,182,212,0.18); border-color:rgba(6,182,212,0.4); color:#38bdf8;">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                      Verified Developer
-                    </span>
+                    {% if badges and badges|length > 0 %}
+                      {% for b in badges %}
+                      <img src="{{ b.icon }}" alt="{{ b.name }}" title="{{ b.name }}" class="dc1-badge-icon">
+                      {% endfor %}
                     {% else %}
-                    <span class="google-badge-pill" style="background:rgba(99,102,241,0.18); border-color:rgba(99,102,241,0.4); color:#a5b4fc;">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                      DIPRE VIP
-                    </span>
+                      <img src="https://cdn.discordapp.com/badge-icons/3aa41de486fa12454c3761e8e223442e.png?size=64" alt="HypeSquad Balance" title="HypeSquad Balance" class="dc1-badge-icon">
+                      <img src="https://cdn.discordapp.com/badge-icons/6bdc42827b30f498e4a0713f64455d80.png?size=64" alt="Active Developer" title="Active Developer" class="dc1-badge-icon">
+                      <img src="https://cdn.discordapp.com/badge-icons/7d9ae358c8c5e118768335dbe68b4fb8.png?size=64" alt="Completed a Quest" title="Completed a Quest" class="dc1-badge-icon">
                     {% endif %}
                   </div>
                 </div>
 
-                <!-- Thông Tin User Profile -->
+                <!-- Nội dung Thông tin Người Dùng -->
                 <div class="dc1-content">
-                  <div class="dc1-global-name" id="hero-profile-name">{{ discord_username if (has_token and discord_username) else username }}</div>
+                  <div class="dc1-global-name" id="hero-profile-name">{{ discord_username if discord_username else (username.split('@')[0] if '@' in username else username) }}</div>
+                  
                   <div class="dc1-username-row">
-                    <span class="dc1-username" id="hero-profile-tag">@{{ (discord_username if (has_token and discord_username) else username).lower().replace(' ', '') }}</span>
-                    <span style="font-size:0.72rem; padding: 1px 6px; border-radius:4px; background:rgba(255,255,255,0.06); color:#cbd5e1;">Active Member</span>
-                  </div>
-
-                  <!-- Custom Status Box -->
-                  <div class="dc1-status-box">
-                    <span id="hero-status-emoji">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-                    </span>
-                    <span id="hero-custom-status-text">
-                      {% if auth_provider == 'google' and not has_token %}
-                      Tài khoản Google liên kết • Sẵn sàng nạp Token
-                      {% elif has_token %}
-                      Đang chạy DIPRE Studio Active
-                      {% else %}
-                      DIPRE Studio Luxury • Sẵn sàng nạp Token
-                      {% endif %}
+                    <span class="dc1-username" id="hero-profile-tag">{{ (discord_username if discord_username else username).lower().replace(' ', '') }}</span>
+                    <span class="dc1-tag-code">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm1 14.5c0 .8-.7 1.5-1.5 1.5s-1.5-.7-1.5-1.5.7-1.5 1.5-1.5 1.5.7 1.5 1.5zm0-4c0 .6-.4 1-1 1s-1-.4-1-1V7c0-.6.4-1 1-1s1 .4 1 1v5.5z"></path></svg>
+                      CODE
                     </span>
                   </div>
 
-                  <!-- Bio / About Me Box -->
-                  <div class="dc1-bio-box">
-                    <div class="dc1-bio-title">Giới Thiệu Bản Thân</div>
-                    <div id="hero-profile-bio">
-                      {% if auth_provider == 'google' and not has_token %}
-                      Tài khoản Google đã kết nối an toàn với DIPRE Studio. Nạp token Discord trong Quản Lý Token để điều khiển RPC &amp; Voice 24/7.
-                      {% elif has_token %}
-                      DIPRE Studio User • Ultra Rich Presence &amp; Voice AFK Active.
-                      {% else %}
-                      Chào mừng đến với DIPRE Studio Luxury Edition. Nạp token trong mục Account để bắt đầu.
-                      {% endif %}
+                  <!-- Bio / Giới thiệu bản thân Discord 1:1 -->
+                  <div style="font-size:0.84rem; color:#dbdee1; margin-top: 8px; font-weight:500;" id="hero-profile-bio">
+                    {{ bio or 'ai nhìn là lgbt' }}
+                  </div>
+
+                  <!-- Roles Pills như ảnh 4 -->
+                  <div class="dc1-roles-row">
+                    <div class="dc1-role-pill">
+                      <span class="dc1-role-dot red"></span>
+                      <span>Owner</span>
                     </div>
+                    <div class="dc1-role-pill">
+                      <span class="dc1-role-dot gray"></span>
+                      <span>Member 🍼</span>
+                      <span style="opacity:0.6; font-size:0.7rem; cursor:pointer;">✕</span>
+                    </div>
+                    <div class="dc1-role-pill add" title="Thêm role">+</div>
+                  </div>
+
+                  <!-- Menu Thao Tác Chuẩn Discord (Ảnh 3) -->
+                  <div class="dc1-menu-section">
+                    <a href="{{ url_for('account_bp.account_settings') }}" class="dc1-menu-btn primary-btn">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                      <span>Sửa Hồ Sơ</span>
+                      <span class="dc1-badge-new">MỚI</span>
+                    </a>
+
+                    <div class="dc1-menu-btn" style="cursor:default;">
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <span class="dc1-status-dot dnd" style="position:static; width:12px; height:12px; border:none;"></span>
+                        <span>Vui Lòng Không Làm Phiền</span>
+                      </div>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </div>
+
+                    <a href="{{ url_for('account_bp.account_settings') }}" class="dc1-menu-btn">
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        <span>Đổi Tài Khoản</span>
+                      </div>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </a>
+
+                    <button type="button" class="dc1-menu-btn" onclick="navigator.clipboard.writeText('{{ discord_id or '1412818296033775707' }}'); alert('Đã sao chép ID Discord: ' + '{{ discord_id or '1412818296033775707' }}');">
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="8" x2="17" y2="8"></line><line x1="7" y1="12" x2="17" y2="12"></line><line x1="7" y1="16" x2="12" y2="16"></line></svg>
+                        <span>Sao chép ID Người Dùng</span>
+                      </div>
+                    </button>
                   </div>
                 </div>
 
               </div>
+              {% endif %}
             </div>
 
           </div>

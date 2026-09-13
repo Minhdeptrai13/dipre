@@ -66,7 +66,7 @@ def init_db():
         # Tự động migrate các cột cho bảng users
         cursor.execute("PRAGMA table_info(users)")
         cols = [r['name'] for r in cursor.fetchall()]
-        for col_name in ['discord_token', 'discord_id', 'discord_username', 'discord_avatar', 'config', 'auth_provider', 'avatar_url', 'google_avatar', 'profile_effect']:
+        for col_name in ['discord_token', 'discord_id', 'discord_username', 'discord_avatar', 'config', 'auth_provider', 'avatar_url', 'google_avatar', 'profile_effect', 'avatar_decoration', 'banner', 'badges', 'custom_status', 'bio']:
             if col_name not in cols:
                 try:
                     cursor.execute(f"ALTER TABLE users ADD COLUMN {col_name} TEXT DEFAULT ''")
