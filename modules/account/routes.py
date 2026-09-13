@@ -89,6 +89,7 @@ def api_account_info():
         'discord_avatar': u['discord_avatar'] or (active_acc['discord_avatar'] if active_acc else ''),
         'avatar_decoration': (active_acc.get('avatar_decoration') if active_acc else '') or '',
         'banner': (active_acc.get('banner') if active_acc else '') or '',
+        'profile_effect': (active_acc.get('profile_effect') if active_acc else '') or '',
         'masked_token': masked,
         'accounts': accounts
     })
@@ -108,8 +109,8 @@ def api_account_bind_token():
         user_id = session['user_id']
         with get_db() as conn:
             cursor = conn.cursor()
-            cursor.execute('UPDATE users SET discord_token = ?, discord_id = ?, discord_username = ?, discord_avatar = ? WHERE id = ?',
-                           (token, profile['id'], profile['username'], profile['avatar'], user_id))
+            cursor.execute('UPDATE users SET discord_token = ?, discord_id = ?, discord_username = ?, discord_avatar = ?, profile_effect = ? WHERE id = ?',
+                           (token, profile['id'], profile['username'], profile['avatar'], profile.get('profile_effect', ''), user_id))
             
             cursor.execute('UPDATE discord_accounts SET is_active = 0 WHERE user_id = ?', (user_id,))
             cursor.execute('SELECT id FROM discord_accounts WHERE user_id = ? AND token = ?', (user_id, token))
@@ -117,14 +118,14 @@ def api_account_bind_token():
             if existing:
                 cursor.execute('''
                     UPDATE discord_accounts
-                    SET discord_id = ?, discord_username = ?, discord_avatar = ?, avatar_decoration = ?, banner = ?, is_active = 1
+                    SET discord_id = ?, discord_username = ?, discord_avatar = ?, avatar_decoration = ?, banner = ?, profile_effect = ?, is_active = 1
                     WHERE id = ?
-                ''', (profile['id'], profile['username'], profile['avatar'], profile['decoration'], profile['banner'], existing['id']))
+                ''', (profile['id'], profile['username'], profile['avatar'], profile['decoration'], profile['banner'], profile.get('profile_effect', ''), existing['id']))
             else:
                 cursor.execute('''
-                    INSERT INTO discord_accounts (user_id, token, discord_id, discord_username, discord_avatar, avatar_decoration, banner, is_active)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, 1)
-                ''', (user_id, token, profile['id'], profile['username'], profile['avatar'], profile['decoration'], profile['banner']))
+                    INSERT INTO discord_accounts (user_id, token, discord_id, discord_username, discord_avatar, avatar_decoration, banner, profile_effect, is_active)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+                ''', (user_id, token, profile['id'], profile['username'], profile['avatar'], profile['decoration'], profile['banner'], profile.get('profile_effect', '')))
             conn.commit()
 
         session['discord_token'] = token
@@ -140,7 +141,10 @@ def api_account_bind_token():
             'discord_username': profile['username'],
             'discord_avatar': profile['avatar'],
             'avatar_decoration': profile['decoration'],
-            'banner': profile['banner']
+            'banner': profile['banner'],
+            'profile_effect': profile.get('profile_effect', ''),
+            'badges': profile.get('badges', []),
+            'bio': profile.get('bio', '')
         })
     except Exception as e:
         return jsonify({'success': False, 'message': f'Lỗi kết nối xác minh Discord: {str(e)}'}), 500
@@ -282,6 +286,15 @@ def api_discord_inbox():
             return jsonify({'success': False, 'message': f'Lỗi Discord API ({res.status_code})'}), 400
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
+
+@account_bp.route('/api/dashboard/stats', methods=['GET'])
+@login_required
+def api_dashboard_stats():
+    """Lấy dữ liệu thống kê tổng hợp phục vụ hiển thị Dashboard Command Center"""
+    user_id = session.get('user_id')
+    from core.database import get_dashboard_stats
+    stats = get_dashboard_stats(user_id)
+    return jsonify({'success': True, 'stats': stats})
 
 # Đăng ký tiểu mục Multi-Account vào Mục Lớn Account trong Core Registry
 registry.register_module(SubModule(

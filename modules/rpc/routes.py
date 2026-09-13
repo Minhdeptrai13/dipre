@@ -6,7 +6,7 @@ import requests
 from flask import Blueprint, request, jsonify, session, redirect
 
 from core.config import UPLOAD_FOLDER, UPLOAD_PATH_MAP
-from core.database import get_db
+from core.database import get_db, track_feature_use
 from core.logger import log_event, LOG_BUFFER
 from core.registry import registry, SubModule
 from modules.auth.helpers import login_required
@@ -74,6 +74,9 @@ def api_start():
     activity_name = data.get('activityName', '').strip()
     if not activity_name:
         data['activityName'] = 'Visual Studio Code'
+    user_id = session.get('user_id')
+    if user_id:
+        track_feature_use(user_id, 'rpc_custom')
     rpc_worker.start(data)
     log_event(f'Khởi động Discord RPC: {data["activityName"]}', 'success')
     return jsonify({'success': True, 'message': 'Đã gửi lệnh kết nối tới Discord Gateway'})

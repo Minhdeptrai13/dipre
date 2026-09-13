@@ -87,15 +87,19 @@ let currentQuestId = null;
 // ============================================================
 
 const TAB_TITLES = {
-  'tab-home': 'DASHBOARD',
-  'tab-rpc-soundcloud': 'SOUNDCLOUD RPC',
+  'tab-home': 'DASHBOARD COMMAND CENTER',
+  'tab-rpc': 'CUSTOM RPC PRESENCE',
   'tab-rpc-youtube': 'YOUTUBE RPC',
+  'tab-rpc-soundcloud': 'SOUNDCLOUD RPC',
   'tab-rpc-spotify': 'SPOTIFY RPC',
-  'tab-rpc': 'CUSTOM RPC',
-  'tab-quest': 'AUTO QUEST',
-  'tab-lyric': 'LYRIC SYNC (NCT)',
-  'tab-inbox': 'INBOX DISCORD',
-  'tab-accounts': 'QUẢN LÝ ĐA TOKEN'
+  'tab-status-custom': 'CUSTOM STATUS DISCORD',
+  'tab-lyric': 'LYRIC STATUS (KARAOKE)',
+  'tab-voice-afk': 'TREO VOICE 24/7 (AFK)',
+  'tab-voice-coming': 'VOICE SOUNDBOARD (COMING SOON)',
+  'tab-quest': 'DISCORD AUTO QUEST',
+  'tab-script-coming': 'ACCOUNT CLEANER (COMING SOON)',
+  'tab-accounts': 'QUẢN LÝ ĐA TOKEN',
+  'tab-inbox': 'INBOX DISCORD'
 };
 
 function switchTab(tabId) {
@@ -121,10 +125,12 @@ function switchTab(tabId) {
   }
 
   // Khởi động các module tương ứng
-  if (tabId === 'tab-rpc') startLogPolling();
+  if (tabId === 'tab-home') { loadDashboardStats(); }
+  else if (tabId === 'tab-rpc') { startLogPolling(); }
   else if (tabId === 'tab-quest') { loadAvailableQuests(); startLogPolling('quest'); }
   else if (tabId === 'tab-inbox') { loadDiscordInbox(); }
   else if (tabId === 'tab-accounts') { loadMultiAccounts(); }
+  else if (tabId === 'tab-voice-afk') { checkVoiceStatus(); }
 }
 
 // ============================================================
@@ -339,13 +345,15 @@ function updateAccountUI(data) {
   const heroBanner = document.getElementById('hero-profile-banner');
   const heroBadges = document.getElementById('hero-badges-row');
   const heroStatusDot = document.getElementById('hero-status-dot');
+  const heroBio = document.getElementById('hero-profile-bio');
 
   const decorUrl = isLinked ? (data.avatar_decoration || data.decoration || '') : '';
+  const badgesList = isLinked ? (data.badges || []) : [];
 
   if (heroName) heroName.textContent = isLinked ? username : '????';
   if (heroTag) heroTag.textContent = isLinked ? `@${username.toLowerCase().replace(/\s+/g, '')}` : '@????';
   if (heroStatusDot) {
-    heroStatusDot.className = `lpp-status-dot ${isLinked ? 'online' : 'offline'}`;
+    heroStatusDot.className = `dc1-status-dot ${isLinked ? 'online' : 'offline'}`;
   }
 
   if (isLinked && avatar) {
@@ -363,9 +371,30 @@ function updateAccountUI(data) {
     if (heroAv) heroAv.classList.add('d-none');
     if (heroAvPh) {
       heroAvPh.classList.remove('d-none');
-      heroAvPh.innerHTML = `<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`;
+      heroAvPh.innerHTML = `<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`;
     }
     if (heroDecor) heroDecor.classList.add('d-none');
+  }
+
+  // Cập nhật Hàng Badges Discord Thật
+  if (heroBadges) {
+    if (badgesList && badgesList.length > 0) {
+      heroBadges.innerHTML = badgesList.map(b => `
+        <img src="${b.icon}" alt="${b.name}" title="${b.name}" class="dc1-badge-icon">
+      `).join('');
+    } else if (isLinked) {
+      heroBadges.innerHTML = `<img src="https://cdn.discordapp.com/badge-icons/6bdc42827b30f498e4a0713f64455d80.png?size=64" alt="Active Developer" title="Active Developer" class="dc1-badge-icon">`;
+    }
+  }
+
+  // Cập nhật Giới Thiệu Bản Thân (Bio)
+  if (heroBio && data.bio) {
+    heroBio.textContent = data.bio;
+  }
+
+  // Cập nhật Banner Thật
+  if (heroBanner && data?.banner) {
+    heroBanner.style.backgroundImage = `url('${data.banner}')`;
   }
 
   // Cập nhật Decoration trên tab preview RPC
@@ -379,13 +408,13 @@ function updateAccountUI(data) {
     }
   }
 
-  if (heroBanner && data?.banner) heroBanner.style.backgroundImage = `url('${data.banner}')`;
-
-  // 5. Toggle Locked Section Overlays (Form + Preview RPC & Lyric)
+  // 5. Toggle Locked Section Overlays (Form + Preview RPC & Lyric & Voice)
   const rpcOverlay = document.getElementById('rpc-locked-overlay');
   const rpcPreviewOverlay = document.getElementById('rpc-preview-locked-overlay');
   const lyricOverlay = document.getElementById('lyric-locked-overlay');
   const lyricPreviewOverlay = document.getElementById('lyric-preview-locked-overlay');
+  const statusOverlay = document.getElementById('status-locked-overlay');
+  const voiceOverlay = document.getElementById('voice-locked-overlay');
   const unbindBtn = document.getElementById('btn-account-unbind');
 
   if (isLinked) {
@@ -393,6 +422,8 @@ function updateAccountUI(data) {
     if (rpcPreviewOverlay) rpcPreviewOverlay.classList.add('d-none');
     if (lyricOverlay) lyricOverlay.classList.add('d-none');
     if (lyricPreviewOverlay) lyricPreviewOverlay.classList.add('d-none');
+    if (statusOverlay) statusOverlay.classList.add('d-none');
+    if (voiceOverlay) voiceOverlay.classList.add('d-none');
     if (unbindBtn) unbindBtn.classList.remove('d-none');
     const alertBar = document.getElementById('token-alert-bar');
     if (alertBar) alertBar.remove();
@@ -401,6 +432,8 @@ function updateAccountUI(data) {
     if (rpcPreviewOverlay) rpcPreviewOverlay.classList.remove('d-none');
     if (lyricOverlay) lyricOverlay.classList.remove('d-none');
     if (lyricPreviewOverlay) lyricPreviewOverlay.classList.remove('d-none');
+    if (statusOverlay) statusOverlay.classList.remove('d-none');
+    if (voiceOverlay) voiceOverlay.classList.remove('d-none');
     if (unbindBtn) unbindBtn.classList.add('d-none');
   }
 }
@@ -2004,28 +2037,31 @@ async function fetchAccountInfo() {
 // THEME SWITCHER (GUI SÁNG & GUI TỐI)
 // ============================================================
 
+const SVG_SUN = `<svg id="theme-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+const SVG_MOON = `<svg id="theme-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+
 function initTheme() {
   const savedTheme = localStorage.getItem('dipre_theme') || 'dark';
-  const icon = document.getElementById('theme-icon');
+  const container = document.getElementById('theme-icon-container') || document.getElementById('theme-icon');
   if (savedTheme === 'light') {
     document.body.classList.add('light-theme');
-    if (icon) icon.textContent = '☀️';
+    if (container) container.innerHTML = SVG_SUN;
   } else {
     document.body.classList.remove('light-theme');
-    if (icon) icon.textContent = '🌙';
+    if (container) container.innerHTML = SVG_MOON;
   }
 }
 
 function toggleTheme() {
   const isLight = document.body.classList.toggle('light-theme');
-  const icon = document.getElementById('theme-icon');
+  const container = document.getElementById('theme-icon-container') || document.getElementById('theme-icon');
   if (isLight) {
     localStorage.setItem('dipre_theme', 'light');
-    if (icon) icon.textContent = '☀️';
+    if (container) container.innerHTML = SVG_SUN;
     showToast('Đã chuyển sang giao diện Sáng (Frost Elegance)', 'info', 2000);
   } else {
     localStorage.setItem('dipre_theme', 'dark');
-    if (icon) icon.textContent = '🌙';
+    if (container) container.innerHTML = SVG_MOON;
     showToast('Đã chuyển sang giao diện Tối (Cyber Luxury)', 'info', 2000);
   }
 }
@@ -2188,6 +2224,271 @@ async function syncAllStatusNow() {
   }
 }
 
+// ============================================================
+// DASHBOARD STATS & COMMAND CENTER ENGINE
+// ============================================================
+
+async function loadDashboardStats() {
+  try {
+    const res = await fetch('/api/dashboard/stats');
+    const data = await res.json();
+    if (data.success && data.stats) {
+      const s = data.stats;
+      const totalTokEl = document.getElementById('stat-total-tokens');
+      const activeUserEl = document.getElementById('stat-active-username');
+      const mostUsedEl = document.getElementById('stat-most-used');
+      const totalRunsEl = document.getElementById('stat-total-runs');
+
+      if (totalTokEl) totalTokEl.innerHTML = `${s.total_tokens || 0} <span class="msc-val-sub">Tokens</span>`;
+      if (activeUserEl && s.active_account) {
+        activeUserEl.textContent = s.active_account.discord_username || 'Active User';
+      }
+      if (mostUsedEl) mostUsedEl.textContent = s.most_used_feature || 'Custom RPC';
+      if (totalRunsEl) totalRunsEl.textContent = `${s.total_runs || 0} lượt chạy`;
+
+      // Update Breakdown Progress Bars
+      if (s.top_features && s.top_features.length > 0) {
+        const total = s.total_runs || 1;
+        s.top_features.forEach(f => {
+          const pct = Math.min(100, Math.round((f.count / total) * 100));
+          if (f.name.includes('RPC') || f.name.includes('rich_presence')) {
+            const bar = document.getElementById('bar-rpc-fill');
+            const cnt = document.getElementById('bar-rpc-count');
+            if (bar) bar.style.width = `${pct}%`;
+            if (cnt) cnt.textContent = `${f.count} lượt`;
+          } else if (f.name.includes('Status') || f.name.includes('Lyric')) {
+            const bar = document.getElementById('bar-status-fill');
+            const cnt = document.getElementById('bar-status-count');
+            if (bar) bar.style.width = `${pct}%`;
+            if (cnt) cnt.textContent = `${f.count} lượt`;
+          } else if (f.name.includes('Voice')) {
+            const bar = document.getElementById('bar-voice-fill');
+            const cnt = document.getElementById('bar-voice-count');
+            if (bar) bar.style.width = `${pct}%`;
+            if (cnt) cnt.textContent = `${f.count} lượt`;
+          } else if (f.name.includes('Quest')) {
+            const bar = document.getElementById('bar-script-fill');
+            const cnt = document.getElementById('bar-script-count');
+            if (bar) bar.style.width = `${pct}%`;
+            if (cnt) cnt.textContent = `${f.count} lượt`;
+          }
+        });
+      }
+    }
+  } catch (e) {}
+}
+
+// ============================================================
+// CUSTOM STATUS & ROTATOR ENGINE
+// ============================================================
+
+function updateCustomStatusPreview() {
+  const text = document.getElementById('input-custom-status-text')?.value.trim() || 'Đang trải nghiệm DIPRE Studio';
+  const emoji = document.getElementById('select-custom-status-emoji')?.value || '💻';
+  const pvBody = document.getElementById('custom-status-pv-body');
+  const pvEmoji = document.getElementById('custom-status-pv-emoji');
+
+  if (pvBody) pvBody.textContent = text;
+  if (pvEmoji) pvEmoji.textContent = emoji;
+}
+
+async function handleApplyCustomStatus() {
+  const text = document.getElementById('input-custom-status-text')?.value.trim();
+  const emoji = document.getElementById('select-custom-status-emoji')?.value || '💻';
+  if (!text) {
+    showToast('Vui lòng nhập nội dung trạng thái!', 'warn');
+    return;
+  }
+  showToast('Đang cập nhật Custom Status...', 'info', 1500);
+  try {
+    const res = await fetch('/api/status/custom', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, emoji })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('Đã cập nhật trạng thái Discord thành công!', 'success');
+      const heroStatus = document.getElementById('hero-custom-status-text');
+      if (heroStatus) heroStatus.textContent = `${emoji} ${text}`;
+      loadDashboardStats();
+    } else {
+      showToast(data.message || 'Lỗi cập nhật trạng thái', 'error');
+    }
+  } catch (e) {
+    showToast('Lỗi kết nối máy chủ', 'error');
+  }
+}
+
+async function handleClearCustomStatus() {
+  showToast('Đang xóa trạng thái...', 'info', 1500);
+  try {
+    const res = await fetch('/api/lyrics/clear', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      showToast('Đã xóa Custom Status Discord!', 'info');
+      const heroStatus = document.getElementById('hero-custom-status-text');
+      if (heroStatus) heroStatus.textContent = 'DIPRE Studio Active';
+      const input = document.getElementById('input-custom-status-text');
+      if (input) input.value = '';
+      updateCustomStatusPreview();
+    } else {
+      showToast(data.message || 'Lỗi xóa status', 'error');
+    }
+  } catch (e) {
+    showToast('Lỗi kết nối', 'error');
+  }
+}
+
+let statusRotatorTimer = null;
+let statusRotatorIndex = 0;
+
+function toggleStatusRotator() {
+  const check = document.getElementById('check-status-rotator-toggle');
+  if (statusRotatorTimer) {
+    clearInterval(statusRotatorTimer);
+    statusRotatorTimer = null;
+  }
+  if (check && check.checked) {
+    const linesStr = document.getElementById('status-rotator-lines')?.value.trim() || '';
+    const lines = linesStr.split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length < 2) {
+      showToast('Vui lòng nhập ít nhất 2 câu status để xoay vòng!', 'warn');
+      check.checked = false;
+      return;
+    }
+    const sec = Math.max(5, parseInt(document.getElementById('status-rotator-interval')?.value || '15'));
+    showToast(`Đã bật Bộ Xoay Vòng Status (đổi mỗi ${sec}s)`, 'success');
+
+    const rotateNext = async () => {
+      const curLine = lines[statusRotatorIndex % lines.length];
+      statusRotatorIndex++;
+      const emoji = document.getElementById('select-custom-status-emoji')?.value || '✨';
+      try {
+        await fetch('/api/status/custom', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: curLine, emoji })
+        });
+        const heroStatus = document.getElementById('hero-custom-status-text');
+        if (heroStatus) heroStatus.textContent = `${emoji} ${curLine}`;
+      } catch (e) {}
+    };
+
+    rotateNext();
+    statusRotatorTimer = setInterval(rotateNext, sec * 1000);
+  } else {
+    showToast('Đã tắt Bộ Xoay Vòng Status', 'info');
+  }
+}
+
+// ============================================================
+// VOICE 24/7 (AFK VOICE) ENGINE
+// ============================================================
+
+let voiceTimerInterval = null;
+let voiceElapsedSeconds = 0;
+
+async function checkVoiceStatus() {
+  try {
+    const res = await fetch('/api/voice/status');
+    const data = await res.json();
+    if (data.success) {
+      const isRunning = data.is_running;
+      const btnStart = document.getElementById('btn-voice-start');
+      const btnStop = document.getElementById('btn-voice-stop');
+      const dot = document.getElementById('voice-vcs-dot');
+      const title = document.getElementById('voice-vcs-title');
+      const sub = document.getElementById('voice-vcs-sub');
+      const badge = document.getElementById('voice-live-badge');
+      const pvCh = document.getElementById('voice-pv-channel-name');
+
+      if (isRunning) {
+        if (btnStart) btnStart.disabled = true;
+        if (btnStop) btnStop.disabled = false;
+        if (dot) dot.className = 'vcs-dot connected';
+        if (title) title.textContent = 'Đang treo Voice 24/7: Đã kết nối';
+        if (sub) sub.textContent = `Server: ${data.guild_id} | Channel: ${data.channel_id}`;
+        if (badge) { badge.textContent = 'CONNECTED'; badge.className = 'preview-live-badge active'; }
+        if (pvCh) pvCh.textContent = `Phòng Voice: ${data.channel_id}`;
+
+        voiceElapsedSeconds = data.elapsed_seconds || 0;
+        if (!voiceTimerInterval) {
+          voiceTimerInterval = setInterval(() => {
+            voiceElapsedSeconds++;
+            const h = String(Math.floor(voiceElapsedSeconds / 3600)).padStart(2, '0');
+            const m = String(Math.floor((voiceElapsedSeconds % 3600) / 60)).padStart(2, '0');
+            const s = String(voiceElapsedSeconds % 60).padStart(2, '0');
+            const timerEl = document.getElementById('voice-pv-timer');
+            if (timerEl) timerEl.textContent = `Thời gian treo: ${h}:${m}:${s}`;
+          }, 1000);
+        }
+      } else {
+        if (btnStart) btnStart.disabled = false;
+        if (btnStop) btnStop.disabled = true;
+        if (dot) dot.className = 'vcs-dot';
+        if (title) title.textContent = 'Chưa kết nối Voice';
+        if (sub) sub.textContent = 'Nhập Guild ID và Channel ID để bắt đầu treo voice';
+        if (badge) { badge.textContent = 'STANDBY'; badge.className = 'preview-live-badge'; }
+        if (pvCh) pvCh.textContent = 'Phòng Voice Chưa Kết Nối';
+        if (voiceTimerInterval) {
+          clearInterval(voiceTimerInterval);
+          voiceTimerInterval = null;
+        }
+        const timerEl = document.getElementById('voice-pv-timer');
+        if (timerEl) timerEl.textContent = 'Thời gian treo: 00:00:00';
+      }
+    }
+  } catch (e) {}
+}
+
+async function handleStartVoiceAFK() {
+  const guild_id = document.getElementById('input-voice-guild-id')?.value.trim();
+  const channel_id = document.getElementById('input-voice-channel-id')?.value.trim();
+  const self_mute = document.getElementById('check-voice-mute')?.checked ?? true;
+  const self_deaf = document.getElementById('check-voice-deaf')?.checked ?? true;
+
+  if (!guild_id || !channel_id) {
+    showToast('Vui lòng nhập đầy đủ Guild ID và Channel ID!', 'warn');
+    return;
+  }
+
+  showToast('Đang kết nối vào phòng voice Discord...', 'info', 2000);
+  try {
+    const res = await fetch('/api/voice/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ guild_id, channel_id, self_mute, self_deaf })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(data.message, 'success');
+      checkVoiceStatus();
+      loadDashboardStats();
+    } else {
+      showToast(data.message || 'Lỗi kết nối Voice', 'error');
+    }
+  } catch (e) {
+    showToast('Lỗi kết nối máy chủ', 'error');
+  }
+}
+
+async function handleStopVoiceAFK() {
+  showToast('Đang ngắt kết nối Treo Voice...', 'info', 1500);
+  try {
+    const res = await fetch('/api/voice/stop', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      showToast(data.message, 'info');
+      checkVoiceStatus();
+    } else {
+      showToast(data.message || 'Lỗi ngắt kết nối', 'error');
+    }
+  } catch (e) {
+    showToast('Lỗi kết nối máy chủ', 'error');
+  }
+}
+
 function init() {
   initTheme();
   initSystemClock();
@@ -2216,10 +2517,13 @@ function init() {
   loadSavedConfig();
   fetchAccountInfo();
   loadMultiAccounts();
+  loadDashboardStats();
+  checkVoiceStatus();
 
   // Chạy background polling định kỳ 3.5s
   setInterval(syncAllStatusNow, 3500);
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
 

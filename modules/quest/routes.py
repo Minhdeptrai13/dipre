@@ -2,7 +2,7 @@ import time
 import requests
 from flask import Blueprint, request, jsonify, session
 
-from core.database import get_db
+from core.database import get_db, track_feature_use
 from core.logger import log_event, quest_log, QUEST_LOG_BUFFER, QUEST_LOG_LOCK
 from core.registry import registry, SubModule
 from modules.auth.helpers import login_required
@@ -92,6 +92,7 @@ def api_quests_start():
 
     data = request.get_json() or {}
     runner = get_user_quest_runner(user_id)
+    track_feature_use(user_id, 'auto_quest')
 
     # Chế độ tự động hoàn toàn (Auto Completer)
     if data.get('auto', False) or data.get('quest_id') == 'auto':
@@ -164,10 +165,10 @@ def api_hypesquad_claim():
     except Exception as e:
         return jsonify({'success': False, 'message': f'Lỗi kết nối: {str(e)}'}), 500
 
-# Đăng ký tiểu mục Auto Quest vào Mục Lớn Quest trong Core Registry
+# Đăng ký tiểu mục Auto Quest vào Mục Lớn Script trong Core Registry
 registry.register_module(SubModule(
     key='auto_quest',
-    category_key='quest',
+    category_key='script',
     title='Discord Auto Quest Runner & HypeSquad claimer',
     blueprint=quest_bp,
     cleanup_handler=stop_all_quest_runners

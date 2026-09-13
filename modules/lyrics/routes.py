@@ -5,8 +5,8 @@ import requests
 from flask import Blueprint, request, jsonify, session
 
 from core.config import UPLOAD_FOLDER
-from core.database import get_db
-from core.logger import quest_log
+from core.database import get_db, track_feature_use
+from core.logger import log_event, quest_log
 from core.registry import registry, SubModule
 from modules.auth.helpers import login_required
 from modules.lyrics.worker import lyric_worker
@@ -172,14 +172,40 @@ def api_lyrics_sync():
         ok, title, lyrics = lyric_worker.fetch_nct_lyrics(song_name)
         if not ok:
             return jsonify({'success': False, 'message': title}), 400
+        track_feature_use(user_id, 'status_lyric')
         lyric_worker.start_lyric_stream(user_id, token, lyrics, emoji=emoji)
         return jsonify({'success': True, 'message': f'Đang phát: {title} ({len(lyrics)} câu)'})
 
     text = (data.get('text') or data.get('status') or '').strip()
     if text:
+        track_feature_use(user_id, 'status_custom')
         ok, msg = lyric_worker.update_lyric(token, text, emoji=emoji)
         return jsonify({'success': ok, 'message': msg})
     return jsonify({'success': False, 'message': 'Nội dung câu hát trống'}), 400
+
+@lyrics_bp.route('/api/status/custom', methods=['POST'])
+@login_required
+def api_status_custom():
+    """Đổi Custom Status trực tiếp của Discord token"""
+    user_id = session['user_id']
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
+        row = cursor.fetchone()
+    token = (row['discord_token'] if row else '') or session.get('discord_token', '')
+    if not token:
+        return jsonify({'success': False, 'message': 'Tài khoản chưa liên kết Discord Token!'}), 400
+
+    data = request.get_json() or {}
+    text = data.get('text', '').strip()
+    emoji = data.get('emoji', '').strip()
+
+    ok, msg = lyric_worker.update_lyric(token, text, emoji=emoji)
+    if ok:
+        track_feature_use(user_id, 'status_custom')
+        log_event(f'Đã đổi Custom Status cho tài khoản: "{text}"', 'success')
+        return jsonify({'success': True, 'message': 'Đã cập nhật trạng thái tùy chỉnh thành công!'})
+    return jsonify({'success': False, 'message': msg}), 400
 
 @lyrics_bp.route('/api/lyrics/clear', methods=['POST'])
 @login_required
@@ -247,10 +273,10 @@ def api_lyrics_transcribe():
         except Exception:
             pass
 
-# Đăng ký tiểu mục Lyric Sync vào Mục Lớn Lyrics trong Core Registry
+# Đăng ký tiểu mục Lyric Sync vào Mục Lớn Status trong Core Registry
 registry.register_module(SubModule(
     key='lyric_sync',
-    category_key='lyrics',
+    category_key='status',
     title='Discord Lyric Sync & Speech-To-Text Engine',
     blueprint=lyrics_bp,
     worker=lyric_worker,

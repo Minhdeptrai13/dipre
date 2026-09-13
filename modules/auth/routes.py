@@ -80,6 +80,8 @@ def index():
         cursor = conn.cursor()
         cursor.execute('SELECT username, discord_token, discord_username, discord_avatar, avatar_url, auth_provider FROM users WHERE id = ?', (user_id,))
         u = cursor.fetchone()
+        cursor.execute('SELECT avatar_decoration, banner, profile_effect FROM discord_accounts WHERE user_id = ? AND is_active = 1 LIMIT 1', (user_id,))
+        acc = cursor.fetchone()
     
     username = u['username'] if u else session.get('username', 'User')
     has_token = bool(u and u['discord_token'] and len(u['discord_token']) > 20)
@@ -91,13 +93,20 @@ def index():
     raw_avatar = (u['avatar_url'] or u['discord_avatar'] or '').strip() if u else ''
     avatar_info = get_avatar_info(username, raw_avatar, auth_prov)
     
+    avatar_decoration = acc['avatar_decoration'] if acc and acc['avatar_decoration'] else None
+    banner = acc['banner'] if acc and acc['banner'] else None
+    profile_effect = acc['profile_effect'] if acc and acc['profile_effect'] else None
+
     return render_template('index.html',
                            username=username,
                            has_token=has_token,
                            discord_username=d_name,
                            discord_avatar=d_avatar,
                            auth_provider=auth_prov,
-                           avatar_info=avatar_info)
+                           avatar_info=avatar_info,
+                           avatar_decoration=avatar_decoration,
+                           banner=banner,
+                           profile_effect=profile_effect)
 
 @auth_bp.route('/api/live/status')
 @login_required

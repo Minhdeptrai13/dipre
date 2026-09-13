@@ -34,59 +34,96 @@
       </div>
 
       <nav class="sidebar-nav">
-        <!-- MỤC LỚN: DASHBOARD -->
+        <!-- MỤC CHÍNH: DASHBOARD -->
         <div class="sidebar-group">
-          <div class="sidebar-group-title">DASHBOARD</div>
+          <div class="sidebar-group-title">COMMAND CENTER</div>
           <div class="sidebar-group-items">
             <button type="button" class="sidebar-nav-item active" data-tab="tab-home" onclick="switchTab('tab-home')">
-              <span class="sni-dot"></span>
+              <svg class="sni-svg" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"></rect><rect x="14" y="3" width="7" height="5" rx="1.5"></rect><rect x="14" y="12" width="7" height="9" rx="1.5"></rect><rect x="3" y="16" width="7" height="5" rx="1.5"></rect></svg>
               <span>Dashboard</span>
             </button>
           </div>
         </div>
 
-        <!-- MỤC LỚN: DISCORD RPC -->
+        <!-- MỤC 1: DISCORD RPC -->
         <div class="sidebar-group">
-          <div class="sidebar-group-title">DISCORD RPC</div>
+          <div class="sidebar-group-title">RPC PRESENCE</div>
           <div class="sidebar-group-items">
-            <button type="button" class="sidebar-nav-item" data-tab="tab-rpc-soundcloud" onclick="switchTab('tab-rpc-soundcloud')">
-              <span class="sni-dot"></span>
-              <span>SoundCloud RPC</span>
+            <button type="button" class="sidebar-nav-item" data-tab="tab-rpc" onclick="switchTab('tab-rpc')">
+              <svg class="sni-svg" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              <span>Custom RPC</span>
             </button>
             <button type="button" class="sidebar-nav-item" data-tab="tab-rpc-youtube" onclick="switchTab('tab-rpc-youtube')">
-              <span class="sni-dot"></span>
+              <svg class="sni-svg" viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>
               <span>YouTube RPC</span>
             </button>
-            <button type="button" class="sidebar-nav-item" data-tab="tab-rpc-spotify" onclick="switchTab('tab-rpc-spotify')">
-              <span class="sni-dot"></span>
-              <span>Spotify RPC</span>
+            <button type="button" class="sidebar-nav-item" data-tab="tab-rpc-soundcloud" onclick="switchTab('tab-rpc-soundcloud')">
+              <svg class="sni-svg" viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>
+              <span>SoundCloud RPC</span>
             </button>
-            <button type="button" class="sidebar-nav-item" data-tab="tab-rpc" onclick="switchTab('tab-rpc')">
-              <span class="sni-dot"></span>
-              <span>Custom RPC</span>
+            <button type="button" class="sidebar-nav-item" data-tab="tab-rpc-spotify" onclick="switchTab('tab-rpc-spotify')">
+              <svg class="sni-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M8 11.5c2.5-1 5.5-1 8 0"></path><path d="M9 14.5c2-.7 4-.7 6 0"></path></svg>
+              <span>Spotify RPC</span>
             </button>
           </div>
         </div>
 
-        <!-- MỤC LỚN: TIỆN ÍCH -->
+        <!-- MỤC 2: STATUS & LYRICS -->
         <div class="sidebar-group">
-          <div class="sidebar-group-title">TIỆN ÍCH</div>
+          <div class="sidebar-group-title">STATUS &amp; LYRIC</div>
           <div class="sidebar-group-items">
-            <button type="button" class="sidebar-nav-item" data-tab="tab-quest" onclick="switchTab('tab-quest')">
-              <span class="sni-dot"></span>
-              <span>Auto Quest</span>
+            <button type="button" class="sidebar-nav-item" data-tab="tab-status-custom" onclick="switchTab('tab-status-custom')">
+              <svg class="sni-svg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              <span>Custom Status</span>
             </button>
             <button type="button" class="sidebar-nav-item" data-tab="tab-lyric" onclick="switchTab('tab-lyric')">
-              <span class="sni-dot"></span>
-              <span>Lyric Sync (NCT)</span>
+              <svg class="sni-svg" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+              <span>Lyric Status (Karaoke)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- MỤC 3: VOICE AFK & AUDIO -->
+        <div class="sidebar-group">
+          <div class="sidebar-group-title">VOICE &amp; AUDIO</div>
+          <div class="sidebar-group-items">
+            <button type="button" class="sidebar-nav-item" data-tab="tab-voice-afk" onclick="switchTab('tab-voice-afk')">
+              <svg class="sni-svg" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+              <span>Treo Voice 24/7 (AFK)</span>
+            </button>
+            <button type="button" class="sidebar-nav-item" data-tab="tab-voice-coming" onclick="switchTab('tab-voice-coming')">
+              <svg class="sni-svg" viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>
+              <span>Voice Soundboard</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- MỤC 4: AUTOMATION SCRIPTS -->
+        <div class="sidebar-group">
+          <div class="sidebar-group-title">AUTOMATION SCRIPT</div>
+          <div class="sidebar-group-items">
+            <button type="button" class="sidebar-nav-item" data-tab="tab-quest" onclick="switchTab('tab-quest')">
+              <svg class="sni-svg" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+              <span>Auto Quest</span>
+            </button>
+            <button type="button" class="sidebar-nav-item" data-tab="tab-script-coming" onclick="switchTab('tab-script-coming')">
+              <svg class="sni-svg" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+              <span>Account Cleaner</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- MỤC 5: ACCOUNT & TOKENS -->
+        <div class="sidebar-group">
+          <div class="sidebar-group-title">ACCOUNT &amp; TOKENS</div>
+          <div class="sidebar-group-items">
+            <button type="button" class="sidebar-nav-item" data-tab="tab-accounts" onclick="switchTab('tab-accounts')">
+              <svg class="sni-svg" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <span>Quản Lý Đa Token</span>
             </button>
             <button type="button" class="sidebar-nav-item" data-tab="tab-inbox" onclick="switchTab('tab-inbox')">
-              <span class="sni-dot"></span>
+              <svg class="sni-svg" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
               <span>Inbox Discord</span>
-            </button>
-            <button type="button" class="sidebar-nav-item" data-tab="tab-accounts" onclick="switchTab('tab-accounts')">
-              <span class="sni-dot"></span>
-              <span>Quản Lý Đa Token</span>
             </button>
           </div>
         </div>
@@ -156,15 +193,17 @@
         </div>
         <div class="topbar-right">
           <div class="topbar-pill system-clock-pill">
-            <span class="clock-icon">⏱️</span>
+            <svg class="clock-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
             <span id="system-clock">--:--:--</span>
           </div>
           <div class="topbar-pill network-ping-pill">
             <span class="ping-dot"></span>
-            <span class="ping-text">Realtime: <strong id="ping-status">Online</strong></span>
+            <span class="ping-text">Gateway: <strong id="ping-status">Online</strong></span>
           </div>
           <button type="button" class="theme-switch-btn" id="btn-theme-toggle" onclick="toggleTheme()" title="Chuyển đổi giao diện Sáng / Tối">
-            <span id="theme-icon">🌙</span>
+            <span id="theme-icon-container">
+              <svg id="theme-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            </span>
           </button>
           <button type="button" class="btn-token-quick" onclick="toggleAccountModal(true)" title="Quản lý & Thêm Token Discord">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
@@ -183,130 +222,227 @@
       </div>
       {% endif %}
 
-      <!-- TAB 1: HOME / BEYOND THE VEIL SHOWCASE -->
+      <!-- TAB 1: DASHBOARD COMMAND CENTER -->
       <section class="tab-panel active" id="tab-home">
-        <div class="beyond-hero-wrapper" style="padding-top: 2rem;">
-          <div class="beyond-hero-container">
-            
-            <!-- CỘT CHỮ BÊN TRÁI -->
-            <div class="beyond-text-col">
-              <h1 class="beyond-main-title">
-                beyond the veil,<br>
-                control returns.
-              </h1>
-              <p class="beyond-sub-title">Nâng cấp trải nghiệm sử dụng Discord lên một tầm cao mới.</p>
-              
-              <div class="beyond-cta-group">
-                <button type="button" class="beyond-btn-white" onclick="switchTab('tab-rpc')">Bắt đầu</button>
-                <button type="button" class="beyond-btn-glass" onclick="switchTab('tab-lyric')">Demo tính năng</button>
+        <div class="dashboard-center-wrapper">
+          
+          <!-- BANNER CHÀO MỪNG & COMMAND CENTER HERO -->
+          <div class="dashboard-hero-banner">
+            <div class="dhb-header">
+              <div>
+                <div class="dhb-badge">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                  <span>DIPRE Studio v4.5 Command Center</span>
+                </div>
+                <h1 class="dhb-main-title">Xin chào, {{ username }}!</h1>
+                <p class="dhb-sub">Trung tâm điều khiển và giám sát hoạt động Discord Realtime. Toàn quyền tùy biến và tối ưu hóa tài khoản.</p>
+              </div>
+              <div class="dhb-action-group">
+                <button type="button" class="rpc-btn rpc-btn-start" onclick="switchTab('tab-rpc')">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                  <span>Mở RPC Presence</span>
+                </button>
+                <button type="button" class="ssh-action" onclick="toggleAccountModal(true)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                  <span>Nạp Token</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- LƯỚI THẺ CHỈ SỐ METRIC CARDS GRID -->
+          <div class="metrics-stats-grid">
+            <div class="metric-stat-card">
+              <div class="msc-head">
+                <div class="msc-icon cyan">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                </div>
+                <span class="msc-tag" id="stat-token-tag">Đã Lưu</span>
+              </div>
+              <div class="msc-body">
+                <div class="msc-val" id="stat-total-tokens">0 <span class="msc-val-sub">Tokens</span></div>
+                <div class="msc-label">Tổng Tài Khoản Discord</div>
               </div>
             </div>
 
-            <!-- CỘT 2 CHIẾC CARD DISCORD BÊN PHẢI (CHUẨN CHỈ AFTERLIFE, CẮT SẠCH VIỀN) -->
-            <div class="beyond-cards-col">
-              <div class="beyond-stage-3d">
-                
-                <!-- Thẻ dài phía sau -->
-                <div class="beyond-card-back">
-                  <div class="bcb-banner"></div>
-                  <div class="bcb-avatar-row">
-                    <div class="bcb-avatar"></div>
+            <div class="metric-stat-card">
+              <div class="msc-head">
+                <div class="msc-icon emerald">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+                </div>
+                <span class="msc-tag active" id="stat-status-badge">{% if has_token %}Online{% else %}Standby{% endif %}</span>
+              </div>
+              <div class="msc-body">
+                <div class="msc-val" id="stat-active-username">{% if has_token and discord_username %}{{ discord_username }}{% else %}Chưa Nạp Token{% endif %}</div>
+                <div class="msc-label">Tài Khoản Active Hiện Tại</div>
+              </div>
+            </div>
+
+            <div class="metric-stat-card">
+              <div class="msc-head">
+                <div class="msc-icon violet">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                </div>
+                <span class="msc-tag">Top Feature</span>
+              </div>
+              <div class="msc-body">
+                <div class="msc-val" id="stat-most-used">Custom RPC</div>
+                <div class="msc-label">Tính Năng Dùng Nhiều Nhất</div>
+              </div>
+            </div>
+
+            <div class="metric-stat-card">
+              <div class="msc-head">
+                <div class="msc-icon amber">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path></svg>
+                </div>
+                <span class="msc-tag active">Connected</span>
+              </div>
+              <div class="msc-body">
+                <div class="msc-val" id="stat-ping-ms">18 <span class="msc-val-sub">ms</span></div>
+                <div class="msc-label">Độ Trễ Discord Gateway</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- COMMAND CENTER: 2 CỘT CHÍNH (HOẠT ĐỘNG VÀ DISCORD CARD 1:1) -->
+          <div class="command-center-2col">
+            
+            <!-- CỘT TRÁI: BIỂU ĐỒ PHÂN BỔ HOẠT ĐỘNG & GỢI Ý 5 MỤC LỚN -->
+            <div class="activity-breakdown-card">
+              <div class="abc-header">
+                <div>
+                  <div class="abc-title">Phân Bổ &amp; Tần Suất Sử Dụng Tính Năng</div>
+                  <div class="text-subtle" style="font-size:0.82rem; margin-top:0.2rem;">Thống kê thời gian và số lần kích hoạt giữa 5 mục lớn của hệ thống.</div>
+                </div>
+                <span class="msc-tag" id="stat-total-runs">0 lượt chạy</span>
+              </div>
+
+              <div class="feature-bars-list" id="feature-bars-list">
+                <div class="fbl-item">
+                  <div class="fbl-meta">
+                    <span class="fbl-name">Discord Rich Presence (RPC)</span>
+                    <span class="fbl-count" id="bar-rpc-count">0 lượt</span>
                   </div>
-                  <div class="bcb-body">
-                    <div class="bcb-name-col">
-                      <div class="bcb-title-mock"></div>
-                      <div class="bcb-sub-mock"></div>
-                    </div>
-                    <div class="bcb-box-mock"></div>
-                    <div class="bcb-box-mock sm"></div>
+                  <div class="fbl-rail">
+                    <div class="fbl-fill" id="bar-rpc-fill" style="width: 45%;"></div>
                   </div>
                 </div>
 
-                <!-- Thẻ Discord Popout phía trước: RENDER ĐỘNG với Avatar Decoration APNG & Badges -->
-                <div class="beyond-card-front live-profile-popout">
-                  <!-- Lớp Hiệu Ứng Hồ Sơ Discord (Profile Effect Layer: Hoa anh đào & Tinh vân quang phổ) -->
-                  <div class="discord-profile-effect-layer">
-                    <div class="pfx-particle p1"></div>
-                    <div class="pfx-particle p2"></div>
-                    <div class="pfx-particle p3"></div>
-                    <div class="pfx-particle p4"></div>
-                    <div class="pfx-sparkle-petal" style="top:8%; left:12%;">🌸</div>
-                    <div class="pfx-sparkle-petal" style="top:32%; right:14%; animation-delay: 2.2s;">✨</div>
-                    <div class="pfx-sparkle-petal" style="bottom:18%; left:18%; animation-delay: 4.5s;">🌸</div>
+                <div class="fbl-item">
+                  <div class="fbl-meta">
+                    <span class="fbl-name">Discord Status &amp; Lyric Karaoke</span>
+                    <span class="fbl-count" id="bar-status-count">0 lượt</span>
+                  </div>
+                  <div class="fbl-rail">
+                    <div class="fbl-fill" id="bar-status-fill" style="width: 30%;"></div>
+                  </div>
+                </div>
+
+                <div class="fbl-item">
+                  <div class="fbl-meta">
+                    <span class="fbl-name">Treo Voice 24/7 (AFK Voice)</span>
+                    <span class="fbl-count" id="bar-voice-count">0 lượt</span>
+                  </div>
+                  <div class="fbl-rail">
+                    <div class="fbl-fill" id="bar-voice-fill" style="width: 15%;"></div>
+                  </div>
+                </div>
+
+                <div class="fbl-item">
+                  <div class="fbl-meta">
+                    <span class="fbl-name">Discord Auto Quest Scripts</span>
+                    <span class="fbl-count" id="bar-script-count">0 lượt</span>
+                  </div>
+                  <div class="fbl-rail">
+                    <div class="fbl-fill" id="bar-script-fill" style="width: 10%;"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Launch Shortcuts -->
+              <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="font-size:0.85rem; font-weight:700; color:var(--text-white); margin-bottom: 0.85rem;">Phím Tắt Kích Hoạt Nhanh 5 Mục</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.6rem;">
+                  <button type="button" class="ssh-action" onclick="switchTab('tab-rpc')">Tùy biến RPC</button>
+                  <button type="button" class="ssh-action" onclick="switchTab('tab-status-custom')">Đổi Custom Status</button>
+                  <button type="button" class="ssh-action" onclick="switchTab('tab-lyric')">Hát Lyric Karaoke</button>
+                  <button type="button" class="ssh-action" onclick="switchTab('tab-voice-afk')">Treo Voice 24/7</button>
+                  <button type="button" class="ssh-action" onclick="switchTab('tab-quest')">Cày Auto Quest</button>
+                  <button type="button" class="ssh-action" onclick="switchTab('tab-accounts')">Quản Lý Tokens</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- CỘT PHẢI: DISCORD CARD 1:1 VỚI PROFILE EFFECT CHUẨN NGUYÊN BẢN -->
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.75rem; padding: 0 0.5rem;">
+                <span style="font-size:0.85rem; font-weight:700; color:var(--text-white);">Discord Profile 1:1 Realtime</span>
+                <span class="msc-tag active">Live Card</span>
+              </div>
+
+              <div class="discord-card-1to1-wrap live-profile-popout" id="discord-main-card">
+                <!-- Lớp Profile Effect Discord (Aura quang phổ, tinh vân và cánh hoa lơ lửng) -->
+                <div class="discord-profile-effect-layer" id="dc1-pfx-layer">
+                  <div class="pfx-particle p1"></div>
+                  <div class="pfx-particle p2"></div>
+                  <div class="pfx-particle p3"></div>
+                  <div class="pfx-particle p4"></div>
+                  <div class="pfx-sparkle-petal" style="top:10%; left:12%;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#ec4899"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm1 14.5c0 .8-.7 1.5-1.5 1.5s-1.5-.7-1.5-1.5.7-1.5 1.5-1.5 1.5.7 1.5 1.5zm0-4c0 .6-.4 1-1 1s-1-.4-1-1V7c0-.6.4-1 1-1s1 .4 1 1v5.5z"></path></svg>
+                  </div>
+                  <div class="pfx-sparkle-petal" style="top:32%; right:14%; animation-delay: 2.2s;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="#a855f7"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                  </div>
+                  <div class="pfx-sparkle-petal" style="bottom:22%; left:16%; animation-delay: 4.5s;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="#38bdf8"><circle cx="12" cy="12" r="6"></circle></svg>
+                  </div>
+                </div>
+
+                <!-- Banner Discord Nitro -->
+                <div class="dc1-banner nitro-animated-banner" id="hero-profile-banner" {% if banner %}style="background-image: url('{{ banner }}');"{% endif %}></div>
+
+                <!-- Avatar & Badges Row -->
+                <div class="dc1-avatar-row">
+                  <div class="dc1-avatar-wrap">
+                    <img src="{% if has_token and discord_avatar %}{{ discord_avatar }}{% else %}https://cdn.discordapp.com/avatars/1412818296033775707/ce5e554896f5457554e0a49cbcf11d2f.png?size=256{% endif %}" 
+                         alt="Discord Avatar" class="dc1-avatar-img" id="hero-avatar-img">
+                    <img src="{% if has_token and avatar_decoration %}{{ avatar_decoration }}{% else %}https://cdn.discordapp.com/avatar-decoration-presets/a_fb1fab5c0a30f0a89a7cd5fad873c6f0.png?size=256&passthrough=true{% endif %}" 
+                         alt="" class="dc1-avatar-decor" id="hero-avatar-decoration">
+                    <div class="dc1-status-dot" id="hero-status-dot"></div>
                   </div>
 
-                  <!-- Banner gradient demo khi chưa link, hoặc banner thật khi đã link -->
-                  <div class="lpp-banner nitro-animated-banner" id="hero-profile-banner" {% if not (has_token and discord_avatar) %}style="background: linear-gradient(135deg, #5865f2 0%, #7c3aed 50%, #a855f7 100%);"{% endif %}></div>
-                  
-                  <div class="lpp-avatar-row">
-                    <div class="lpp-avatar-wrapper">
-                      <!-- Avatar: show real acc demo (Minh) hoặc avatar đã link -->
-                      <img src="{% if has_token and discord_avatar %}{{ discord_avatar }}{% else %}https://cdn.discordapp.com/avatars/1412818296033775707/ce5e554896f5457554e0a49cbcf11d2f.png?size=256{% endif %}" 
-                           alt="Avatar" class="lpp-avatar-img" id="hero-avatar-img">
-                      <!-- Avatar Decoration APNG: luôn show nếu có -->
-                      <img src="{% if has_token and avatar_decoration %}{{ avatar_decoration }}{% else %}https://cdn.discordapp.com/avatar-decoration-presets/a_fb1fab5c0a30f0a89a7cd5fad873c6f0.png?size=256&passthrough=true{% endif %}" 
-                           alt="" class="lpp-avatar-decoration-img" id="hero-avatar-decoration" aria-hidden="true">
-                      <div class="lpp-status-dot online" id="hero-status-dot"></div>
-                    </div>
+                  <!-- Hàng Badges Discord Thật -->
+                  <div class="dc1-badges-bar" id="hero-badges-row">
+                    {% if has_token %}
+                    <span class="d-badge-loading">...</span>
+                    {% else %}
+                    <img src="https://cdn.discordapp.com/badge-icons/8ef6f594b94c2c1e76b5b52c32b49b0c.png?size=64" alt="HypeSquad Balance" title="HypeSquad Balance" class="dc1-badge-icon">
+                    <img src="https://cdn.discordapp.com/badge-icons/6bdc42827b30f498e4a0713f64455d80.png?size=64" alt="Active Developer" title="Active Developer" class="dc1-badge-icon">
+                    {% endif %}
+                  </div>
+                </div>
 
-                    <!-- Hàng Badges Discord -->
-                    <div class="lpp-badges-badge-row" id="hero-badges-row">
-                      {% if has_token %}
-                      <!-- Badges thật được cập nhật bởi JS fetchAccountInfo() -->
-                      <span class="d-badge-loading" title="Đang tải badges...">...</span>
-                      {% else %}
-                      <!-- Demo badges: HypeSquad Balance của acc Minh -->
-                      <img src="https://cdn.discordapp.com/badge-icons/8ef6f594b94c2c1e76b5b52c32b49b0c.png?size=64" alt="HypeSquad Balance" title="HypeSquad Balance" class="d-badge-icon">
-                      {% endif %}
-                    </div>
+                <!-- Thông Tin User Profile -->
+                <div class="dc1-content">
+                  <div class="dc1-global-name" id="hero-profile-name">{% if has_token and discord_username %}{{ discord_username }}{% else %}Minh{% endif %}</div>
+                  <div class="dc1-username-row">
+                    <span class="dc1-username" id="hero-profile-tag">{% if has_token and discord_username %}@{{ discord_username.lower().replace(' ', '') }}{% else %}@minh3003a{% endif %}</span>
+                    <span style="font-size:0.72rem; padding: 1px 6px; border-radius:4px; background:rgba(255,255,255,0.06); color:#cbd5e1;">Active Member</span>
                   </div>
 
-                  <div class="lpp-content-box">
-                    <div class="lpp-user-header">
-                      <div class="lpp-global-name" id="hero-profile-name">{% if has_token and discord_username %}{{ discord_username }}{% else %}Minh{% endif %}</div>
-                      <div class="lpp-sub-row">
-                        <span class="lpp-username" id="hero-profile-tag">{% if has_token and discord_username %}@{{ discord_username.lower().replace(' ', '') }}{% else %}@minh3003a{% endif %}</span>
-                        <span class="lpp-pronouns">{% if has_token %}Discord Verified ✓{% else %}Preview Demo 🎯{% endif %}</span>
-                      </div>
-                    </div>
+                  <!-- Custom Status Box -->
+                  <div class="dc1-status-box">
+                    <span id="hero-status-emoji">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+                    </span>
+                    <span id="hero-custom-status-text">{% if has_token %}Đang chạy DIPRE Studio{% else %}minh3003a • HypeSquad Balance{% endif %}</span>
+                  </div>
 
-                    <!-- Custom Status -->
-                    <div class="lpp-thought-bubble">
-                      <span class="bubble-icon">🎵</span>
-                      <span class="bubble-text" id="hero-custom-status-text">{% if has_token %}Đang chạy DIPRE Studio{% else %}minh3003a • HypeSquad Balance{% endif %}</span>
-                    </div>
-
-                    <div class="lpp-divider"></div>
-
-                    <!-- Rich Presence Embed Box -->
-                    <div class="lpp-rpc-box" id="hero-rpc-box">
-                      <div class="lpp-rpc-label" id="hero-rpc-label">PLAYING A GAME</div>
-                      <div class="lpp-rpc-inner">
-                        <div class="lpp-rpc-icon-wrap">
-                          <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg" alt="App Icon" class="lpp-rpc-app-icon" id="hero-rpc-large-img">
-                          <span class="lpp-rpc-small-badge" id="hero-rpc-small-badge">⚡</span>
-                        </div>
-                        <div class="lpp-rpc-meta">
-                          <div class="lpp-rpc-title" id="hero-rpc-title">{% if has_token %}DIPRE Studio Active{% else %}Visual Studio Code{% endif %}</div>
-                          <div class="lpp-rpc-details" id="hero-rpc-details">{% if has_token %}Rich Presence is running{% else %}Developing DIPRE Studio{% endif %}</div>
-                          <div class="lpp-rpc-state" id="hero-rpc-state" data-start="{{ now_ts if now_ts else 0 }}">🕐 00:00:00 elapsed</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- About Me & Footer -->
-                    <div class="lpp-about-box">
-                      <div class="lpp-about-text">
-                        <b>DIPRE Studio — Discord Premium</b><br>
-                        Tùy chỉnh RPC, Lyric Sync & Auto Quest.<br>
-                        <span class="lpp-member-since" id="hero-member-since">Member Since: {% if has_token %}{% else %}Sep 3, 2025{% endif %}</span>
-                      </div>
-                      <div class="lpp-founder-pill">
-                        <span>{% if has_token %}Token Active{% else %}Demo Mode{% endif %}</span>
-                        <span class="fp-dot">{% if has_token %}✅{% else %}🎯{% endif %}</span>
-                      </div>
-                    </div>
-
+                  <!-- Bio / About Me Box -->
+                  <div class="dc1-bio-box">
+                    <div class="dc1-bio-title">Giới Thiệu Bản Thân</div>
+                    <div id="hero-profile-bio">{% if has_token %}DIPRE Studio User • Ultra RPC &amp; Voice AFK Active{% else %}beyond the veil, control returns. DIPRE Studio v4.5 Luxury Edition.{% endif %}</div>
                   </div>
                 </div>
 
@@ -658,7 +794,125 @@
         </div>
       </section>
 
-      <!-- TAB 3: LYRIC SYNC (NHACCUATUI + LRCLIB MODERN AUDIO PLAYER) -->
+      <!-- TAB 2.1: CUSTOM STATUS (STATUS ROTATOR & CUSTOM TEXT/EMOJI) -->
+      <section class="tab-panel" id="tab-status-custom">
+        <div class="panel-2col-layout">
+          <div class="panel-form-col panel-form-relative">
+            
+            <div class="locked-section-overlay {% if has_token %}d-none{% endif %}" id="status-locked-overlay">
+              <div class="locked-overlay-content">
+                <div class="locked-icon-bubble">
+                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </div>
+                <div class="locked-overlay-title">Tính Năng Yêu Cầu Token</div>
+                <div class="locked-overlay-desc">Chưa phát hiện Discord Token. Vui lòng liên kết tài khoản để cập nhật Custom Status trực tiếp.</div>
+                <button type="button" class="locked-overlay-btn" onclick="toggleAccountModal(true)">Liên Kết Token Ngay</button>
+              </div>
+            </div>
+
+            <!-- Thiết lập Custom Status -->
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div>
+                  <div class="ssh-title">Đổi Trạng Thái Tùy Chỉnh (Custom Status)</div>
+                  <div class="ssh-sub">Cập nhật dòng suy nghĩ và biểu tượng cảm xúc hiển thị trên Profile Discord của bạn.</div>
+                </div>
+                <span class="ssh-badge">Instant Discord Sync</span>
+              </div>
+
+              <div class="sf-row">
+                <label class="sf-label" for="input-custom-status-text">Nội Dung Trạng Thái</label>
+                <input type="text" id="input-custom-status-text" class="sf-input" placeholder="Ví dụ: Đang bận code DIPRE Studio..." value="" oninput="updateCustomStatusPreview()">
+              </div>
+
+              <div class="sf-grid-2">
+                <div class="sf-row">
+                  <label class="sf-label" for="select-custom-status-emoji">Biểu Tượng Cảm Xúc (Emoji)</label>
+                  <select id="select-custom-status-emoji" class="sf-select" onchange="updateCustomStatusPreview()">
+                    <option value="💻" selected>💻 Máy Tính / Coder</option>
+                    <option value="⚡">⚡ Tia Sét</option>
+                    <option value="✨">✨ Lấp Lánh</option>
+                    <option value="🎵">🎵 Nốt Nhạc</option>
+                    <option value="🔥">🔥 Lửa Cháy</option>
+                    <option value="🌸">🌸 Hoa Đào</option>
+                    <option value="☕">☕ Cà Phê</option>
+                    <option value="🎮">🎮 Chơi Game</option>
+                    <option value="🌙">🌙 Trăng Đêm</option>
+                  </select>
+                </div>
+                <div class="sf-row">
+                  <label class="sf-label" for="select-status-clear-after">Tự Động Xóa Sau (Clear After)</label>
+                  <select id="select-status-clear-after" class="sf-select">
+                    <option value="never" selected>Không bao giờ xóa (Vĩnh viễn)</option>
+                    <option value="1800">Sau 30 phút</option>
+                    <option value="3600">Sau 1 giờ</option>
+                    <option value="14400">Sau 4 giờ</option>
+                    <option value="86400">Sau 1 ngày</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="sf-action-row mt-3">
+                <button type="button" class="rpc-btn rpc-btn-start" onclick="handleApplyCustomStatus()">Cập Nhật Status Ngay</button>
+                <button type="button" class="rpc-btn rpc-btn-stop" onclick="handleClearCustomStatus()">Xóa Status</button>
+              </div>
+            </div>
+
+            <!-- Bộ Xoay Vòng Trạng Thái (Status Rotator) -->
+            <div class="settings-section mt-3">
+              <div class="settings-section-header">
+                <div>
+                  <div class="ssh-title">Bộ Xoay Vòng Trạng Thái (Status Rotator)</div>
+                  <div class="ssh-sub">Tự động luân chuyển danh sách nhiều status theo chu kỳ giây.</div>
+                </div>
+                <label class="switch-pill" for="check-status-rotator-toggle">
+                  <input type="checkbox" id="check-status-rotator-toggle" onchange="toggleStatusRotator()">
+                  <span class="switch-pill-slider"></span>
+                </label>
+              </div>
+
+              <div class="sf-row">
+                <label class="sf-label">Danh Sách Câu Status (Mỗi dòng 1 câu):</label>
+                <textarea id="status-rotator-lines" class="sf-input" style="height: 90px; resize: vertical; font-family: inherit;" placeholder="Đang lướt web&#10;Đang nghe nhạc chill&#10;beyond the veil, control returns."></textarea>
+              </div>
+
+              <div class="sf-row">
+                <label class="sf-label" for="status-rotator-interval">Chu kỳ đổi mỗi (giây):</label>
+                <input type="number" id="status-rotator-interval" class="sf-input sf-input-short" value="15" min="5" max="300">
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Preview cột phải -->
+          <div class="panel-preview-col">
+            <div class="preview-sticky">
+              <div class="preview-header">
+                <span class="preview-title">Xem Trước Trạng Thái Discord</span>
+                <span class="preview-live-badge">REALTIME</span>
+              </div>
+
+              <div class="lyric-status-card dipre-status-box">
+                <div class="lsc-user-row">
+                  <img src="{% if has_token and discord_avatar %}{{ discord_avatar }}{% else %}https://cdn.discordapp.com/embed/avatars/0.png{% endif %}" alt="" class="lsc-avatar" id="custom-status-pv-avatar">
+                  <div class="lsc-user-meta">
+                    <div class="lsc-user-name" id="custom-status-pv-name">{% if has_token and discord_username %}{{ discord_username }}{% else %}Discord User{% endif %}</div>
+                    <div class="lsc-user-tag">Custom Status • Realtime</div>
+                  </div>
+                </div>
+                <div class="lsc-status-display">
+                  <div class="lsc-lyric-active" id="custom-status-pv-text">
+                    <span id="custom-status-pv-emoji">💻</span>
+                    <span id="custom-status-pv-body">Đang trải nghiệm DIPRE Studio</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2.2: LYRIC SYNC (NHACCUATUI + LRCLIB MODERN AUDIO PLAYER) -->
       <section class="tab-panel" id="tab-lyric">
         <div class="panel-2col-layout">
           <div class="panel-form-col panel-form-relative">
@@ -1199,6 +1453,135 @@
         </div>
       </section>
 
+      <!-- TAB 3.1: TREO VOICE 24/7 (AFK VOICE) -->
+      <section class="tab-panel" id="tab-voice-afk">
+        <div class="panel-2col-layout">
+          <div class="panel-form-col panel-form-relative">
+            
+            <div class="locked-section-overlay {% if has_token %}d-none{% endif %}" id="voice-locked-overlay">
+              <div class="locked-overlay-content">
+                <div class="locked-icon-bubble">
+                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </div>
+                <div class="locked-overlay-title">Tính Năng Yêu Cầu Token</div>
+                <div class="locked-overlay-desc">Chưa phát hiện Discord Token. Vui lòng liên kết tài khoản để kích hoạt treo phòng voice 24/7.</div>
+                <button type="button" class="locked-overlay-btn" onclick="toggleAccountModal(true)">Liên Kết Token Ngay</button>
+              </div>
+            </div>
+
+            <!-- Cấu hình Treo Voice 24/7 -->
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div>
+                  <div class="ssh-title">Cấu Hình Treo Voice 24/7 (AFK Voice)</div>
+                  <div class="ssh-sub">Giữ tài khoản luôn online trong phòng voice Discord 24/7 thông qua Discord Gateway.</div>
+                </div>
+                <span class="ssh-badge">24/7 Non-Stop</span>
+              </div>
+
+              <!-- Trạng thái kết nối Voice -->
+              <div class="voice-connection-status" id="voice-status-box">
+                <span class="vcs-dot" id="voice-vcs-dot"></span>
+                <div class="vcs-info">
+                  <span class="vcs-title" id="voice-vcs-title">Chưa kết nối Voice</span>
+                  <span class="vcs-sub" id="voice-vcs-sub">Nhập Guild ID và Channel ID để bắt đầu treo voice</span>
+                </div>
+              </div>
+
+              <div class="sf-grid-2">
+                <div class="sf-row">
+                  <label class="sf-label" for="input-voice-guild-id">Guild ID (Server Discord) <span class="sf-required">*</span></label>
+                  <input type="text" id="input-voice-guild-id" class="sf-input" placeholder="Ví dụ: 104712345678901234" value="">
+                </div>
+                <div class="sf-row">
+                  <label class="sf-label" for="input-voice-channel-id">Channel ID (Phòng Voice) <span class="sf-required">*</span></label>
+                  <input type="text" id="input-voice-channel-id" class="sf-input" placeholder="Ví dụ: 104798765432109876" value="">
+                </div>
+              </div>
+
+              <div class="sf-toggle-row mt-2">
+                <div class="sf-toggle-meta">
+                  <div class="sf-toggle-title">Tự Động Tắt Mic (Self Mute)</div>
+                  <div class="sf-toggle-sub">Giữ micro luôn ở trạng thái tắt khi vào phòng voice</div>
+                </div>
+                <label class="switch-pill" for="check-voice-mute">
+                  <input type="checkbox" id="check-voice-mute" checked>
+                  <span class="switch-pill-slider"></span>
+                </label>
+              </div>
+
+              <div class="sf-toggle-row mt-2">
+                <div class="sf-toggle-meta">
+                  <div class="sf-toggle-title">Tự Động Điếc Tai (Self Deafen)</div>
+                  <div class="sf-toggle-sub">Tắt âm lượng tai nghe để không nhận luồng voice từ phòng</div>
+                </div>
+                <label class="switch-pill" for="check-voice-deaf">
+                  <input type="checkbox" id="check-voice-deaf" checked>
+                  <span class="switch-pill-slider"></span>
+                </label>
+              </div>
+
+              <div class="sf-action-row mt-4">
+                <button type="button" class="rpc-btn rpc-btn-start" id="btn-voice-start" onclick="handleStartVoiceAFK()">Kích Hoạt Treo Voice 24/7</button>
+                <button type="button" class="rpc-btn rpc-btn-stop" id="btn-voice-stop" onclick="handleStopVoiceAFK()" disabled>Ngắt Kết Nối</button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Cột Preview & Hướng Dẫn -->
+          <div class="panel-preview-col">
+            <div class="preview-sticky">
+              <div class="preview-header">
+                <span class="preview-title">Trạng Thái Phòng Voice</span>
+                <span class="preview-live-badge" id="voice-live-badge">STANDBY</span>
+              </div>
+
+              <div class="settings-section">
+                <div style="display:flex; align-items:center; gap:0.8rem; margin-bottom: 1rem;">
+                  <div style="width:40px; height:40px; border-radius:10px; background:rgba(99,102,241,0.15); display:flex; align-items:center; justify-content:center; color:#818cf8;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                  </div>
+                  <div>
+                    <div style="font-size:0.95rem; font-weight:700; color:#fff;" id="voice-pv-channel-name">Phòng Voice Chưa Kết Nối</div>
+                    <div style="font-size:0.8rem; color:#94a3b8;" id="voice-pv-timer">Thời gian treo: 00:00:00</div>
+                  </div>
+                </div>
+
+                <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 0.85rem; font-size: 0.82rem; color: #94a3b8; line-height: 1.6;">
+                  <strong style="color:#fff;">Lưu ý khi Treo Voice:</strong>
+                  <ul style="padding-left: 1.2rem; margin-top: 0.4rem;">
+                    <li>Bật Developer Mode trên Discord để chuột phải vào Server / Channel và chọn <em>Copy ID</em>.</li>
+                    <li>Hệ thống duy trì Heartbeat Opcode 1 và Opcode 4 tự động, kể cả khi bạn đóng tab web.</li>
+                    <li>Tài khoản sẽ tự động kết nối lại nếu Discord Gateway bị ngắt hoặc bảo trì.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3.2: VOICE SOUNDBOARD (COMING SOON) -->
+      <section class="tab-panel" id="tab-voice-coming">
+        <div class="coming-soon-card">
+          <div class="csc-badge">Coming Soon in Next Update</div>
+          <h2 class="csc-title">Voice Soundboard &amp; Radio Bot</h2>
+          <p class="csc-desc">Tính năng phát âm thanh Soundboard trực tiếp vào kênh đàm thoại của bạn và stream nhạc Lo-Fi Radio không giới hạn thời gian.</p>
+          <button type="button" class="ssh-action" onclick="switchTab('tab-voice-afk')">Quay lại Treo Voice 24/7</button>
+        </div>
+      </section>
+
+      <!-- TAB 4.2: SCRIPT CLEANER (COMING SOON) -->
+      <section class="tab-panel" id="tab-script-coming">
+        <div class="coming-soon-card">
+          <div class="csc-badge">Coming Soon in Next Update</div>
+          <h2 class="csc-title">Discord Account Cleaner &amp; Claimer</h2>
+          <p class="csc-desc">Bộ công cụ tự động dọn dẹp tin nhắn rác, tự động claim phần thưởng Nitro Promotion và tối ưu hóa tài khoản an toàn.</p>
+          <button type="button" class="ssh-action" onclick="switchTab('tab-quest')">Quay lại Auto Quest</button>
+        </div>
+      </section>
+
     </main>
   </div>
 
@@ -1304,7 +1687,9 @@
   <!-- ANTI-DEVTOOLS / INSPECT SHIELD OVERLAY -->
   <div class="anti-devtools-overlay" id="anti-devtools-overlay">
     <div class="devtools-shield-card">
-      <div class="dsc-icon">🛡️</div>
+      <div class="dsc-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      </div>
       <h2 class="dsc-title">DEVTOOLS DETECTED</h2>
       <p class="dsc-desc">Thao tác mở DevTools (Inspect Element / F12 / Shortcut) đã bị hạn chế để bảo vệ hệ thống DIPRE Studio.</p>
       <div class="dsc-code-pill">SECURITY_PROTOCOL: 0xANTI_INSPECT_BLOCKED</div>
@@ -1315,21 +1700,26 @@
   <!-- CUSTOM CONTEXT MENU CHUYÊN NGHIỆP THAY CHO CHUỘT PHẢI MẶC ĐỊNH -->
   <div class="dipre-custom-menu" id="dipre-custom-menu">
     <div class="dcm-item" onclick="switchTab('tab-home')">
-      <span>⚡</span><span>Dashboard Tổng Quan</span>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg>
+      <span>Dashboard Command Center</span>
     </div>
     <div class="dcm-item" onclick="switchTab('tab-accounts')">
-      <span>👑</span><span>Quản Lý Đa Token</span>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+      <span>Quản Lý Đa Token</span>
     </div>
     <div class="dcm-divider"></div>
     <div class="dcm-item" onclick="toggleTheme()">
-      <span>🌓</span><span>Đổi Giao Diện Sáng / Tối</span>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <span>Đổi Giao Diện Sáng / Tối</span>
     </div>
     <div class="dcm-item" onclick="syncAllStatusNow()">
-      <span>🔄</span><span>Đồng Bộ Trạng Thái Realtime</span>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+      <span>Đồng Bộ Trạng Thái Realtime</span>
     </div>
     <div class="dcm-divider"></div>
     <div class="dcm-item" onclick="location.reload()">
-      <span>⚡</span><span>Làm Mới Trang (F5)</span>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+      <span>Làm Mới Trang (F5)</span>
     </div>
   </div>
 

@@ -43,10 +43,20 @@ def fetch_discord_profile(token: str):
     if flags & (1 << 22):
         badges.append({'name': 'Active Developer', 'icon': 'https://cdn.discordapp.com/badge-icons/6bdc42827b30f498e4a0713f64455d80.png?size=64'})
 
+    profile_effect = ''
+    bio = data.get('bio', '')
     try:
         p_res = requests.get(f'https://discord.com/api/v9/users/{d_id}/profile?with_mutual_guilds=false', headers=headers, timeout=5)
         if p_res.status_code == 200:
             p_data = p_res.json()
+            u_prof = p_data.get('user_profile', {})
+            pfx = u_prof.get('profile_effect') or p_data.get('profile_effect')
+            if pfx and isinstance(pfx, dict) and pfx.get('id'):
+                profile_effect = str(pfx['id'])
+            elif pfx:
+                profile_effect = str(pfx)
+            if u_prof.get('bio'):
+                bio = u_prof.get('bio')
             for b in p_data.get('badges', []):
                 b_icon = b.get('icon')
                 if b_icon:
@@ -65,5 +75,7 @@ def fetch_discord_profile(token: str):
         'avatar': avatar_url,
         'decoration': decor_url,
         'banner': banner_url,
-        'badges': badges
+        'badges': badges,
+        'profile_effect': profile_effect,
+        'bio': bio
     }
