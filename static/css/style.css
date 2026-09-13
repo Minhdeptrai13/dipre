@@ -10434,4 +10434,144 @@ body.light-theme .dcm-item:hover {
   filter: drop-shadow(0 0 6px rgba(129, 140, 248, 0.6));
 }
 
+/* ==========================================================================
+   TOKEN NOTICE BANNER (THAY THẾ LỚP KHÓA ĐEN SÌ CŨ BẰNG BANNER NHẮC NHỞ TINH TẾ)
+   ========================================================================== */
+.token-notice-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  margin-bottom: 1.25rem;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+  transition: all var(--trans-fast);
+}
+
+.token-notice-banner.d-none {
+  display: none !important;
+}
+
+.tnb-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.86rem;
+  color: #e2e8f0;
+}
+
+.tnb-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  color: #818cf8;
+  flex-shrink: 0;
+}
+
+.tnb-text b {
+  color: #ffffff;
+}
+
+.tnb-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.95rem;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--trans-fast);
+}
+
+.tnb-cta:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+}
+
+/* ==========================================================================
+   GOOGLE ONE & ULTRA MULTI-COLOR AURA RING & VIP PROFILE STYLES
+   ========================================================================== */
+.google-profile-card .dc1-banner {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 40%, #1e1b4b 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.google-profile-card .dc1-banner::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #4285F4 0%, #EA4335 33%, #FBBC05 66%, #34A853 100%);
+}
+
+.google-one-ring {
+  position: relative;
+  border-radius: 50%;
+  padding: 3.5px;
+  background: conic-gradient(from 0deg, #4285F4, #EA4335, #FBBC05, #34A853, #4285F4);
+  box-shadow: 0 0 16px rgba(66, 133, 244, 0.4), 0 0 28px rgba(234, 67, 53, 0.25);
+  animation: googleOneSpin 6s linear infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes googleOneSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.google-one-ring img,
+.google-one-ring .dc1-avatar-img,
+.google-one-ring .user-avatar-initials {
+  border-radius: 50%;
+  animation: googleOneCounterSpin 6s linear infinite;
+}
+
+@keyframes googleOneCounterSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(-360deg); }
+}
+
+.google-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: rgba(66, 133, 244, 0.12);
+  border: 1px solid rgba(66, 133, 244, 0.3);
+  color: #60a5fa;
+}
+
+.google-badge-pill.ultra {
+  background: linear-gradient(135deg, rgba(234, 67, 53, 0.15), rgba(251, 188, 5, 0.15));
+  border: 1px solid rgba(251, 188, 5, 0.4);
+  color: #fbbf24;
+}
+
+/* VÔ HIỆU HÓA HOÀN TOÀN TẤT CẢ CÁC LỚP PHỦ KHÓA ĐEN SÌ CŨ */
+.locked-section-overlay {
+  display: none !important;
+}
+
 

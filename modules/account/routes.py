@@ -68,25 +68,28 @@ def api_account_info():
     user_id = session['user_id']
     with get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute('SELECT username, discord_token, discord_id, discord_username, discord_avatar FROM users WHERE id = ?', (user_id,))
+        cursor.execute('SELECT username, discord_token, discord_id, discord_username, discord_avatar, auth_provider, avatar_url, google_avatar FROM users WHERE id = ?', (user_id,))
         u = cursor.fetchone()
         cursor.execute('SELECT * FROM discord_accounts WHERE user_id = ? ORDER BY is_active DESC, id DESC', (user_id,))
         accounts = [dict(r) for r in cursor.fetchall()]
     if not u:
         return jsonify({'success': False, 'message': 'Không tìm thấy tài khoản'}), 404
     token = u['discord_token'] or ''
-    has_token = bool(token and len(token) > 20)
-    masked = (token[:10] + '...' + token[-6:]) if has_token else ''
+    has_token = bool(token and len(token) > 20) or bool(accounts)
+    masked = (token[:10] + '...' + token[-6:]) if (token and len(token) > 20) else ''
 
     active_acc = next((a for a in accounts if a.get('is_active') == 1), None) or (accounts[0] if accounts else None)
 
     return jsonify({
         'success': True,
         'username': u['username'],
+        'auth_provider': u.get('auth_provider') or 'local',
+        'avatar_url': u.get('avatar_url') or u.get('google_avatar') or '',
+        'google_avatar': u.get('google_avatar') or '',
         'has_token': has_token,
-        'discord_id': u['discord_id'] or (active_acc['discord_id'] if active_acc else ''),
-        'discord_username': u['discord_username'] or (active_acc['discord_username'] if active_acc else ''),
-        'discord_avatar': u['discord_avatar'] or (active_acc['discord_avatar'] if active_acc else ''),
+        'discord_id': (active_acc['discord_id'] if active_acc else u['discord_id']) or '',
+        'discord_username': (active_acc['discord_username'] if active_acc else u['discord_username']) or '',
+        'discord_avatar': (active_acc['discord_avatar'] if active_acc else u['discord_avatar']) or '',
         'avatar_decoration': (active_acc.get('avatar_decoration') if active_acc else '') or '',
         'banner': (active_acc.get('banner') if active_acc else '') or '',
         'profile_effect': (active_acc.get('profile_effect') if active_acc else '') or '',

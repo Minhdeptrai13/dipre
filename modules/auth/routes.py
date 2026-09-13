@@ -78,19 +78,22 @@ def index():
     user_id = session['user_id']
     with get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute('SELECT username, discord_token, discord_username, discord_avatar, avatar_url, auth_provider FROM users WHERE id = ?', (user_id,))
+        cursor.execute('SELECT username, discord_token, discord_id, discord_username, discord_avatar, avatar_url, google_avatar, auth_provider FROM users WHERE id = ?', (user_id,))
         u = cursor.fetchone()
-        cursor.execute('SELECT avatar_decoration, banner, profile_effect FROM discord_accounts WHERE user_id = ? AND is_active = 1 LIMIT 1', (user_id,))
+        cursor.execute('SELECT avatar_decoration, banner, profile_effect, discord_username, discord_avatar FROM discord_accounts WHERE user_id = ? AND is_active = 1 LIMIT 1', (user_id,))
         acc = cursor.fetchone()
+        cursor.execute('SELECT COUNT(*) as cnt FROM discord_accounts WHERE user_id = ?', (user_id,))
+        acc_cnt_row = cursor.fetchone()
+        sub_count = acc_cnt_row['cnt'] if acc_cnt_row else 0
     
     username = u['username'] if u else session.get('username', 'User')
-    has_token = bool(u and u['discord_token'] and len(u['discord_token']) > 20)
-    d_name = (u['discord_username'] if u and u['discord_username'] else None)
-    d_avatar = (u['discord_avatar'] if u and u['discord_avatar'] else None)
+    has_token = bool((u and u['discord_token'] and len(u['discord_token']) > 20) or acc)
+    d_name = (acc['discord_username'] if (acc and acc['discord_username']) else (u['discord_username'] if (u and u['discord_username']) else None))
+    d_avatar = (acc['discord_avatar'] if (acc and acc['discord_avatar']) else (u['discord_avatar'] if (u and u['discord_avatar']) else None))
     auth_prov = (u['auth_provider'] if u and u['auth_provider'] else 'local')
     
     # Ưu tiên avatar_url của hệ thống, nếu không có thì fallback discord_avatar
-    raw_avatar = (u['avatar_url'] or u['discord_avatar'] or '').strip() if u else ''
+    raw_avatar = (u['avatar_url'] or u['google_avatar'] or u['discord_avatar'] or '').strip() if u else ''
     avatar_info = get_avatar_info(username, raw_avatar, auth_prov)
     
     avatar_decoration = acc['avatar_decoration'] if acc and acc['avatar_decoration'] else None
@@ -103,10 +106,12 @@ def index():
                            discord_username=d_name,
                            discord_avatar=d_avatar,
                            auth_provider=auth_prov,
+                           avatar_url=raw_avatar,
                            avatar_info=avatar_info,
                            avatar_decoration=avatar_decoration,
                            banner=banner,
-                           profile_effect=profile_effect)
+                           profile_effect=profile_effect,
+                           sub_accounts_count=sub_count)
 
 @auth_bp.route('/api/live/status')
 @login_required
