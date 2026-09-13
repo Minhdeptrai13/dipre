@@ -12,13 +12,14 @@ def fetch_discord_profile(token: str, target_user_id: str = None):
     # Nếu có target_user_id, lấy thông tin của user đó qua profile endpoint
     target_id = str(target_user_id).strip() if target_user_id else None
     
-    # Lấy thông tin cơ bản
-    if target_id and target_id != '@me':
-        url_user = f'https://discord.com/api/v9/users/{target_id}'
-    else:
-        url_user = 'https://discord.com/api/v9/users/@me'
+    # Nếu có target_user_id, kiểm tra xem có phải chính tài khoản của token không
+    target_id = str(target_user_id).strip() if target_user_id else None
+    
+    # Luôn lấy thông tin chính tài khoản qua @me trước (chuẩn User Token không bị 403)
+    res = requests.get('https://discord.com/api/v9/users/@me', headers=headers, timeout=8)
+    if res.status_code != 200 and target_id:
+        res = requests.get(f'https://discord.com/api/v9/users/{target_id}', headers=headers, timeout=8)
         
-    res = requests.get(url_user, headers=headers, timeout=8)
     if res.status_code != 200:
         return None
     data = res.json()
@@ -45,19 +46,9 @@ def fetch_discord_profile(token: str, target_user_id: str = None):
         banner_url = f"https://cdn.discordapp.com/banners/{d_id}/{banner_hash}.{b_ext}?size=600"
 
     badges = []
-    flags = data.get('flags', 0) or data.get('public_flags', 0)
-    if flags & (1 << 6):
-        badges.append({'name': 'HypeSquad Bravery', 'icon': 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f7e3.svg'})
-    if flags & (1 << 7):
-        badges.append({'name': 'HypeSquad Brilliance', 'icon': 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f7e0.svg'})
-    if flags & (1 << 8):
-        badges.append({'name': 'HypeSquad Balance', 'icon': 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f7e2.svg'})
-    if flags & (1 << 22):
-        badges.append({'name': 'Active Developer', 'icon': 'https://cdn.discordapp.com/badge-icons/6bdc42827b30f498e4a0713f64455d80.png?size=64'})
-
+    seen_badge_names = set()
     profile_effect = ''
     bio = data.get('bio', '')
-    custom_status = {}
     
     try:
         p_res = requests.get(f'https://discord.com/api/v9/users/{d_id}/profile?with_mutual_guilds=false', headers=headers, timeout=6)
@@ -80,14 +71,23 @@ def fetch_discord_profile(token: str, target_user_id: str = None):
                     
             for b in p_data.get('badges', []):
                 b_icon = b.get('icon')
-                if b_icon:
+                b_name = b.get('description', 'Badge')
+                if b_icon and b_name not in seen_badge_names:
+                    seen_badge_names.add(b_name)
                     badges.append({
                         'id': b.get('id'),
-                        'name': b.get('description', 'Badge'),
+                        'name': b_name,
                         'icon': f"https://cdn.discordapp.com/badge-icons/{b_icon}.png?size=64"
                     })
     except Exception:
         pass
+
+    # Nếu chưa có badge từ profile, lấy qua public flags
+    flags = data.get('flags', 0) or data.get('public_flags', 0)
+    if 'HypeSquad Balance' not in seen_badge_names and (flags & (1 << 8)):
+        badges.append({'name': 'HypeSquad Balance', 'icon': 'https://cdn.discordapp.com/badge-icons/3aa41de486fa12454c3761e8e223442e.png?size=64'})
+    if 'Active Developer' not in seen_badge_names and (flags & (1 << 22)):
+        badges.append({'name': 'Active Developer', 'icon': 'https://cdn.discordapp.com/badge-icons/6bdc42827b30f498e4a0713f64455d80.png?size=64'})
 
     return {
         'id': d_id,
