@@ -1,12 +1,24 @@
 import requests
 
-def fetch_discord_profile(token: str):
-    """Lấy toàn bộ thông tin profile Discord: Avatar, Avatar Decoration APNG, Banner, Badges, Username"""
+def fetch_discord_profile(token: str, target_user_id: str = None):
+    """Lấy toàn bộ thông tin profile Discord chính chủ 100%: Avatar, Avatar Decoration APNG, Banner, Badges, Username, Profile Effect"""
+    token = token.strip().strip('"').strip("'")
+    auth_header = token if token.startswith('Bot ') else token
     headers = {
-        'Authorization': token,
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        'Authorization': auth_header,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
     }
-    res = requests.get('https://discord.com/api/v9/users/@me', headers=headers, timeout=8)
+    
+    # Nếu có target_user_id, lấy thông tin của user đó qua profile endpoint
+    target_id = str(target_user_id).strip() if target_user_id else None
+    
+    # Lấy thông tin cơ bản
+    if target_id and target_id != '@me':
+        url_user = f'https://discord.com/api/v9/users/{target_id}'
+    else:
+        url_user = 'https://discord.com/api/v9/users/@me'
+        
+    res = requests.get(url_user, headers=headers, timeout=8)
     if res.status_code != 200:
         return None
     data = res.json()
@@ -45,8 +57,10 @@ def fetch_discord_profile(token: str):
 
     profile_effect = ''
     bio = data.get('bio', '')
+    custom_status = {}
+    
     try:
-        p_res = requests.get(f'https://discord.com/api/v9/users/{d_id}/profile?with_mutual_guilds=false', headers=headers, timeout=5)
+        p_res = requests.get(f'https://discord.com/api/v9/users/{d_id}/profile?with_mutual_guilds=false', headers=headers, timeout=6)
         if p_res.status_code == 200:
             p_data = p_res.json()
             u_prof = p_data.get('user_profile', {})
@@ -55,8 +69,15 @@ def fetch_discord_profile(token: str):
                 profile_effect = str(pfx['id'])
             elif pfx:
                 profile_effect = str(pfx)
+                
             if u_prof.get('bio'):
                 bio = u_prof.get('bio')
+                
+            if not decor_url and u_prof.get('avatar_decoration_data'):
+                u_asset = u_prof['avatar_decoration_data'].get('asset')
+                if u_asset:
+                    decor_url = f"https://cdn.discordapp.com/avatar-decoration-presets/{u_asset}.png?size=256&passthrough=true"
+                    
             for b in p_data.get('badges', []):
                 b_icon = b.get('icon')
                 if b_icon:

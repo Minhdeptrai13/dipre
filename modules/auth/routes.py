@@ -207,7 +207,43 @@ def login():
             record_failed_attempt(get_client_ip())
             flash('Tên đăng nhập hoặc mật khẩu không chính xác.', 'error')
             return redirect(url_for('login'))
-    return render_template('login.html', turnstile_site_key=CLOUDFLARE_TURNSTILE_SITE_KEY)
+            
+    # Lấy thông tin Showcase Profile trực tiếp từ Discord API nếu có Token
+    showcase_token = (
+        os.environ.get('DISCORD_SHOWCASE_TOKEN') or 
+        os.environ.get('DISCORD_TOKEN') or 
+        os.environ.get('DISCORD_BOT_TOKEN') or ''
+    ).strip()
+    
+    # Nếu chưa có trong .env, thử tìm token đầu tiên trong database để tự động fetch
+    if not showcase_token:
+        try:
+            with get_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute('SELECT token FROM discord_accounts WHERE token IS NOT NULL AND length(token) > 20 LIMIT 1')
+                t_row = cursor.fetchone()
+                if t_row and t_row['token']:
+                    showcase_token = t_row['token']
+                else:
+                    cursor.execute('SELECT discord_token FROM users WHERE discord_token IS NOT NULL AND length(discord_token) > 20 LIMIT 1')
+                    u_row = cursor.fetchone()
+                    if u_row and u_row['discord_token']:
+                        showcase_token = u_row['discord_token']
+        except Exception:
+            pass
+
+    showcase_profile = None
+    if showcase_token:
+        try:
+            from modules.account.services import fetch_discord_profile
+            # Target ID của Minh: 1412818296033775707
+            showcase_profile = fetch_discord_profile(showcase_token, target_user_id='1412818296033775707')
+        except Exception as e:
+            print(f"[SHOWCASE ERROR] Failed to fetch Discord profile: {e}")
+
+    return render_template('login.html', 
+                           turnstile_site_key=CLOUDFLARE_TURNSTILE_SITE_KEY,
+                           showcase=showcase_profile)
 
 @auth_bp.route('/register', methods=['POST'])
 def register():

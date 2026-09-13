@@ -110,18 +110,24 @@
             </div>
 
             <!-- Banner Header Discord (Dark Minimalist Discord Nitro Theme) -->
-            <div class="dlp-banner"></div>
+            <div class="dlp-banner" {% if showcase and showcase.banner %}style="background-image: url('{{ showcase.banner }}'); background-size: cover; background-position: center;"{% endif %}></div>
 
             <!-- Avatar & Badges Section -->
             <div class="dlp-avatar-section">
               <div class="dlp-avatar-wrapper">
-                <!-- Avatar thật của Minh trích xuất nét căng -->
-                <img src="{{ url_for('static', filename='img/minh_avatar_pure.png') }}" alt="Minh" class="dlp-avatar-img">
-                <!-- Discord Avatar Decoration Ring (Vòng trang trí cá heo vờn ngọc ánh sáng) -->
+                <!-- Avatar thật từ Discord CDN nếu có Token, fallback ảnh trích xuất -->
+                <img src="{% if showcase and showcase.avatar %}{{ showcase.avatar }}{% else %}{{ url_for('static', filename='img/minh_avatar_pure.png') }}{% endif %}" alt="{{ showcase.username if showcase else 'Minh' }}" class="dlp-avatar-img">
+                
+                <!-- Discord Avatar Decoration Ring: Dùng APNG chính chủ nếu fetch được từ Discord, fallback vòng trang trí CSS -->
+                {% if showcase and showcase.decoration %}
+                <img src="{{ showcase.decoration }}" class="dlp-avatar-decor-img" alt="Decoration" style="position:absolute; top:-12px; left:-12px; width:100px; height:100px; pointer-events:none; z-index:6;">
+                {% else %}
                 <div class="dlp-avatar-decor-ring">
                   <div class="dlp-decor-dolphin"></div>
                   <div class="dlp-decor-star">✦</div>
                 </div>
+                {% endif %}
+                
                 <!-- Discord Online Status Dot -->
                 <div class="dlp-status-dot online"></div>
               </div>
@@ -153,11 +159,18 @@
 
               <!-- Name & Discord Badges -->
               <div class="dlp-names-row">
-                <div class="dlp-display-name">Minh</div>
+                <div class="dlp-display-name">{{ showcase.username if showcase else 'Minh' }}</div>
                 <div class="dlp-username-badges">
-                  <span class="dlp-username">minh3003a</span>
-                  <!-- Discord Badges Chuẩn (Active Developer & HypeSquad) -->
+                  <span class="dlp-username">{{ showcase.tag if showcase else 'minh3003a' }}</span>
+                  <!-- Discord Badges Chuẩn (Từ Discord CDN nếu có, fallback SVG) -->
                   <div class="dlp-badges-group">
+                    {% if showcase and showcase.badges %}
+                      {% for b in showcase.badges %}
+                      <span class="dlp-badge-icon" title="{{ b.name }}">
+                        <img src="{{ b.icon }}" alt="{{ b.name }}" style="width:16px; height:16px; object-fit:contain;">
+                      </span>
+                      {% endfor %}
+                    {% else %}
                     <span class="dlp-badge-icon hypesquad" title="HypeSquad Balance">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="#22c55e"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/></svg>
                     </span>
@@ -167,6 +180,7 @@
                     <span class="dlp-badge-icon nitro" title="Nitro Subscriber">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="#ec4899"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                     </span>
+                    {% endif %}
                   </div>
                 </div>
               </div>
