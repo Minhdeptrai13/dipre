@@ -462,5 +462,73 @@ class DiscordRPCWorker:
                     if self.loop is loop:
                         self.loop = None
 
-# Singleton Worker của module RPC
-rpc_worker = DiscordRPCWorker()
+class MultiDiscordRPCWorker:
+    """Quản lý chạy đồng thời nhiều tài khoản Discord Rich Presence (Đa Token song song)"""
+    def __init__(self):
+        self.workers: Dict[str, DiscordRPCWorker] = {}
+        self._lock = threading.Lock()
+        self.current_config = None
+
+    def start_accounts(self, configs_list: list):
+        """Khởi động đồng loạt nhiều tài khoản cùng lúc không dừng lẫn nhau"""
+        with self._lock:
+            if configs_list:
+                self.current_config = configs_list[0]
+
+            active_tokens = {c.get('token') for c in configs_list if c.get('token')}
+            
+            # Dừng các tài khoản không còn nằm trong danh sách chọn
+            for tok in list(self.workers.keys()):
+                if tok not in active_tokens:
+                    try:
+                        self.workers[tok].stop()
+                    except Exception:
+                        pass
+                    del self.workers[tok]
+
+            # Khởi chạy các worker tương ứng
+            for cfg in configs_list:
+                tok = cfg.get('token')
+                if not tok:
+                    continue
+                if tok not in self.workers:
+                    w = DiscordRPCWorker()
+                    self.workers[tok] = w
+                    w.start(cfg)
+                else:
+                    self.workers[tok].update_presence(cfg)
+
+    def start(self, config):
+        """Hỗ trợ tương thích ngược: chạy 1 config duy nhất"""
+        self.start_accounts([config])
+
+    def update_presence(self, config):
+        with self._lock:
+            self.current_config = config
+            for w in self.workers.values():
+                w.update_presence(config)
+
+    def stop(self):
+        """Dừng tất cả các worker đang chạy"""
+        with self._lock:
+            for w in self.workers.values():
+                try:
+                    w.stop()
+                except Exception:
+                    pass
+            self.workers.clear()
+
+    def get_status_data(self):
+        with self._lock:
+            if not self.workers:
+                return {'status': 'stopped', 'workers_count': 0}
+            running = [w for w in self.workers.values() if w.status == 'running']
+            first_w = next(iter(self.workers.values()))
+            res = first_w.get_status_data()
+            res['workers_count'] = len(self.workers)
+            res['running_count'] = len(running)
+            res['status'] = 'running' if running else ('connecting' if any(w.status == 'connecting' for w in self.workers.values()) else 'stopped')
+            return res
+
+# Singleton Worker đa tài khoản của module RPC
+rpc_worker = MultiDiscordRPCWorker()

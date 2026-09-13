@@ -511,16 +511,18 @@ function buildRPCConfig() {
   if (btn1Label && btn1Url) buttons.push({ label: btn1Label, url: btn1Url });
   if (btn2Label && btn2Url) buttons.push({ label: btn2Label, url: btn2Url });
 
-  // Lấy account_id từ multi-token widget nếu người dùng chọn
+  // Lấy toàn bộ danh sách account_ids từ multi-token widget nếu người dùng chọn
+  let accountIds = [];
   let accountId = null;
   if (window.selectedMultiAccounts && window.selectedMultiAccounts['rpc'] && window.selectedMultiAccounts['rpc'].length > 0) {
-    accountId = window.selectedMultiAccounts['rpc'][0].id;
+    accountIds = window.selectedMultiAccounts['rpc'].map(a => a.id);
+    accountId = accountIds[0];
   }
 
   return {
     activity_type: actType, name, details, state, large_image: largeImage, small_image: smallImage,
     large_text: largeText, small_text: smallText, buttons, use_timestamp: useTimestamp,
-    status, app_id: appId, stream_url: streamUrl, account_id: accountId
+    status, app_id: appId, stream_url: streamUrl, account_id: accountId, account_ids: accountIds
   };
 }
 
@@ -652,10 +654,14 @@ function updateLivePreview() {
   const el = (id) => document.getElementById(id);
   if (el('pv-activity-type-header')) el('pv-activity-type-header').textContent = typeMap[actType] || 'PLAYING A GAME';
 
-  const emptyCard = el('pv-empty-activity');
-  const actCard = el('pv-activity-card');
+  // Lấy giá trị ảnh lớn
+  const largeImgVal = document.getElementById('input-large-img')?.value.trim() || 
+                      document.getElementById('input-large-image')?.value.trim() || 
+                      currentLargeImageUrl;
 
-  if (!name) {
+  const hasActivity = Boolean(name || largeImgVal || details || state);
+
+  if (!hasActivity) {
     if (emptyCard) emptyCard.classList.remove('d-none');
     if (actCard) actCard.classList.add('d-none');
   } else {
@@ -663,7 +669,9 @@ function updateLivePreview() {
     if (actCard) actCard.classList.remove('d-none');
   }
 
-  if (el('pv-activity-name')) el('pv-activity-name').textContent = name || '';
+  if (el('pv-activity-name')) {
+    el('pv-activity-name').textContent = name || (largeImgVal ? 'Discord Presence' : '');
+  }
   if (el('pv-details')) {
     el('pv-details').textContent = details || '';
     el('pv-details').style.display = details ? '' : 'none';
@@ -689,23 +697,27 @@ function updateLivePreview() {
     dotEl.style.background = cols[userStatus] || '#3ba55c';
   }
 
-  // Đồng bộ hiển thị ảnh lớn: Nếu chưa chọn ảnh thì ẩn hoàn toàn, không hiện icon mặc định
-  const largeImgVal = document.getElementById('input-large-img')?.value.trim() || 
-                      document.getElementById('input-large-image')?.value.trim() || 
-                      currentLargeImageUrl;
+  // Đồng bộ hiển thị ảnh lớn cả trên ô Form Settings và Discord Card 1:1
   const pvLarge = document.getElementById('pv-large-img');
-  if (pvLarge) {
-    if (largeImgVal) {
-      if (!largeImgVal.startsWith('http')) {
-        const known = KNOWN_ASSET_ICONS[largeImgVal];
-        pvLarge.src = known ? known.url : largeImgVal;
-      } else {
-        pvLarge.src = largeImgVal;
-      }
+  const boxLarge = document.getElementById('box-large-preview');
+  if (largeImgVal) {
+    const finalUrl = (!largeImgVal.startsWith('http')) ? (KNOWN_ASSET_ICONS[largeImgVal]?.url || largeImgVal) : largeImgVal;
+    if (pvLarge) {
+      pvLarge.src = finalUrl;
       pvLarge.style.display = 'block';
-    } else {
+    }
+    if (boxLarge) {
+      boxLarge.src = finalUrl;
+      boxLarge.style.display = 'block';
+    }
+  } else {
+    if (pvLarge) {
       pvLarge.src = '';
       pvLarge.style.display = 'none';
+    }
+    if (boxLarge) {
+      boxLarge.src = '';
+      boxLarge.style.display = 'none';
     }
   }
 
@@ -965,27 +977,43 @@ async function uploadImageFile(input, type) {
       if (type === 'large') {
         currentLargeImageUrl = url;
         const img = document.getElementById('box-large-preview');
-        if (img) img.src = url;
+        if (img) {
+          img.src = url;
+          img.style.display = 'block';
+        }
+        const inp = document.getElementById('input-large-img');
+        if (inp) inp.value = url;
+        const inpOld = document.getElementById('input-large-image');
+        if (inpOld) inpOld.value = url;
+        const manualWrap = document.getElementById('manual-large-wrap');
+        if (manualWrap) manualWrap.classList.remove('d-none');
+        
         const pvImg = document.getElementById('pv-large-img');
-        if (pvImg) pvImg.src = url;
+        if (pvImg) {
+          pvImg.src = url;
+          pvImg.style.display = 'block';
+        }
         const src = document.getElementById('lbl-large-source');
-        if (src) src.textContent = 'Hinh tai len';
+        if (src) src.textContent = 'Hình tải lên';
       } else {
         currentSmallImageUrl = url;
         const wrap = document.getElementById('wrap-small-preview');
         if (wrap) wrap.style.display = '';
         const img = document.getElementById('box-small-preview');
-        if (img) { img.src = url; img.style.display = ''; }
+        if (img) { img.src = url; img.style.display = 'block'; }
+        const inp = document.getElementById('input-small-img');
+        if (inp) inp.value = url;
         const pvImg = document.getElementById('pv-small-img');
         if (pvImg) { pvImg.src = url; pvImg.style.display = 'block'; }
         const src = document.getElementById('lbl-small-source');
-        if (src) src.textContent = 'Hinh tai len';
+        if (src) src.textContent = 'Hình tải lên';
         const btnAdd = document.getElementById('btn-add-small');
-        if (btnAdd) btnAdd.textContent = 'Doi Anh';
+        if (btnAdd) btnAdd.textContent = 'Đổi Ảnh';
         const btnRemove = document.getElementById('btn-remove-small');
         if (btnRemove) btnRemove.style.display = '';
       }
-      showToast('Da tai len anh!', 'success');
+      updateLivePreview();
+      showToast('Đã tải lên ảnh thành công!', 'success');
     } else showToast(d.error || 'Tai len that bai', 'error');
   } catch (e) { showToast('Loi tai len anh', 'error'); }
 }

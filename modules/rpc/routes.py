@@ -60,57 +60,81 @@ def api_start():
     account_id = raw_data.get('account_id') or data.get('account_id')
     token = data.get('token', '').strip()
 
-    if not token and user_id:
+    account_ids = raw_data.get('account_ids') or []
+    if not account_ids and account_id:
+        account_ids = [account_id]
+
+    tokens_list = []
+    if account_ids and user_id:
         with get_db() as conn:
             cursor = conn.cursor()
-            # 1. Nếu có chỉ định account_id cụ thể từ widget
-            if account_id and str(account_id) != 'main':
-                cursor.execute('SELECT token FROM discord_accounts WHERE id = ? AND user_id = ?', (account_id, user_id))
-                acc_row = cursor.fetchone()
-                if acc_row and acc_row['token']:
-                    token = acc_row['token']
+            for aid in account_ids:
+                if str(aid) == 'main':
+                    cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
+                    r = cursor.fetchone()
+                    if r and r['discord_token']:
+                        tokens_list.append(r['discord_token'])
+                else:
+                    cursor.execute('SELECT token FROM discord_accounts WHERE id = ? AND user_id = ?', (aid, user_id))
+                    r = cursor.fetchone()
+                    if r and r['token']:
+                        tokens_list.append(r['token'])
 
-            # 2. Tìm tài khoản active trong discord_accounts
-            if not token:
+    # Nếu không có danh sách cụ thể, fallback lấy token theo thứ tự cũ
+    if not tokens_list:
+        if token:
+            tokens_list.append(token)
+        elif user_id:
+            with get_db() as conn:
+                cursor = conn.cursor()
                 cursor.execute('SELECT token FROM discord_accounts WHERE user_id = ? AND is_active = 1 LIMIT 1', (user_id,))
                 acc_row = cursor.fetchone()
                 if acc_row and acc_row['token']:
-                    token = acc_row['token']
+                    tokens_list.append(acc_row['token'])
+                else:
+                    cursor.execute('SELECT token FROM discord_accounts WHERE user_id = ? ORDER BY id DESC LIMIT 1', (user_id,))
+                    acc_row = cursor.fetchone()
+                    if acc_row and acc_row['token']:
+                        tokens_list.append(acc_row['token'])
+                    else:
+                        cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
+                        row = cursor.fetchone()
+                        if row and row['discord_token']:
+                            tokens_list.append(row['discord_token'])
 
-            # 3. Tìm tài khoản mới nhất trong discord_accounts
-            if not token:
-                cursor.execute('SELECT token FROM discord_accounts WHERE user_id = ? ORDER BY id DESC LIMIT 1', (user_id,))
-                acc_row = cursor.fetchone()
-                if acc_row and acc_row['token']:
-                    token = acc_row['token']
+        if not tokens_list and 'discord_token' in session:
+            tokens_list.append(session['discord_token'])
 
-            # 4. Tìm trong users.discord_token
-            if not token:
-                cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
-                row = cursor.fetchone()
-                if row and row['discord_token']:
-                    token = row['discord_token']
+        if not tokens_list:
+            showcase_token = os.environ.get('DISCORD_SHOWCASE_TOKEN', '').strip()
+            if showcase_token:
+                tokens_list.append(showcase_token)
 
-    if not token and 'discord_token' in session:
-        token = session['discord_token']
-
-    if not token:
-        showcase_token = os.environ.get('DISCORD_SHOWCASE_TOKEN', '').strip()
-        if showcase_token:
-            token = showcase_token
-
-    if not token:
+    if not tokens_list:
         return (jsonify({'success': False, 'message': 'Chưa có token. Vui lòng liên kết Discord Token tại mục Quản Lý Tài Khoản trước!'}), 400)
 
-    data['token'] = token
-    activity_name = data.get('activityName', '').strip()
-    if not activity_name:
-        data['activityName'] = 'Visual Studio Code'
+    # Loại bỏ token trùng lặp
+    unique_tokens = list(dict.fromkeys(tokens_list))
+
+    activity_name = data.get('activityName', '').strip() or 'Visual Studio Code'
+    data['activityName'] = activity_name
+
+    configs_to_run = []
+    for tok in unique_tokens:
+        cfg = data.copy()
+        cfg['token'] = tok
+        configs_to_run.append(cfg)
+
     if user_id:
         track_feature_use(user_id, 'rpc_custom')
-    rpc_worker.start(data)
-    log_event(f'Khởi động Discord RPC: {data["activityName"]}', 'success')
-    return jsonify({'success': True, 'message': 'Đã gửi lệnh kết nối tới Discord Gateway'})
+
+    rpc_worker.start_accounts(configs_to_run)
+    log_event(f'Khởi động Discord RPC song song cho {len(configs_to_run)} tài khoản: {activity_name}', 'success')
+    return jsonify({
+        'success': True,
+        'message': f'Đã kích hoạt Rich Presence đồng loạt trên {len(configs_to_run)} tài khoản!',
+        'count': len(configs_to_run)
+    })
 
 @rpc_bp.route('/api/update', methods=['POST'])
 @login_required

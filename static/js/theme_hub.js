@@ -320,11 +320,17 @@ function applyTemplate(templateId, config) {
     if (typeSelect) typeSelect.value = config.activity_type;
   }
   if (config.large_image) {
-    const imgInput = document.getElementById('input-custom-large-url');
+    const imgInput = document.getElementById('input-large-img') || document.getElementById('input-custom-large-url');
     if (imgInput) imgInput.value = config.large_image;
+    currentLargeImageUrl = config.large_image;
+    const boxLarge = document.getElementById('box-large-preview');
+    if (boxLarge) {
+      boxLarge.src = config.large_image;
+      boxLarge.style.display = 'block';
+    }
   }
   if (config.button1_label) {
-    const b1l = document.getElementById('input-btn1-text');
+    const b1l = document.getElementById('input-btn1-label') || document.getElementById('input-btn1-text');
     if (b1l) b1l.value = config.button1_label;
   }
   if (config.button1_url) {
@@ -332,7 +338,7 @@ function applyTemplate(templateId, config) {
     if (b1u) b1u.value = config.button1_url;
   }
   if (config.button2_label) {
-    const b2l = document.getElementById('input-btn2-text');
+    const b2l = document.getElementById('input-btn2-label') || document.getElementById('input-btn2-text');
     if (b2l) b2l.value = config.button2_label;
   }
   if (config.button2_url) {
@@ -347,6 +353,9 @@ function applyTemplate(templateId, config) {
 
   // Chuyển sang Tab Tạo / Tùy Chỉnh để người dùng kiểm tra Live Preview
   switchThemeSubTab('editor');
+  if (typeof updateLivePreview === 'function') {
+    updateLivePreview();
+  }
   
   if (typeof showToast === 'function') {
     showToast('Đã áp dụng Template thành công! Bạn có thể xem trước và bấm "Bắt Đầu Presence".', 'success');
