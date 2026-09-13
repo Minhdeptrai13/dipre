@@ -11399,4 +11399,484 @@ body.light-theme .dcm-item:hover {
   display: none !important;
 }
 
+/* ==========================================================================
+   LYRIC DISCOVERY & SEARCH MOCKUP 1:1
+   ========================================================================== */
+.lyric-main-discovery-box {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+
+/* 3 Sub-tabs bar trên đầu */
+.lyric-subtabs-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 1.25rem;
+  width: 100%;
+  max-width: 480px;
+}
+
+.lyric-subtab-btn {
+  flex: 1;
+  text-align: center;
+  padding: 8px 16px;
+  border-radius: 9px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #94a3b8;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.lyric-subtab-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.lyric-subtab-btn.active {
+  background: #ffffff;
+  color: #2563eb;
+  font-weight: 700;
+  border: 1.5px solid #2563eb;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
+}
+
+body[data-theme="dark"] .lyric-subtab-btn.active {
+  background: rgba(37, 99, 235, 0.15);
+  color: #60a5fa;
+  border: 1.5px solid #3b82f6;
+}
+
+/* Thanh tìm kiếm hình viên thuốc (Pill Search Bar) */
+.lyric-pill-search-container {
+  margin-bottom: 1.25rem;
+}
+
+.lps-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  border-radius: 9999px;
+  padding: 8px 18px;
+  transition: all 0.25s ease;
+}
+
+.lps-input-wrap:focus-within {
+  border-color: #2563eb;
+  background: rgba(37, 99, 235, 0.04);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.lps-search-icon {
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.lps-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.lps-search-input::placeholder {
+  color: #64748b;
+}
+
+.lps-search-action-btn {
+  padding: 6px 16px;
+  border-radius: 9999px;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.lps-search-action-btn:hover {
+  background: #1d4ed8;
+  transform: scale(1.03);
+}
+
+/* Nhãn Section Header */
+.lyric-section-title-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #94a3b8;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+/* Lưới 2 cột Card Bài Hát (2-Column Responsive Card Grid) */
+.lyric-song-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.lyric-song-card {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.lyric-song-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.lsc-thumb {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.lsc-meta {
+  flex: 1;
+  margin-left: 12px;
+  margin-right: 8px;
+  min-width: 0;
+}
+
+.lsc-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lsc-artist {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lsc-add-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  background: transparent;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.lsc-add-btn:hover {
+  border-color: #2563eb;
+  background: rgba(37, 99, 235, 0.2);
+  color: #60a5fa;
+  transform: scale(1.1);
+}
+
+/* Pagination Row */
+.lyric-pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 1.5rem;
+}
+
+.lpg-btn {
+  min-width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #94a3b8;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.lpg-btn:hover {
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.lpg-btn.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+}
+
+/* ==========================================================================
+   VOICE SOUNDBOARD STYLES
+   ========================================================================== */
+.soundboard-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.sb-card {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.sb-card:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.35);
+  transform: translateY(-2px);
+}
+
+.sb-card.playing {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: #818cf8;
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.4);
+}
+
+.sbc-icon {
+  font-size: 1.6rem;
+  margin-right: 12px;
+}
+
+.sbc-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.sbc-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.sbc-tag {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.sbc-play-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: #818cf8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  margin-left: 8px;
+}
+
+/* ==========================================================================
+   ACCOUNT CLEANER STYLES
+   ========================================================================== */
+.cleaner-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.cleaner-tool-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.ctc-header {
+  display: flex;
+  gap: 12px;
+}
+
+.ctc-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.ctc-icon.red { background: rgba(244, 63, 94, 0.15); }
+.ctc-icon.orange { background: rgba(249, 115, 22, 0.15); }
+.ctc-icon.blue { background: rgba(59, 130, 246, 0.15); }
+.ctc-icon.purple { background: rgba(168, 85, 247, 0.15); }
+
+.ctc-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.ctc-desc {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   MULTI-ACCOUNT GRID & INBOX STYLES
+   ========================================================================== */
+.accounts-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 14px;
+}
+
+.acc-card-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.acc-card-item.active {
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.05);
+}
+
+.aci-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.aci-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  object-fit: cover;
+  position: relative;
+}
+
+.aci-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.aci-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.aci-id {
+  font-size: 0.74rem;
+  color: #94a3b8;
+  font-family: monospace;
+}
+
+.aci-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.inbox-channels-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+  margin-top: 1rem;
+}
+
+.inbox-item-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+}
+
+.inbox-item-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.iic-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.iic-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.iic-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.iic-last-msg {
+  font-size: 0.76rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+
 

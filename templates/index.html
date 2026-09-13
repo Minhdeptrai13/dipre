@@ -1014,52 +1014,115 @@
               <button type="button" class="tnb-cta" onclick="switchTab('tab-accounts')">Quản Lý Token</button>
             </div>
 
-            <!-- TÌM KIẾM NHẠC NCT / LRCLIB -->
-            <div class="settings-section">
-              <div class="settings-section-header">
-                <div class="ssh-title">Tìm Bài Hát Có Lời NhacCuaTui / LRCLIB</div>
-                <span class="ssh-badge">Đồng Bộ Có Lời 100%</span>
-              </div>
-              <div class="sf-row">
-                <label class="sf-label">Tìm kiếm bài hát theo tên hoặc ca sĩ</label>
-                <div class="sf-input-with-btn">
-                  <input type="text" id="input-nct-search" class="sf-input"
-                    placeholder="Ví dụ: Lạc Trôi, Nàng Thơ, Bước Qua Nhau, Sơn Tùng..." onkeydown="if(event.key==='Enter') searchNctLyrics()">
-                  <button type="button" class="sf-addon-btn primary" onclick="searchNctLyrics()">Tìm Kiếm</button>
-                </div>
-                <div id="nct-search-results" class="nct-search-dropdown d-none"></div>
+            <!-- SUB-TABS & TÌM KIẾM BÀI HÁT THEO ẢNH MOCKUP 1:1 -->
+            <div class="settings-section lyric-main-discovery-box">
+              
+              <!-- 3 Sub-Tabs trên đầu: Khám phá, Playlist, Lịch sử -->
+              <div class="lyric-subtabs-wrap">
+                <button type="button" class="lyric-subtab-btn active" id="subtab-discover" onclick="switchLyricSubTab('discover')">Khám phá</button>
+                <button type="button" class="lyric-subtab-btn" id="subtab-playlist" onclick="switchLyricSubTab('playlist')">Playlist (2)</button>
+                <button type="button" class="lyric-subtab-btn" id="subtab-history" onclick="switchLyricSubTab('history')">Lịch sử</button>
               </div>
 
-              <div class="sf-row">
-                <label class="sf-label" for="select-lyric-track">Hoặc chọn bài mẫu tuyển chọn có sẵn</label>
-                <select id="select-lyric-track" class="sf-select" title="Chọn bài hát mẫu"
-                  aria-label="Bài hát mẫu có sẵn" onchange="handleSelectLyricTrack()">
-                  <option value="lactroi">Lạc Trôi — Sơn Tùng M-TP (Full Synced Lyrics)</option>
-                  <option value="nangtho">Nàng Thơ — Hoàng Dũng (Full Synced Lyrics)</option>
-                  <option value="buocquanhau">Bước Qua Nhau — Vũ (Full Synced Lyrics)</option>
-                  <option value="cyber">Neon Cyber — Synthwave (Full Synced Lyrics)</option>
-                  <option value="sunset">Sunset Lover — Lo-Fi Chill (Full Synced Lyrics)</option>
-                  <option value="custom">Tự Dán Lời Bài Hát (Custom LRC / Text)</option>
-                </select>
+              <!-- Thanh tìm kiếm to hình viên thuốc (Pill Search Input) -->
+              <div class="lyric-pill-search-container">
+                <div class="lps-input-wrap">
+                  <svg class="lps-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  <input type="text" id="input-nct-search" class="lps-search-input"
+                    placeholder="gửi em người bất tử, lạc trôi, nàng thơ, bước qua nhau..." 
+                    value="gửi em người bất tử"
+                    onkeydown="if(event.key==='Enter') searchNctLyrics(1)">
+                  <button type="button" class="lps-search-action-btn" onclick="searchNctLyrics(1)">
+                    <span>Tìm</span>
+                  </button>
+                </div>
               </div>
+
+              <!-- Tiêu đề Mục: KẾT QUẢ TÌM KIẾM -->
+              <div class="lyric-section-title-label">KẾT QUẢ TÌM KIẾM</div>
+
+              <!-- Lưới 2 Cột Card Bài Hát (2-Column Responsive Card Grid) -->
+              <div class="lyric-song-cards-grid" id="lyric-song-cards-grid">
+                <!-- Card 1 -->
+                <div class="lyric-song-card" onclick="selectTrackCard('Gửi em, người bất tử', 'Meliodas', 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=120&auto=format&fit=crop&q=80')">
+                  <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=120&auto=format&fit=crop&q=80" alt="Meliodas" class="lsc-thumb">
+                  <div class="lsc-meta">
+                    <div class="lsc-title">Gửi em, người bất tử</div>
+                    <div class="lsc-artist">Meliodas</div>
+                  </div>
+                  <button type="button" class="lsc-add-btn" title="Chọn và phát bài này" onclick="event.stopPropagation(); selectTrackCard('Gửi em, người bất tử', 'Meliodas', 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=120&auto=format&fit=crop&q=80')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  </button>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="lyric-song-card" onclick="selectTrackCard('Gửi em, người bất tử (432 Hz)', 'hn1vv', 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=120&auto=format&fit=crop&q=80')">
+                  <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=120&auto=format&fit=crop&q=80" alt="hn1vv" class="lsc-thumb">
+                  <div class="lsc-meta">
+                    <div class="lsc-title">Gửi em, người bất tử (432 Hz)</div>
+                    <div class="lsc-artist">hn1vv</div>
+                  </div>
+                  <button type="button" class="lsc-add-btn" title="Chọn và phát bài này" onclick="event.stopPropagation(); selectTrackCard('Gửi em, người bất tử (432 Hz)', 'hn1vv', 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=120&auto=format&fit=crop&q=80')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  </button>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="lyric-song-card" onclick="selectTrackCard('Gửi em, người bất tử - QuinvyRemix', 'guest253iwe4g@', 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=120&auto=format&fit=crop&q=80')">
+                  <img src="https://images.unsplash.com/photo-1534447677768-be436bb09401?w=120&auto=format&fit=crop&q=80" alt="QuinvyRemix" class="lsc-thumb">
+                  <div class="lsc-meta">
+                    <div class="lsc-title">Gửi em, người bất tử - QuinvyRemix</div>
+                    <div class="lsc-artist">guest253iwe4g@</div>
+                  </div>
+                  <button type="button" class="lsc-add-btn" title="Chọn và phát bài này" onclick="event.stopPropagation(); selectTrackCard('Gửi em, người bất tử - QuinvyRemix', 'guest253iwe4g@', 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=120&auto=format&fit=crop&q=80')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  </button>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="lyric-song-card" onclick="selectTrackCard('gui em, nguoi bat tu (demo)', 'w1bi', 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=120&auto=format&fit=crop&q=80')">
+                  <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=120&auto=format&fit=crop&q=80" alt="w1bi" class="lsc-thumb">
+                  <div class="lsc-meta">
+                    <div class="lsc-title">gui em, nguoi bat tu (demo)</div>
+                    <div class="lsc-artist">w1bi</div>
+                  </div>
+                  <button type="button" class="lsc-add-btn" title="Chọn và phát bài này" onclick="event.stopPropagation(); selectTrackCard('gui em, nguoi bat tu (demo)', 'w1bi', 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=120&auto=format&fit=crop&q=80')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Thanh Phân Trang Pagination (1, 2, 3) -->
+              <div class="lyric-pagination-container">
+                <button type="button" class="lpg-btn active" id="lpg-1" onclick="searchNctLyrics(1)">1</button>
+                <button type="button" class="lpg-btn" id="lpg-2" onclick="searchNctLyrics(2)">2</button>
+                <button type="button" class="lpg-btn" id="lpg-3" onclick="searchNctLyrics(3)">3</button>
+              </div>
+
             </div>
 
-            <!-- HTML5 AUDIO PLAYER HIỆN ĐẠI (THAY THẾ SOUNDCLOUD) -->
-            <div class="settings-section dipre-player-section">
+            <!-- HTML5 AUDIO PLAYER HIỆN ĐẠI (ĐIỀU KHIỂN & ĐỒNG BỘ DISCORD) -->
+            <div class="settings-section dipre-player-section mt-3">
               <div class="settings-section-header">
-                <div class="ssh-title">Trình Phát Nhạc HTML5 Studio</div>
+                <div>
+                  <div class="ssh-title">Trình Phát Nhạc &amp; Đồng Bộ Lyric Discord</div>
+                  <div class="ssh-sub">Đang phát bài đã chọn. Lời Karaoke sẽ tự động đồng bộ lên Discord Profile realtime.</div>
+                </div>
                 <span class="ssh-badge" id="player-track-badge">NCT Audio</span>
               </div>
 
               <div class="dipre-audio-player-card">
                 <div class="dap-track-info">
                   <div class="dap-art-wrap">
-                    <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=120&auto=format&fit=crop&q=80" alt="Track Art" class="dap-art-img" id="dap-art">
+                    <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=120&auto=format&fit=crop&q=80" alt="Track Art" class="dap-art-img" id="dap-art">
                     <div class="dap-art-disc"></div>
                   </div>
                   <div class="dap-meta">
-                    <div class="dap-title" id="dap-title">Lạc Trôi</div>
-                    <div class="dap-artist" id="dap-artist">Sơn Tùng M-TP • NhacCuaTui Synced</div>
+                    <div class="dap-title" id="dap-title">Gửi em, người bất tử</div>
+                    <div class="dap-artist" id="dap-artist">Meliodas • NhacCuaTui Synced</div>
                   </div>
                 </div>
 
@@ -1070,7 +1133,7 @@
                 <div class="dap-progress-bar-wrap">
                   <div class="dap-time-display">
                     <span id="dap-cur-time">00:00</span>
-                    <span id="dap-total-time">04:02</span>
+                    <span id="dap-total-time">03:45</span>
                   </div>
                   <div class="dap-progress-rail" id="dap-progress-rail" onclick="handleSeekAudio(event)">
                     <div class="dap-progress-fill" id="dap-progress-fill"></div>
@@ -1095,8 +1158,7 @@
               <div class="sf-grid-2 mt-3">
                 <div class="sf-row">
                   <label class="sf-label" for="select-lyric-emoji">Emoji Trạng Thái</label>
-                  <select id="select-lyric-emoji" class="sf-select" title="Chọn emoji trạng thái"
-                    aria-label="Emoji trạng thái">
+                  <select id="select-lyric-emoji" class="sf-select" title="Chọn emoji trạng thái" aria-label="Emoji trạng thái">
                     <option value="🎵" selected>🎵 Nốt Nhạc</option>
                     <option value="🎧">🎧 Tai Nghe</option>
                     <option value="⚡">⚡ Tia Sét</option>
@@ -1105,14 +1167,24 @@
                     <option value="🌸">🌸 Hoa Đào</option>
                   </select>
                 </div>
-                <div class="sf-row"></div>
+                <div class="sf-row">
+                  <label class="sf-label" for="select-lyric-track">Hoặc chọn nhanh bài mẫu</label>
+                  <select id="select-lyric-track" class="sf-select" onchange="handleSelectLyricTrack()">
+                    <option value="bat_tu">Gửi Em, Người Bất Tử — Meliodas</option>
+                    <option value="lactroi">Lạc Trôi — Sơn Tùng M-TP</option>
+                    <option value="nangtho">Nàng Thơ — Hoàng Dũng</option>
+                    <option value="buocquanhau">Bước Qua Nhau — Vũ</option>
+                    <option value="cyber">Neon Cyber — Synthwave</option>
+                    <option value="custom">Tự Dán Lời Bài Hát (Custom LRC)</option>
+                  </select>
+                </div>
               </div>
 
-              <!-- Khu vực nhập thủ công / upload STT nếu muốn -->
+              <!-- Khu vực nhập thủ công / upload LRC nếu muốn -->
               <div class="lyric-custom-box d-none" id="custom-lrc-group">
                 <label class="sf-label">Lời bài hát thủ công (Định dạng [mm:ss] hoặc lời thường)</label>
                 <textarea id="input-custom-lrc" class="sf-textarea" rows="6"
-                  placeholder="[00:05] Chiều tàn, ánh đèn neon le lói&#10;[00:12] Bóng tối phủ mờ con đường những người đi..."></textarea>
+                  placeholder="[00:05] Gửi em người bất tử, nơi phương trời xa xăm&#10;[00:15] Từng giọt sầu vương nhẹ trên đôi mi người đi..."></textarea>
                 <div class="sf-row" style="margin-top:10px;">
                   <label class="sf-label">Hoặc tải file MP3 &amp; File LRC từ máy tính</label>
                   <div class="sf-input-with-btn">
@@ -1630,23 +1702,310 @@
         </div>
       </section>
 
-      <!-- TAB 3.2: VOICE SOUNDBOARD (COMING SOON) -->
+      <!-- TAB 3.2: VOICE SOUNDBOARD STUDIO -->
       <section class="tab-panel" id="tab-voice-coming">
-        <div class="coming-soon-card">
-          <div class="csc-badge">Coming Soon in Next Update</div>
-          <h2 class="csc-title">Voice Soundboard &amp; Radio Bot</h2>
-          <p class="csc-desc">Tính năng phát âm thanh Soundboard trực tiếp vào kênh đàm thoại của bạn và stream nhạc Lo-Fi Radio không giới hạn thời gian.</p>
-          <button type="button" class="ssh-action" onclick="switchTab('tab-voice-afk')">Quay lại Treo Voice 24/7</button>
+        <div class="settings-section mb-3">
+          <div class="settings-section-header flex-wrap gap-3">
+            <div>
+              <div class="ssh-title dipre-text-gradient" style="font-size: 1.25rem;">
+                Discord Voice Soundboard &amp; SFX Studio
+              </div>
+              <div class="ssh-sub">
+                Phát hiệu ứng âm thanh Soundboard cực căng vào phòng voice Discord hoặc nghe thử trực tiếp trên trình duyệt.
+              </div>
+            </div>
+            <div class="ssh-action-group gap-2">
+              <button type="button" class="rpc-btn rpc-btn-stop" onclick="stopAllSoundboardSounds()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg>
+                <span>Dừng Tất Cả Âm</span>
+              </button>
+              <div class="dap-volume-box" style="background: rgba(255,255,255,0.06); padding: 6px 12px; border-radius: 8px;">
+                <span>🔊 Master:</span>
+                <input type="range" id="soundboard-master-volume" min="0" max="1" step="0.05" value="0.85" oninput="updateSoundboardVolume(this.value)">
+              </div>
+            </div>
+          </div>
+
+          <!-- LƯỚI NÚT ÂM THANH SOUNDBOARD ĐA DẠNG -->
+          <div class="soundboard-cards-grid mt-3" id="soundboard-cards-grid">
+            
+            <div class="sb-card" onclick="triggerSoundboardPlay('airhorn')">
+              <div class="sbc-icon">📢</div>
+              <div class="sbc-meta">
+                <div class="sbc-title">Airhorn MLG</div>
+                <div class="sbc-tag">Kèn hơi quẩy căng đét</div>
+              </div>
+              <button type="button" class="sbc-play-btn" title="Phát">▶</button>
+            </div>
+
+            <div class="sb-card" onclick="triggerSoundboardPlay('badumtss')">
+              <div class="sbc-icon">🥁</div>
+              <div class="sbc-meta">
+                <div class="sbc-title">Ba Dum Tss</div>
+                <div class="sbc-tag">Tấu hài cổ điển</div>
+              </div>
+              <button type="button" class="sbc-play-btn" title="Phát">▶</button>
+            </div>
+
+            <div class="sb-card" onclick="triggerSoundboardPlay('quack')">
+              <div class="sbc-icon">🦆</div>
+              <div class="sbc-meta">
+                <div class="sbc-title">Vịt Quack Quack</div>
+                <div class="sbc-tag">Tiếng vịt kêu bựa</div>
+              </div>
+              <button type="button" class="sbc-play-btn" title="Phát">▶</button>
+            </div>
+
+            <div class="sb-card" onclick="triggerSoundboardPlay('bruh')">
+              <div class="sbc-icon">🗿</div>
+              <div class="sbc-meta">
+                <div class="sbc-title">Bruh Moment</div>
+                <div class="sbc-tag">Cạn lời 100%</div>
+              </div>
+              <button type="button" class="sbc-play-btn" title="Phát">▶</button>
+            </div>
+
+            <div class="sb-card" onclick="triggerSoundboardPlay('vineboom')">
+              <div class="sbc-icon">💥</div>
+              <div class="sbc-meta">
+                <div class="sbc-title">Vine Boom</div>
+                <div class="sbc-tag">Nổ giật bắn mình</div>
+              </div>
+              <button type="button" class="sbc-play-btn" title="Phát">▶</button>
+            </div>
+
+            <div class="sb-card" onclick="triggerSoundboardPlay('metalpipe')">
+              <div class="sbc-icon">🧱</div>
+              <div class="sbc-meta">
+                <div class="sbc-title">Metal Pipe</div>
+                <div class="sbc-tag">Ống sắt rơi rộn ràng</div>
+              </div>
+              <button type="button" class="sbc-play-btn" title="Phát">▶</button>
+            </div>
+
+            <div class="sb-card" onclick="triggerSoundboardPlay('fbi')">
+              <div class="sbc-icon">🚪</div>
+              <div class="sbc-meta">
+                <div class="sbc-title">FBI Open Up!</div>
+                <div class="sbc-tag">Cảnh sát ập vào</div>
+              </div>
+              <button type="button" class="sbc-play-btn" title="Phát">▶</button>
+            </div>
+
+            <div class="sb-card" onclick="triggerSoundboardPlay('discordping')">
+              <div class="sbc-icon">🔔</div>
+              <div class="sbc-meta">
+                <div class="sbc-title">Discord Ping Troll</div>
+                <div class="sbc-tag">Troll bạn bè tag ảo</div>
+              </div>
+              <button type="button" class="sbc-play-btn" title="Phát">▶</button>
+            </div>
+
+            <div class="sb-card" onclick="triggerSoundboardPlay('siren')">
+              <div class="sbc-icon">🚨</div>
+              <div class="sbc-meta">
+                <div class="sbc-title">Police Siren</div>
+                <div class="sbc-tag">Còi hụ báo động</div>
+              </div>
+              <button type="button" class="sbc-play-btn" title="Phát">▶</button>
+            </div>
+
+            <div class="sb-card" onclick="triggerSoundboardPlay('laugh')">
+              <div class="sbc-icon">🤣</div>
+              <div class="sbc-meta">
+                <div class="sbc-title">Evil Laugh</div>
+                <div class="sbc-tag">Tiếng cười nham hiểm</div>
+              </div>
+              <button type="button" class="sbc-play-btn" title="Phát">▶</button>
+            </div>
+
+            <div class="sb-card" onclick="triggerSoundboardPlay('animewow')">
+              <div class="sbc-icon">😲</div>
+              <div class="sbc-meta">
+                <div class="sbc-title">Anime Wow!</div>
+                <div class="sbc-tag">Kawaii ngạc nhiên</div>
+              </div>
+              <button type="button" class="sbc-play-btn" title="Phát">▶</button>
+            </div>
+
+            <div class="sb-card" onclick="triggerSoundboardPlay('cricket')">
+              <div class="sbc-icon">🦗</div>
+              <div class="sbc-meta">
+                <div class="sbc-title">Cricket Chirp</div>
+                <div class="sbc-tag">Tiếng dế kêu lạc lõng</div>
+              </div>
+              <button type="button" class="sbc-play-btn" title="Phát">▶</button>
+            </div>
+
+            <div class="sb-card" onclick="triggerSoundboardPlay('fart')">
+              <div class="sbc-icon">💨</div>
+              <div class="sbc-meta">
+                <div class="sbc-title">Ultra Fart Reverb</div>
+                <div class="sbc-tag">Âm thanh siêu bựa</div>
+              </div>
+              <button type="button" class="sbc-play-btn" title="Phát">▶</button>
+            </div>
+
+            <div class="sb-card" onclick="triggerSoundboardPlay('sadviolin')">
+              <div class="sbc-icon">🎻</div>
+              <div class="sbc-meta">
+                <div class="sbc-title">Sad Violin</div>
+                <div class="sbc-tag">Vĩ cầm bi kịch</div>
+              </div>
+              <button type="button" class="sbc-play-btn" title="Phát">▶</button>
+            </div>
+
+            <div class="sb-card" onclick="triggerSoundboardPlay('rickroll')">
+              <div class="sbc-icon">🕺</div>
+              <div class="sbc-meta">
+                <div class="sbc-title">Rickroll 8-Bit</div>
+                <div class="sbc-tag">Never Gonna Give You Up</div>
+              </div>
+              <button type="button" class="sbc-play-btn" title="Phát">▶</button>
+            </div>
+
+            <div class="sb-card" onclick="triggerSoundboardPlay('gg')">
+              <div class="sbc-icon">🏆</div>
+              <div class="sbc-meta">
+                <div class="sbc-title">GG Well Played</div>
+                <div class="sbc-tag">Chiến thắng rực rỡ</div>
+              </div>
+              <button type="button" class="sbc-play-btn" title="Phát">▶</button>
+            </div>
+
+          </div>
+
+          <!-- TẢI LÊN FILE ÂM THANH RIÊNG (CUSTOM SOUND) -->
+          <div class="modal-section-box mt-3">
+            <div class="msb-title">TẢI LÊN FILE HIỆU ỨNG ÂM THANH RIÊNG (.MP3, .WAV)</div>
+            <div class="sf-row mt-2">
+              <input type="file" id="input-custom-soundboard-file" class="sf-input" accept=".mp3,.wav,.ogg" onchange="handleUploadCustomSound(this)">
+            </div>
+            <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 6px;">
+              💡 Tệp âm thanh sẽ được mã hóa và có thể phát lặp lại hoặc dùng làm Soundboard cá nhân tức thì.
+            </div>
+          </div>
         </div>
       </section>
 
-      <!-- TAB 4.2: SCRIPT CLEANER (COMING SOON) -->
+      <!-- TAB 4.2: DISCORD ACCOUNT CLEANER STUDIO -->
       <section class="tab-panel" id="tab-script-coming">
-        <div class="coming-soon-card">
-          <div class="csc-badge">Coming Soon in Next Update</div>
-          <h2 class="csc-title">Discord Account Cleaner &amp; Claimer</h2>
-          <p class="csc-desc">Bộ công cụ tự động dọn dẹp tin nhắn rác, tự động claim phần thưởng Nitro Promotion và tối ưu hóa tài khoản an toàn.</p>
-          <button type="button" class="ssh-action" onclick="switchTab('tab-quest')">Quay lại Auto Quest</button>
+        <div class="settings-section mb-3">
+          <div class="settings-section-header flex-wrap gap-3">
+            <div>
+              <div class="ssh-title dipre-text-gradient" style="font-size: 1.25rem;">
+                Discord Account Cleaner &amp; Privacy Shield
+              </div>
+              <div class="ssh-sub">
+                Dọn dẹp tin nhắn riêng tư, hủy yêu cầu kết bạn, rời server rác hàng loạt chống Rate Limit 429 an toàn.
+              </div>
+            </div>
+            <div class="ssh-action-group gap-2">
+              <button type="button" class="rpc-btn rpc-btn-stop" id="btn-cleaner-stop" onclick="stopAccountCleaner()" disabled>Dừng Dọn Dẹp</button>
+              <button type="button" class="ssh-action" onclick="clearCleanerLog()">Xóa Nhật Ký</button>
+            </div>
+          </div>
+
+          <!-- 4 CÔNG CỤ DỌN DẸP CHUYÊN DỤNG -->
+          <div class="cleaner-tools-grid mt-3">
+            
+            <!-- Tool 1: DM Purge -->
+            <div class="cleaner-tool-card">
+              <div class="ctc-header">
+                <div class="ctc-icon red">🗑️</div>
+                <div class="ctc-meta">
+                  <div class="ctc-title">Dọn Dẹp Tin Nhắn Riêng (DM Purge)</div>
+                  <div class="ctc-desc">Tự động tìm và xóa tất cả tin nhắn bạn đã gửi trong cuộc trò chuyện riêng.</div>
+                </div>
+              </div>
+              <div class="sf-row mt-2">
+                <label class="sf-label">Channel ID hoặc DM ID cần xóa:</label>
+                <input type="text" id="cleaner-dm-id" class="sf-input" placeholder="Ví dụ: 104712345678901234">
+              </div>
+              <button type="button" class="rpc-btn rpc-btn-start w-100 mt-2" onclick="startCleanerTask('dm_purge')">
+                Quét &amp; Xóa Tin Nhắn DM
+              </button>
+            </div>
+
+            <!-- Tool 2: Server Leaver -->
+            <div class="cleaner-tool-card">
+              <div class="ctc-header">
+                <div class="ctc-icon orange">🚪</div>
+                <div class="ctc-meta">
+                  <div class="ctc-title">Rời Server Rác Hàng Loạt (Bulk Leave)</div>
+                  <div class="ctc-desc">Quét toàn bộ server tài khoản đang tham gia và rời khỏi server không hoạt động.</div>
+                </div>
+              </div>
+              <div class="sf-row mt-2">
+                <label class="sf-label">Giữ lại Server ID này (Không rời):</label>
+                <input type="text" id="cleaner-keep-guilds" class="sf-input" placeholder="Guild ID 1, Guild ID 2 (cách nhau dấu phẩy)">
+              </div>
+              <button type="button" class="rpc-btn rpc-btn-start w-100 mt-2" onclick="startCleanerTask('server_leave')">
+                Quét &amp; Rời Hàng Loạt Server
+              </button>
+            </div>
+
+            <!-- Tool 3: Friend Requests Cleaner -->
+            <div class="cleaner-tool-card">
+              <div class="ctc-header">
+                <div class="ctc-icon blue">👥</div>
+                <div class="ctc-meta">
+                  <div class="ctc-title">Thu Hồi Lời Mời Kết Bạn Đang Chờ</div>
+                  <div class="ctc-desc">Hủy tất cả các yêu cầu kết bạn bạn đã gửi đi mà chưa được đối phương đồng ý.</div>
+                </div>
+              </div>
+              <div style="font-size: 0.8rem; color: #94a3b8; margin: 12px 0;">
+                Giúp làm sạch danh sách Pending Relationships và bảo vệ tài khoản khỏi các báo cáo Spam của Discord.
+              </div>
+              <button type="button" class="rpc-btn rpc-btn-start w-100 mt-2" onclick="startCleanerTask('cancel_friends')">
+                Thu Hồi Toàn Bộ Lời Mời
+              </button>
+            </div>
+
+            <!-- Tool 4: Close Inactive DMs -->
+            <div class="cleaner-tool-card">
+              <div class="ctc-header">
+                <div class="ctc-icon purple">🧹</div>
+                <div class="ctc-meta">
+                  <div class="ctc-title">Đóng Cuộc Trò Chuyện DM Không Dùng</div>
+                  <div class="ctc-desc">Ẩn toàn bộ các cuộc hội thoại DM đã cũ khỏi thanh bên trái ứng dụng Discord.</div>
+                </div>
+              </div>
+              <div style="font-size: 0.8rem; color: #94a3b8; margin: 12px 0;">
+                Giao diện Discord của bạn sẽ trở nên gọn gàng, siêu tốc và không còn bị rối mắt bởi hàng trăm tin nhắn cũ.
+              </div>
+              <button type="button" class="rpc-btn rpc-btn-start w-100 mt-2" onclick="startCleanerTask('close_dms')">
+                Đóng Toàn Bộ DM Cũ
+              </button>
+            </div>
+
+          </div>
+
+          <!-- THANH TIẾN TRÌNH & CONSOLE TERMINAL -->
+          <div class="quest-progress-box mt-3">
+            <div class="qpb-head">
+              <div class="qpb-title-wrap">
+                <span class="quest-status-badge" id="cleaner-status-badge">Sẵn Sàng</span>
+                <span id="cleaner-active-task" class="qpb-title">Chế độ: An Toàn Tối Đa (Delay 1.8s)</span>
+              </div>
+              <span id="cleaner-progress-pct" class="qpb-pct">0%</span>
+            </div>
+            <div class="qrc-progress-bg">
+              <div class="qrc-progress-fill" id="cleaner-progress-fill"></div>
+            </div>
+          </div>
+
+          <div class="preview-terminal mt-3">
+            <div class="pt-header">
+              <div class="pt-dots"><span class="ptd red"></span><span class="ptd yellow"></span><span class="ptd green"></span></div>
+              <span class="pt-title">Nhật Ký Dọn Dẹp Discord Realtime</span>
+              <button type="button" class="pt-clear" onclick="clearCleanerLog()">Xóa</button>
+            </div>
+            <div class="pt-screen" id="cleaner-log-screen" style="max-height: 220px;">
+              <div class="log-line info"><span class="log-time">[CLEANER]</span> <span class="log-msg">Discord Account Cleaner sẵn sàng hoạt động. Chọn tác vụ phía trên để thực thi.</span></div>
+            </div>
+          </div>
+
         </div>
       </section>
 

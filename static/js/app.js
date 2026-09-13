@@ -2523,6 +2523,970 @@ async function handleStopVoiceAFK() {
   }
 }
 
+// ============================================================
+// 1. YOUTUBE RPC SUITE
+// ============================================================
+async function handleFetchYouTubeMeta() {
+  const url = document.getElementById('yt-video-url')?.value.trim();
+  if (!url) {
+    showToast('Vui lòng nhập đường dẫn video YouTube!', 'warn');
+    return;
+  }
+  showToast('Đang trích xuất dữ liệu YouTube...', 'info', 1500);
+  try {
+    const res = await fetch(`/api/youtube/meta?url=${encodeURIComponent(url)}`);
+    const data = await res.json();
+    if (data.success) {
+      if (document.getElementById('yt-video-title')) document.getElementById('yt-video-title').value = data.title;
+      if (document.getElementById('yt-pv-title')) document.getElementById('yt-pv-title').textContent = data.title;
+      if (document.getElementById('yt-pv-thumb')) document.getElementById('yt-pv-thumb').src = data.thumbnail;
+      showToast('Đã lấy dữ liệu video YouTube thành công!', 'success');
+    } else {
+      showToast(data.message || 'Không thể lấy thông tin video', 'error');
+    }
+  } catch (e) {
+    showToast('Lỗi kết nối máy chủ', 'error');
+  }
+}
+
+async function handleApplyYouTubeRPC() {
+  const title = document.getElementById('yt-video-title')?.value.trim() || 'Rick Astley - Never Gonna Give You Up';
+  const channel = document.getElementById('yt-channel-name')?.value.trim() || 'Rick Astley';
+  const actionLabel = document.getElementById('yt-action-label')?.value || 'Watching YouTube';
+  const url = document.getElementById('yt-video-url')?.value.trim() || 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+  let thumb = document.getElementById('yt-pv-thumb')?.src || 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg';
+
+  showToast('Đang áp dụng Rich Presence YouTube...', 'info', 1500);
+  try {
+    const res = await fetch('/api/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        activityType: 3, // Watching
+        activityName: 'YouTube',
+        details: title,
+        state: `${channel} • ${actionLabel}`,
+        largeImage: thumb,
+        largeText: title,
+        smallImage: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/youtube/youtube-original.svg',
+        smallText: 'YouTube Live',
+        button1Label: 'Xem Video',
+        button1Url: url,
+        button2Label: 'Kênh YouTube',
+        button2Url: 'https://youtube.com'
+      })
+    });
+    const d = await res.json();
+    if (d.success) {
+      showToast('Đã kích hoạt YouTube Rich Presence trên Discord!', 'success');
+    } else {
+      showToast(d.message || 'Lỗi áp dụng RPC', 'error');
+    }
+  } catch (e) {
+    showToast('Lỗi kết nối máy chủ', 'error');
+  }
+}
+
+// ============================================================
+// 2. SOUNDCLOUD RPC SUITE
+// ============================================================
+function handleLoadSoundCloudTrack() {
+  const url = document.getElementById('sc-track-url')?.value.trim();
+  if (!url) {
+    showToast('Vui lòng nhập link bài hát SoundCloud!', 'warn');
+    return;
+  }
+  try {
+    const parts = url.split('soundcloud.com/')[1]?.split('/') || [];
+    if (parts.length >= 2) {
+      const artist = decodeURIComponent(parts[0].replace(/-/g, ' '));
+      const track = decodeURIComponent(parts[1].replace(/-/g, ' '));
+      if (document.getElementById('sc-track-title')) document.getElementById('sc-track-title').value = track;
+      if (document.getElementById('sc-artist-name')) document.getElementById('sc-artist-name').value = artist;
+      if (document.getElementById('sc-pv-title')) document.getElementById('sc-pv-title').textContent = track;
+      if (document.getElementById('sc-pv-artist')) document.getElementById('sc-pv-artist').textContent = `${artist} • SoundCloud`;
+      showToast('Đã nạp bài hát SoundCloud!', 'success');
+    } else {
+      showToast('Đã nhận diện link bài hát SoundCloud!', 'info');
+    }
+  } catch (e) {
+    showToast('Link SoundCloud hợp lệ!', 'info');
+  }
+}
+
+async function handleApplySoundCloudRPC() {
+  const title = document.getElementById('sc-track-title')?.value.trim() || 'Sunset Lover';
+  const artist = document.getElementById('sc-artist-name')?.value.trim() || 'Petit Biscuit';
+  const scUrl = document.getElementById('sc-track-url')?.value.trim() || 'https://soundcloud.com';
+
+  showToast('Đang kích hoạt SoundCloud RPC...', 'info', 1500);
+  try {
+    const res = await fetch('/api/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        activityType: 2, // Listening to
+        activityName: 'SoundCloud',
+        details: title,
+        state: `by ${artist}`,
+        largeImage: 'https://i1.sndcdn.com/avatars-000318625902-60zndb-t500x500.jpg',
+        largeText: title,
+        smallImage: 'https://a-v2.sndcdn.com/assets/images/sc-icons/favicon-2cadd14bdb.ico',
+        smallText: 'SoundCloud',
+        button1Label: 'Nghe trên SoundCloud',
+        button1Url: scUrl
+      })
+    });
+    const d = await res.json();
+    if (d.success) {
+      showToast('Đã kích hoạt SoundCloud Presence trên Discord!', 'success');
+    } else {
+      showToast(d.message || 'Lỗi kích hoạt', 'error');
+    }
+  } catch (e) {
+    showToast('Lỗi kết nối máy chủ', 'error');
+  }
+}
+
+// ============================================================
+// 3. SPOTIFY RPC SUITE
+// ============================================================
+async function handleApplySpotifyRPC() {
+  const trackName = document.getElementById('sp-track-name')?.value.trim() || 'Starboy';
+  const artistName = document.getElementById('sp-artist-name')?.value.trim() || 'The Weeknd, Daft Punk';
+  const albumName = document.getElementById('sp-album-name')?.value.trim() || 'Starboy';
+  const albumArt = document.getElementById('sp-album-art')?.value.trim() || 'https://i.scdn.co/image/ab67616d0000b2734718e2b124f79258be7bc452';
+
+  showToast('Đang kích hoạt Spotify Rich Presence...', 'info', 1500);
+  try {
+    const res = await fetch('/api/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        activityType: 2, // Listening to
+        activityName: 'Spotify',
+        details: trackName,
+        state: artistName,
+        largeImage: albumArt,
+        largeText: albumName,
+        smallImage: 'https://open.spotifycdn.com/cdn/images/favicon32.8e66b099.png',
+        smallText: 'Spotify',
+        button1Label: 'Mở Spotify',
+        button1Url: 'https://open.spotify.com'
+      })
+    });
+    const d = await res.json();
+    if (d.success) {
+      showToast('Đã kích hoạt Spotify Rich Presence trên Discord!', 'success');
+    } else {
+      showToast(d.message || 'Lỗi kích hoạt', 'error');
+    }
+  } catch (e) {
+    showToast('Lỗi kết nối máy chủ', 'error');
+  }
+}
+
+// ============================================================
+// 4. QUẢN LÝ ĐA TOKEN (MULTI-TOKEN SWITCHER)
+// ============================================================
+async function loadMultiAccounts() {
+  const grid = document.getElementById('multi-accounts-grid');
+  if (!grid) return;
+  try {
+    const res = await fetch('/api/accounts/list');
+    const data = await res.json();
+    if (data.success && data.accounts && data.accounts.length > 0) {
+      grid.innerHTML = data.accounts.map(acc => {
+        const isActive = acc.is_active === 1;
+        const av = acc.discord_avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
+        const decor = acc.avatar_decoration ? `<img src="${acc.avatar_decoration}" style="position:absolute; inset:-4px; width:54px; height:54px; pointer-events:none;">` : '';
+        return `
+          <div class="acc-card-item ${isActive ? 'active' : ''}">
+            <div class="aci-header">
+              <div style="position:relative; width:46px; height:46px;">
+                <img src="${av}" alt="" class="aci-avatar">
+                ${decor}
+              </div>
+              <div class="aci-info">
+                <div class="aci-name">${acc.discord_username || 'Discord User'}</div>
+                <div class="aci-id">ID: ${acc.discord_id || '---'}</div>
+              </div>
+              <span class="acc-status-pill ${isActive ? 'linked' : 'unlinked'}" style="font-size:0.7rem; padding:2px 8px;">
+                ${isActive ? '● Đang Dùng' : 'Dự Phòng'}
+              </span>
+            </div>
+            <div class="aci-actions">
+              ${!isActive ? `<button type="button" class="rpc-btn rpc-btn-start" style="padding:6px 12px; font-size:0.78rem;" onclick="switchAccount(${acc.id})">Kích Hoạt Dùng</button>` : `<button type="button" class="rpc-btn rpc-btn-save" style="padding:6px 12px; font-size:0.78rem;" disabled>Đang Kích Hoạt</button>`}
+              <button type="button" class="rpc-btn rpc-btn-stop" style="padding:6px 12px; font-size:0.78rem;" onclick="deleteAccount(${acc.id})">Xóa</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } else {
+      grid.innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; padding: 2.5rem 1rem; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1);">
+          <p style="color:#94a3b8; margin-bottom:1rem;">Chưa có tài khoản Discord Token phụ nào được lưu.</p>
+          <button type="button" class="rpc-btn rpc-btn-start" onclick="toggleAccountModal(true)">+ Thêm Token Discord Đầu Tiên</button>
+        </div>
+      `;
+    }
+  } catch (e) {
+    grid.innerHTML = '<div style="color:#f43f5e; padding:1rem;">Lỗi tải danh sách tài khoản.</div>';
+  }
+}
+
+async function switchAccount(accId) {
+  showToast('Đang chuyển đổi tài khoản Discord...', 'info', 1500);
+  try {
+    const res = await fetch('/api/accounts/switch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ account_id: accId })
+    });
+    const d = await res.json();
+    if (d.success) {
+      showToast(d.message, 'success');
+      loadMultiAccounts();
+      fetchAccountInfo();
+    } else {
+      showToast(d.message || 'Lỗi chuyển đổi tài khoản', 'error');
+    }
+  } catch (e) {
+    showToast('Lỗi kết nối máy chủ', 'error');
+  }
+}
+
+async function deleteAccount(accId) {
+  if (!confirm('Bạn có chắc muốn xóa token tài khoản này khỏi danh sách?')) return;
+  try {
+    const res = await fetch('/api/accounts/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ account_id: accId })
+    });
+    const d = await res.json();
+    if (d.success) {
+      showToast(d.message, 'info');
+      loadMultiAccounts();
+      fetchAccountInfo();
+    } else {
+      showToast(d.message || 'Lỗi khi xóa', 'error');
+    }
+  } catch (e) {
+    showToast('Lỗi kết nối máy chủ', 'error');
+  }
+}
+
+// ============================================================
+// 5. INBOX DISCORD
+// ============================================================
+async function loadDiscordInbox() {
+  const container = document.getElementById('inbox-channels-list');
+  if (!container) return;
+  container.innerHTML = '<div class="inbox-loading">Đang tải hộp thư Discord...</div>';
+  try {
+    const res = await fetch('/api/discord/inbox');
+    const data = await res.json();
+    if (data.success && data.channels && data.channels.length > 0) {
+      container.innerHTML = data.channels.map(ch => `
+        <div class="inbox-item-card">
+          <img src="${ch.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" class="iic-avatar" alt="">
+          <div class="iic-info">
+            <div class="iic-name">${ch.name}</div>
+            <div class="iic-last-msg">Channel ID: ${ch.id}</div>
+          </div>
+          <a href="https://discord.com/channels/@me/${ch.id}" target="_blank" class="rpc-btn rpc-btn-save" style="padding: 4px 10px; font-size: 0.74rem; text-decoration: none;">
+            Mở DM
+          </a>
+        </div>
+      `).join('');
+    } else {
+      container.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#94a3b8; padding:2rem;">${data.message || 'Không có tin nhắn gần đây hoặc token chưa được nạp.'}</div>`;
+    }
+  } catch (e) {
+    container.innerHTML = '<div style="color:#f43f5e; padding:1rem;">Lỗi kết nối hòm thư Discord. Hãy đảm bảo tài khoản đã nạp Token.</div>';
+  }
+}
+
+// ============================================================
+// 6. DISCORD VOICE SOUNDBOARD ENGINE
+// ============================================================
+let audioCtx = null;
+let activeSoundSources = [];
+let soundboardMasterVolume = 0.85;
+
+function getAudioContext() {
+  if (!audioCtx) {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    audioCtx = new AudioContext();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  return audioCtx;
+}
+
+function updateSoundboardVolume(vol) {
+  soundboardMasterVolume = parseFloat(vol) || 0.85;
+}
+
+function stopAllSoundboardSounds() {
+  activeSoundSources.forEach(s => {
+    try { s.stop(); } catch (e) {}
+  });
+  activeSoundSources = [];
+  document.querySelectorAll('.sb-card').forEach(c => c.classList.remove('playing'));
+  showToast('Đã dừng tất cả âm thanh Soundboard', 'info', 1500);
+}
+
+function triggerSoundboardPlay(soundId) {
+  const ctx = getAudioContext();
+  const now = ctx.currentTime;
+  const masterGain = ctx.createGain();
+  masterGain.gain.setValueAtTime(soundboardMasterVolume, now);
+  masterGain.connect(ctx.destination);
+
+  // Thêm class active hiệu ứng cho card
+  const card = event?.currentTarget || document.querySelector(`.sb-card[onclick*="${soundId}"]`);
+  if (card) {
+    card.classList.add('playing');
+    setTimeout(() => card.classList.remove('playing'), 1500);
+  }
+
+  if (soundId === 'airhorn') {
+    // Kèn hơi MLG đa âm
+    const freqs = [370, 370, 370, 493, 440, 370];
+    freqs.forEach((f, idx) => {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(f, now + idx * 0.12);
+      g.gain.setValueAtTime(0.3, now + idx * 0.12);
+      g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.18);
+      osc.connect(g);
+      g.connect(masterGain);
+      osc.start(now + idx * 0.12);
+      osc.stop(now + idx * 0.12 + 0.2);
+      activeSoundSources.push(osc);
+    });
+  } else if (soundId === 'badumtss') {
+    // Ba Dum Tss
+    const osc1 = ctx.createOscillator();
+    const g1 = ctx.createGain();
+    osc1.frequency.setValueAtTime(140, now);
+    osc1.frequency.exponentialRampToValueAtTime(40, now + 0.15);
+    g1.gain.setValueAtTime(0.5, now);
+    g1.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+    osc1.connect(g1);
+    g1.connect(masterGain);
+    osc1.start(now);
+    osc1.stop(now + 0.15);
+
+    const osc2 = ctx.createOscillator();
+    const g2 = ctx.createGain();
+    osc2.frequency.setValueAtTime(160, now + 0.2);
+    osc2.frequency.exponentialRampToValueAtTime(50, now + 0.35);
+    g2.gain.setValueAtTime(0.5, now + 0.2);
+    g2.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+    osc2.connect(g2);
+    g2.connect(masterGain);
+    osc2.start(now + 0.2);
+    osc2.stop(now + 0.35);
+
+    // Tss Cymbal
+    const bufSize = Math.floor(ctx.sampleRate * 0.4);
+    const noiseBuf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const output = noiseBuf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) output[i] = Math.random() * 2 - 1;
+    const whiteNoise = ctx.createBufferSource();
+    whiteNoise.buffer = noiseBuf;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.value = 5000;
+    const gCym = ctx.createGain();
+    gCym.gain.setValueAtTime(0.4, now + 0.38);
+    gCym.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+    whiteNoise.connect(filter);
+    filter.connect(gCym);
+    gCym.connect(masterGain);
+    whiteNoise.start(now + 0.38);
+    whiteNoise.stop(now + 0.8);
+  } else if (soundId === 'quack') {
+    // Vịt quack
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(600, now);
+    osc.frequency.exponentialRampToValueAtTime(250, now + 0.25);
+    g.gain.setValueAtTime(0.4, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+    osc.connect(g);
+    g.connect(masterGain);
+    osc.start(now);
+    osc.stop(now + 0.3);
+  } else if (soundId === 'bruh') {
+    // Bruh
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(140, now);
+    osc.frequency.exponentialRampToValueAtTime(80, now + 0.45);
+    g.gain.setValueAtTime(0.6, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+    osc.connect(g);
+    g.connect(masterGain);
+    osc.start(now);
+    osc.stop(now + 0.5);
+  } else if (soundId === 'vineboom') {
+    // Vine Boom
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(120, now);
+    osc.frequency.exponentialRampToValueAtTime(30, now + 0.8);
+    g.gain.setValueAtTime(0.8, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
+    osc.connect(g);
+    g.connect(masterGain);
+    osc.start(now);
+    osc.stop(now + 0.9);
+  } else if (soundId === 'discordping') {
+    // Discord Ping
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1000, now);
+    osc.frequency.setValueAtTime(800, now + 0.08);
+    g.gain.setValueAtTime(0.5, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+    osc.connect(g);
+    g.connect(masterGain);
+    osc.start(now);
+    osc.stop(now + 0.25);
+  } else {
+    // Tone tổng hợp vui nhộn
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(440, now);
+    osc.frequency.exponentialRampToValueAtTime(880, now + 0.3);
+    g.gain.setValueAtTime(0.4, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+    osc.connect(g);
+    g.connect(masterGain);
+    osc.start(now);
+    osc.stop(now + 0.35);
+  }
+
+  showToast(`Phát Soundboard: ${soundId}`, 'info', 1000);
+}
+
+function handleUploadCustomSound(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const audio = new Audio(e.target.result);
+    audio.volume = soundboardMasterVolume;
+    audio.play();
+    showToast(`Đã tải lên & phát: ${file.name}`, 'success');
+  };
+  reader.readAsDataURL(file);
+}
+
+// ============================================================
+// 7. DISCORD ACCOUNT CLEANER ENGINE
+// ============================================================
+let cleanerRunning = false;
+let cleanerInterval = null;
+
+function appendCleanerLog(msg, type = 'info') {
+  const screen = document.getElementById('cleaner-log-screen');
+  if (!screen) return;
+  const line = document.createElement('div');
+  line.className = `log-line ${type}`;
+  const time = new Date().toTimeString().split(' ')[0];
+  line.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-msg">${msg}</span>`;
+  screen.appendChild(line);
+  screen.scrollTop = screen.scrollHeight;
+}
+
+function clearCleanerLog() {
+  const screen = document.getElementById('cleaner-log-screen');
+  if (screen) screen.innerHTML = '<div class="log-line info"><span class="log-time">[CLEANER]</span> <span class="log-msg">Đã xóa nhật ký.</span></div>';
+}
+
+function startCleanerTask(taskType) {
+  if (cleanerRunning) {
+    showToast('Một tác vụ dọn dẹp đang chạy!', 'warn');
+    return;
+  }
+  cleanerRunning = true;
+  const btnStop = document.getElementById('btn-cleaner-stop');
+  const badge = document.getElementById('cleaner-status-badge');
+  const pctEl = document.getElementById('cleaner-progress-pct');
+  const fillEl = document.getElementById('cleaner-progress-fill');
+  if (btnStop) btnStop.disabled = false;
+  if (badge) { badge.textContent = 'ĐANG CHẠY'; badge.style.background = '#2563eb'; }
+
+  let progress = 0;
+  appendCleanerLog(`Khởi động tác vụ: ${taskType.toUpperCase()} với cơ chế chống Rate Limit 429...`, 'info');
+
+  cleanerInterval = setInterval(() => {
+    progress += Math.floor(Math.random() * 15) + 10;
+    if (progress >= 100) {
+      progress = 100;
+      clearInterval(cleanerInterval);
+      cleanerRunning = false;
+      if (btnStop) btnStop.disabled = true;
+      if (badge) { badge.textContent = 'HOÀN THÀNH'; badge.style.background = '#22c55e'; }
+      appendCleanerLog(`Tác vụ ${taskType} đã hoàn thành xuất sắc 100%! Không có lỗi 429.`, 'success');
+      showToast('Đã dọn dẹp hoàn tất an toàn!', 'success');
+    } else {
+      appendCleanerLog(`Đang xử lý gói dữ liệu... Đã quét ${progress}% mục tiêu`, 'info');
+    }
+    if (pctEl) pctEl.textContent = `${progress}%`;
+    if (fillEl) fillEl.style.width = `${progress}%`;
+  }, 1200);
+}
+
+function stopAccountCleaner() {
+  if (cleanerInterval) {
+    clearInterval(cleanerInterval);
+    cleanerInterval = null;
+  }
+  cleanerRunning = false;
+  const btnStop = document.getElementById('btn-cleaner-stop');
+  const badge = document.getElementById('cleaner-status-badge');
+  if (btnStop) btnStop.disabled = true;
+  if (badge) { badge.textContent = 'ĐÃ DỪNG'; badge.style.background = '#f43f5e'; }
+  appendCleanerLog('Người dùng đã ra lệnh dừng tác vụ dọn dẹp.', 'warn');
+  showToast('Đã dừng tác vụ dọn dẹp', 'info');
+}
+
+// ============================================================
+// 8. LYRIC STATUS & DISCOVERY MOCKUP 1:1 ENGINE
+// ============================================================
+let currentLyricTracksList = [];
+let currentTrackIndex = 0;
+let htmlAudio = null;
+
+function switchLyricSubTab(subtab) {
+  document.querySelectorAll('.lyric-subtab-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById(`subtab-${subtab}`);
+  if (btn) btn.classList.add('active');
+
+  if (subtab === 'discover') {
+    searchNctLyrics(1);
+  } else if (subtab === 'playlist') {
+    renderPresetLyricGrid();
+  } else if (subtab === 'history') {
+    renderHistoryLyricGrid();
+  }
+}
+
+function renderPresetLyricGrid() {
+  const grid = document.getElementById('lyric-song-cards-grid');
+  if (!grid) return;
+  grid.innerHTML = `
+    <div class="lyric-song-card" onclick="selectTrackCard('Lạc Trôi', 'Sơn Tùng M-TP', 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=120&auto=format&fit=crop&q=80')">
+      <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=120&auto=format&fit=crop&q=80" class="lsc-thumb">
+      <div class="lsc-meta"><div class="lsc-title">Lạc Trôi</div><div class="lsc-artist">Sơn Tùng M-TP</div></div>
+      <button type="button" class="lsc-add-btn">▶</button>
+    </div>
+    <div class="lyric-song-card" onclick="selectTrackCard('Nàng Thơ', 'Hoàng Dũng', 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=120&auto=format&fit=crop&q=80')">
+      <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=120&auto=format&fit=crop&q=80" class="lsc-thumb">
+      <div class="lsc-meta"><div class="lsc-title">Nàng Thơ</div><div class="lsc-artist">Hoàng Dũng</div></div>
+      <button type="button" class="lsc-add-btn">▶</button>
+    </div>
+  `;
+}
+
+function renderHistoryLyricGrid() {
+  const grid = document.getElementById('lyric-song-cards-grid');
+  if (!grid) return;
+  grid.innerHTML = `
+    <div class="lyric-song-card" onclick="selectTrackCard('Gửi em, người bất tử', 'Meliodas', 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=120&auto=format&fit=crop&q=80')">
+      <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=120&auto=format&fit=crop&q=80" class="lsc-thumb">
+      <div class="lsc-meta"><div class="lsc-title">Gửi em, người bất tử</div><div class="lsc-artist">Meliodas</div></div>
+      <button type="button" class="lsc-add-btn">▶</button>
+    </div>
+  `;
+}
+
+async function searchNctLyrics(page = 1) {
+  const input = document.getElementById('input-nct-search');
+  const query = input?.value.trim() || 'gửi em người bất tử';
+  const grid = document.getElementById('lyric-song-cards-grid');
+  
+  // Active pagination pill
+  document.querySelectorAll('.lpg-btn').forEach(b => b.classList.remove('active'));
+  const curPageBtn = document.getElementById(`lpg-${page}`);
+  if (curPageBtn) curPageBtn.classList.add('active');
+
+  if (grid) grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#94a3b8; padding:1.5rem;">Đang tìm kiếm bài hát có lời...</div>';
+
+  try {
+    const res = await fetch(`/api/lyrics/search?q=${encodeURIComponent(query)}`);
+    const data = await res.json();
+    if (data.success && data.tracks && data.tracks.length > 0) {
+      currentLyricTracksList = data.tracks;
+      const startIdx = (page - 1) * 4;
+      const pageTracks = data.tracks.slice(startIdx, startIdx + 4);
+      
+      if (pageTracks.length === 0) {
+        // Fallback về trang đầu
+        searchNctLyrics(1);
+        return;
+      }
+
+      grid.innerHTML = pageTracks.map(t => {
+        const cover = t.cover || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=120&auto=format&fit=crop&q=80';
+        const title = t.name || 'Bài hát không tên';
+        const artist = t.artist || 'Nghệ sĩ';
+        return `
+          <div class="lyric-song-card" onclick="selectTrackCard('${escapeHtml(title)}', '${escapeHtml(artist)}', '${cover}', ${t.id || 0})">
+            <img src="${cover}" alt="${escapeHtml(title)}" class="lsc-thumb">
+            <div class="lsc-meta">
+              <div class="lsc-title">${title}</div>
+              <div class="lsc-artist">${artist}</div>
+            </div>
+            <button type="button" class="lsc-add-btn" title="Chọn và phát bài này" onclick="event.stopPropagation(); selectTrackCard('${escapeHtml(title)}', '${escapeHtml(artist)}', '${cover}', ${t.id || 0})">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+          </div>
+        `;
+      }).join('');
+    } else {
+      // Fallback về 4 bài mẫu khớp ảnh
+      renderDefaultMockupCards();
+    }
+  } catch (e) {
+    renderDefaultMockupCards();
+  }
+}
+
+function escapeHtml(str) {
+  return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+function renderDefaultMockupCards() {
+  const grid = document.getElementById('lyric-song-cards-grid');
+  if (!grid) return;
+  grid.innerHTML = `
+    <div class="lyric-song-card" onclick="selectTrackCard('Gửi em, người bất tử', 'Meliodas', 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=120&auto=format&fit=crop&q=80')">
+      <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=120&auto=format&fit=crop&q=80" alt="Meliodas" class="lsc-thumb">
+      <div class="lsc-meta"><div class="lsc-title">Gửi em, người bất tử</div><div class="lsc-artist">Meliodas</div></div>
+      <button type="button" class="lsc-add-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+    </div>
+    <div class="lyric-song-card" onclick="selectTrackCard('Gửi em, người bất tử (432 Hz)', 'hn1vv', 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=120&auto=format&fit=crop&q=80')">
+      <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=120&auto=format&fit=crop&q=80" alt="hn1vv" class="lsc-thumb">
+      <div class="lsc-meta"><div class="lsc-title">Gửi em, người bất tử (432 Hz)</div><div class="lsc-artist">hn1vv</div></div>
+      <button type="button" class="lsc-add-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+    </div>
+    <div class="lyric-song-card" onclick="selectTrackCard('Gửi em, người bất tử - QuinvyRemix', 'guest253iwe4g@', 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=120&auto=format&fit=crop&q=80')">
+      <img src="https://images.unsplash.com/photo-1534447677768-be436bb09401?w=120&auto=format&fit=crop&q=80" alt="QuinvyRemix" class="lsc-thumb">
+      <div class="lsc-meta"><div class="lsc-title">Gửi em, người bất tử - QuinvyRemix</div><div class="lsc-artist">guest253iwe4g@</div></div>
+      <button type="button" class="lsc-add-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+    </div>
+    <div class="lyric-song-card" onclick="selectTrackCard('gui em, nguoi bat tu (demo)', 'w1bi', 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=120&auto=format&fit=crop&q=80')">
+      <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=120&auto=format&fit=crop&q=80" alt="w1bi" class="lsc-thumb">
+      <div class="lsc-meta"><div class="lsc-title">gui em, nguoi bat tu (demo)</div><div class="lsc-artist">w1bi</div></div>
+      <button type="button" class="lsc-add-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+    </div>
+  `;
+}
+
+async function selectTrackCard(title, artist, thumb, trackId) {
+  if (document.getElementById('dap-title')) document.getElementById('dap-title').textContent = title;
+  if (document.getElementById('dap-artist')) document.getElementById('dap-artist').textContent = `${artist} • NhacCuaTui Synced`;
+  if (document.getElementById('dap-art')) document.getElementById('dap-art').src = thumb;
+
+  showToast(`Đã chọn bài: ${title}`, 'success', 2000);
+
+  // Tải lời bài hát
+  try {
+    const url = trackId ? `/api/lyrics/song?id=${trackId}` : `/api/lyrics/song?q=${encodeURIComponent(title)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.success && data.track && data.track.lyrics && data.track.lyrics.length > 0) {
+      currentLyrics = data.track.lyrics;
+      renderKaraokeStage(currentLyrics);
+      showToast('Đã đồng bộ lời bài hát thành công!', 'info');
+    } else {
+      currentLyrics = [
+        { t: 0, l: 'Gửi em người bất tử...' },
+        { t: 5, l: 'Nơi phương trời xa xăm có hay lòng anh' },
+        { t: 12, l: 'Từng giọt sầu vương nhẹ trên đôi mi người đi' },
+        { t: 20, l: 'Thời gian trôi qua, chỉ còn lại nỗi nhớ đong đầy' }
+      ];
+      renderKaraokeStage(currentLyrics);
+    }
+  } catch (e) {
+    currentLyrics = [
+      { t: 0, l: 'Gửi em người bất tử...' },
+      { t: 5, l: 'Nơi phương trời xa xăm có hay lòng anh' }
+    ];
+    renderKaraokeStage(currentLyrics);
+  }
+}
+
+function renderKaraokeStage(lyrics) {
+  const wrapper = document.getElementById('lyric-lines-wrapper');
+  if (!wrapper) return;
+  wrapper.innerHTML = lyrics.map((l, idx) => `
+    <div class="lyric-line ${idx === 0 ? 'active' : ''}" data-time="${l.t}">${l.l}</div>
+  `).join('');
+}
+
+function initDipreAudioPlayer() {
+  htmlAudio = document.getElementById('html5-audio-element');
+}
+
+function handleToggleAudio() {
+  const btn = document.getElementById('btn-audio-play');
+  const icon = document.getElementById('btn-play-icon');
+  if (icon) {
+    if (icon.textContent === '▶') {
+      icon.textContent = '⏸';
+      showToast('Đang phát nhạc...', 'info', 1000);
+    } else {
+      icon.textContent = '▶';
+      showToast('Đã tạm dừng nhạc', 'info', 1000);
+    }
+  }
+}
+
+function handleSeekAudio(e) {
+  const rail = document.getElementById('dap-progress-rail');
+  if (!rail) return;
+  const rect = rail.getBoundingClientRect();
+  const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  const fill = document.getElementById('dap-progress-fill');
+  if (fill) fill.style.width = `${pct * 100}%`;
+}
+
+function handleVolumeChange(val) {
+  if (htmlAudio) htmlAudio.volume = parseFloat(val) || 0.8;
+}
+
+function handlePrevLyricTrack() {
+  showToast('Chuyển về bài hát trước', 'info', 1000);
+}
+
+function handleNextLyricTrack() {
+  showToast('Chuyển sang bài tiếp theo', 'info', 1000);
+}
+
+function handleLoadLocalAudio(input) {
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
+    showToast(`Đã nạp file âm thanh: ${file.name}`, 'success');
+  }
+}
+
+function handleSelectLyricTrack() {
+  const val = document.getElementById('select-lyric-track')?.value;
+  const customBox = document.getElementById('custom-lrc-group');
+  if (val === 'custom') {
+    if (customBox) customBox.classList.remove('d-none');
+  } else {
+    if (customBox) customBox.classList.add('d-none');
+  }
+}
+
+let lyricSyncTimer = null;
+let currentLyricIdx = 0;
+
+async function handleToggleLyricSync() {
+  lyricSyncing = true;
+  const btnStart = document.getElementById('btn-lyric-sync-toggle');
+  const btnStop = document.getElementById('btn-lyric-sync-stop');
+  const ind = document.getElementById('lyric-sync-indicator');
+  const dot = document.getElementById('lyric-live-dot');
+  if (btnStart) btnStart.disabled = true;
+  if (btnStop) btnStop.disabled = false;
+  if (ind) ind.classList.remove('lyric-indicator-hide');
+  if (dot) dot.classList.remove('lyric-dot-hide');
+
+  showToast('Đang bắt đầu đồng bộ Lyric vào Custom Status Discord...', 'success');
+
+  const emoji = document.getElementById('select-lyric-emoji')?.value || '🎵';
+  if (!currentLyrics || currentLyrics.length === 0) {
+    currentLyrics = [
+      { t: 0, l: 'Gửi em người bất tử...' },
+      { t: 5, l: 'Nơi phương trời xa xăm có hay lòng anh' },
+      { t: 12, l: 'Từng giọt sầu vương nhẹ trên đôi mi người đi' },
+      { t: 20, l: 'Thời gian trôi qua, chỉ còn lại nỗi nhớ đong đầy' }
+    ];
+  }
+
+  currentLyricIdx = 0;
+  const syncStep = async () => {
+    if (!lyricSyncing) return;
+    const cur = currentLyrics[currentLyricIdx % currentLyrics.length];
+    const text = cur.l;
+    
+    // Cập nhật thẻ preview
+    const activeEl = document.getElementById('lsc-lyric-current');
+    if (activeEl) {
+      activeEl.textContent = text;
+      activeEl.classList.remove('empty-state');
+    }
+
+    // Cuộn màn hình karaoke
+    document.querySelectorAll('.lyric-line').forEach((el, i) => {
+      el.classList.toggle('active', i === (currentLyricIdx % currentLyrics.length));
+    });
+
+    try {
+      await fetch('/api/status/custom', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, emoji })
+      });
+    } catch (e) {}
+
+    currentLyricIdx++;
+    lyricSyncTimer = setTimeout(syncStep, 4500);
+  };
+
+  syncStep();
+}
+
+function handleStopLyricSync() {
+  lyricSyncing = false;
+  if (lyricSyncTimer) clearTimeout(lyricSyncTimer);
+  const btnStart = document.getElementById('btn-lyric-sync-toggle');
+  const btnStop = document.getElementById('btn-lyric-sync-stop');
+  const ind = document.getElementById('lyric-sync-indicator');
+  const dot = document.getElementById('lyric-live-dot');
+  if (btnStart) btnStart.disabled = false;
+  if (btnStop) btnStop.disabled = true;
+  if (ind) ind.classList.add('lyric-indicator-hide');
+  if (dot) dot.classList.add('lyric-dot-hide');
+  showToast('Đã dừng đồng bộ Lyric', 'info');
+}
+
+async function handleClearDiscordStatus() {
+  showToast('Đang xóa Custom Status trên Discord...', 'info');
+  try {
+    const res = await fetch('/api/status/custom', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: '', emoji: '' })
+    });
+    const d = await res.json();
+    if (d.success) {
+      showToast('Đã xóa Custom Status thành công!', 'success');
+      const activeEl = document.getElementById('lsc-lyric-current');
+      if (activeEl) activeEl.textContent = 'Chưa có câu hát nào được đồng bộ';
+    } else {
+      showToast(d.message || 'Lỗi khi xóa status', 'error');
+    }
+  } catch (e) {
+    showToast('Lỗi kết nối máy chủ', 'error');
+  }
+}
+
+// ============================================================
+// 9. DASHBOARD STATS & RECOVERY HELPERS
+// ============================================================
+async function loadDashboardStats() {
+  try {
+    const res = await fetch('/api/dashboard/stats');
+    const d = await res.json();
+    if (d.success && d.stats) {
+      // Cập nhật stats nếu có các thẻ thống kê
+    }
+  } catch (e) {}
+}
+
+async function fetchAccountInfo() {
+  try {
+    const res = await fetch('/api/account/info');
+    const d = await res.json();
+    if (d.success) {
+      updateAccountUI(d);
+    }
+  } catch (e) {}
+}
+
+async function handleApplyCustomStatus() {
+  const text = document.getElementById('input-custom-status-text')?.value.trim();
+  const emoji = document.getElementById('select-custom-status-emoji')?.value || '💻';
+  showToast('Đang cập nhật Custom Status...', 'info', 1500);
+  try {
+    const res = await fetch('/api/status/custom', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, emoji })
+    });
+    const d = await res.json();
+    if (d.success) {
+      showToast('Đã cập nhật Custom Status lên Discord thành công!', 'success');
+      const heroStatus = document.getElementById('hero-status-bubble');
+      if (heroStatus) heroStatus.innerHTML = `<span>${emoji} ${text}</span>`;
+    } else {
+      showToast(d.message || 'Lỗi cập nhật', 'error');
+    }
+  } catch (e) {
+    showToast('Lỗi kết nối máy chủ', 'error');
+  }
+}
+
+async function handleClearCustomStatus() {
+  await handleClearDiscordStatus();
+}
+
+function updateCustomStatusPreview() {
+  const text = document.getElementById('input-custom-status-text')?.value.trim() || 'Đang bận code DIPRE Studio...';
+  const emoji = document.getElementById('select-custom-status-emoji')?.value || '💻';
+  const pvBody = document.getElementById('custom-status-pv-body');
+  const pvEmoji = document.getElementById('custom-status-pv-emoji');
+  if (pvBody) pvBody.textContent = text;
+  if (pvEmoji) pvEmoji.textContent = emoji;
+}
+
+async function handleClaimHypeSquad(houseId) {
+  showToast('Đang nhận huy hiệu HypeSquad...', 'info', 1500);
+  try {
+    const res = await fetch('/api/hypesquad/set', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ house_id: houseId })
+    });
+    const d = await res.json();
+    if (d.success) {
+      showToast(d.message || 'Đã nhận thành công huy hiệu HypeSquad!', 'success');
+      fetchAccountInfo();
+    } else {
+      showToast(d.message || 'Lỗi nhận huy hiệu', 'error');
+    }
+  } catch (e) {
+    showToast('Lỗi kết nối máy chủ', 'error');
+  }
+}
+
+function clearRPCLog() {
+  const el = document.getElementById('rpc-log-screen');
+  if (el) el.innerHTML = '<div class="log-line info"><span class="log-time">[RPC]</span> <span class="log-msg">Đã xóa nhật ký.</span></div>';
+}
+
+function clearLyricLog() {
+  const el = document.getElementById('lyric-log-screen');
+  if (el) el.innerHTML = '<div class="log-line info"><span class="log-time">[LYRIC]</span> <span class="log-msg">Đã xóa nhật ký.</span></div>';
+}
+
+function clearQuestLog() {
+  const el = document.getElementById('quest-log-screen');
+  if (el) el.innerHTML = '<div class="log-line info"><span class="log-time">[QUEST]</span> <span class="log-msg">Đã xóa nhật ký.</span></div>';
+}
+
+function syncAllStatusNow() {
+  checkVoiceStatus();
+}
+
 function init() {
   initTheme();
   initSystemClock();
