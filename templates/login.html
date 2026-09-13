@@ -30,10 +30,10 @@
         </span>
       </button>
       <div class="beyond-lang-pill">
-        <span class="lang-opt">EN</span>
-        <span class="lang-opt active">VI</span>
+        <span class="lang-opt" id="landing-lang-en" onclick="setLandingLanguage('en')">EN</span>
+        <span class="lang-opt active" id="landing-lang-vi" onclick="setLandingLanguage('vi')">VI</span>
       </div>
-      <button type="button" class="beyond-login-btn" onclick="openAuthModal('login')">
+      <button type="button" class="beyond-login-btn" id="landing-btn-login" onclick="openAuthModal('login')">
         Đăng nhập
       </button>
     </div>
@@ -45,15 +45,15 @@
       
       <!-- CỘT CHỮ BÊN TRÁI -->
       <div class="beyond-text-col">
-        <h1 class="beyond-main-title">
+        <h1 class="beyond-main-title" id="landing-hero-title">
           beyond the limits,<br>
           command the shadows.
         </h1>
-        <p class="beyond-sub-title">Khẳng định quyền kiểm soát tối thượng. Tự do tùy biến Discord Rich Presence và thống trị mọi tác vụ không giới hạn.</p>
+        <p class="beyond-sub-title" id="landing-hero-sub">Khẳng định quyền kiểm soát tối thượng. Tự do tùy biến Discord Rich Presence và thống trị mọi tác vụ không giới hạn.</p>
         
         <div class="beyond-cta-group">
-          <button type="button" class="beyond-btn-white" onclick="openAuthModal('register')">Bắt đầu</button>
-          <button type="button" class="beyond-btn-glass" onclick="openAuthModal('login')">Demo tính năng</button>
+          <button type="button" class="beyond-btn-white" id="landing-cta-start" onclick="openAuthModal('register')">Bắt đầu</button>
+          <button type="button" class="beyond-btn-glass" id="landing-cta-demo" onclick="openAuthModal('login')">Demo tính năng</button>
         </div>
       </div>
 
@@ -557,10 +557,107 @@
       }, 1000);
     }
 
+    // ============================================================
+    // BILINGUAL LANGUAGE SWITCHER (VI / EN)
+    // ============================================================
+    const LANDING_I18N = {
+      vi: {
+        login_btn: 'Đăng nhập',
+        hero_sub: 'Khẳng định quyền kiểm soát tối thượng. Tự do tùy biến Discord Rich Presence và thống trị mọi tác vụ không giới hạn.',
+        cta_start: 'Bắt đầu',
+        cta_demo: 'Demo tính năng',
+        tab_login: 'Đăng Nhập',
+        tab_register: 'Đăng Ký Mới',
+        modal_title_login: 'Đăng Nhập Tài Khoản',
+        modal_title_register: 'Tạo Tài Khoản DIPRE',
+        btn_login_submit: 'Đăng Nhập Ngay',
+        btn_register_submit: 'Tạo Tài Khoản Ngay',
+        lbl_login_user: 'Tên tài khoản',
+        lbl_login_pass: 'Mật khẩu',
+        lbl_reg_user: 'Tên tài khoản mới',
+        lbl_reg_pass: 'Mật khẩu',
+        lbl_reg_conf: 'Xác nhận mật khẩu'
+      },
+      en: {
+        login_btn: 'Sign In',
+        hero_sub: 'Claim ultimate control. Freely customize Discord Rich Presence and dominate every task without limitations.',
+        cta_start: 'Get Started',
+        cta_demo: 'Live Demo',
+        tab_login: 'Sign In',
+        tab_register: 'Register',
+        modal_title_login: 'Sign In to Account',
+        modal_title_register: 'Create DIPRE Account',
+        btn_login_submit: 'Sign In Now',
+        btn_register_submit: 'Create Account Now',
+        lbl_login_user: 'Username',
+        lbl_login_pass: 'Password',
+        lbl_reg_user: 'New Username',
+        lbl_reg_pass: 'Password',
+        lbl_reg_conf: 'Confirm Password'
+      }
+    };
+
+    function setLandingLanguage(lang) {
+      if (!['vi', 'en'].includes(lang)) lang = 'vi';
+      localStorage.setItem('dipre_lang', lang);
+
+      const optEn = document.getElementById('landing-lang-en');
+      const optVi = document.getElementById('landing-lang-vi');
+      if (optEn && optVi) {
+        if (lang === 'en') {
+          optEn.classList.add('active');
+          optVi.classList.remove('active');
+        } else {
+          optVi.classList.add('active');
+          optEn.classList.remove('active');
+        }
+      }
+
+      const dict = LANDING_I18N[lang];
+      if (!dict) return;
+
+      const setTxt = (id, txt) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = txt;
+      };
+
+      setTxt('landing-btn-login', dict.login_btn);
+      setTxt('landing-hero-sub', dict.hero_sub);
+      setTxt('landing-cta-start', dict.cta_start);
+      setTxt('landing-cta-demo', dict.cta_demo);
+      setTxt('btn-login-submit', dict.btn_login_submit);
+      setTxt('btn-register-submit', dict.btn_register_submit);
+
+      const tabLoginSpan = document.querySelector('#btn-tab-login span');
+      if (tabLoginSpan) tabLoginSpan.textContent = dict.tab_login;
+      const tabRegSpan = document.querySelector('#btn-tab-register span');
+      if (tabRegSpan) tabRegSpan.textContent = dict.tab_register;
+
+      const title = document.getElementById('auth-modal-title');
+      const isLogin = document.getElementById('btn-tab-login')?.classList.contains('active');
+      if (title) title.textContent = isLogin ? dict.modal_title_login : dict.modal_title_register;
+
+      // Labels
+      const lblLoginUser = document.querySelector('label[for="login-username"]');
+      if (lblLoginUser) lblLoginUser.textContent = dict.lbl_login_user;
+      const lblLoginPass = document.querySelector('label[for="login-password"]');
+      if (lblLoginPass) lblLoginPass.textContent = dict.lbl_login_pass;
+      const lblRegUser = document.querySelector('label[for="reg-username"]');
+      if (lblRegUser) lblRegUser.textContent = dict.lbl_reg_user;
+      const lblRegPass = document.querySelector('label[for="reg-password"]');
+      if (lblRegPass) lblRegPass.textContent = dict.lbl_reg_pass;
+      const lblRegConf = document.querySelector('label[for="reg-confirm-password"]');
+      if (lblRegConf) lblRegConf.textContent = dict.lbl_reg_conf;
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       // Khôi phục theme đã lưu
       const savedTheme = localStorage.getItem('dipre_theme') || 'dark';
       applyLandingTheme(savedTheme);
+
+      // Khôi phục ngôn ngữ đã lưu
+      const savedLang = localStorage.getItem('dipre_lang') || 'vi';
+      setLandingLanguage(savedLang);
 
       // Kích hoạt realtime timer cho activity card
       startLandingLiveTimer();

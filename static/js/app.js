@@ -486,8 +486,12 @@ function buildRPCConfig() {
   const name = document.getElementById('input-activity-name')?.value.trim() || 'Discord RPC';
   const details = document.getElementById('input-details')?.value.trim() || '';
   const state = document.getElementById('input-state')?.value.trim() || '';
-  const largeImage = document.getElementById('input-large-image')?.value.trim() || currentLargeImageUrl || 'bot_avatar';
-  const smallImage = document.getElementById('input-small-image')?.value.trim() || currentSmallImageUrl || '';
+  const largeImage = document.getElementById('input-large-img')?.value.trim() || 
+                     document.getElementById('input-large-image')?.value.trim() || 
+                     currentLargeImageUrl || 'bot_avatar';
+  const smallImage = document.getElementById('input-small-img')?.value.trim() || 
+                     document.getElementById('input-small-image')?.value.trim() || 
+                     currentSmallImageUrl || '';
   const largeText = document.getElementById('input-large-text')?.value.trim() || '';
   const smallText = document.getElementById('input-small-text')?.value.trim() || '';
   const btn1Label = document.getElementById('input-btn1-label')?.value.trim() || '';
@@ -501,52 +505,123 @@ function buildRPCConfig() {
   const buttons = [];
   if (btn1Label && btn1Url) buttons.push({ label: btn1Label, url: btn1Url });
   if (btn2Label && btn2Url) buttons.push({ label: btn2Label, url: btn2Url });
+
+  // Lấy account_id từ multi-token widget nếu người dùng chọn
+  let accountId = null;
+  if (window.selectedMultiAccounts && window.selectedMultiAccounts['rpc'] && window.selectedMultiAccounts['rpc'].length > 0) {
+    accountId = window.selectedMultiAccounts['rpc'][0].id;
+  }
+
   return {
     activity_type: actType, name, details, state, large_image: largeImage, small_image: smallImage,
     large_text: largeText, small_text: smallText, buttons, use_timestamp: useTimestamp,
-    status, app_id: appId, stream_url: streamUrl
+    status, app_id: appId, stream_url: streamUrl, account_id: accountId
   };
 }
 
 async function handleStartRPC() {
   const cfg = buildRPCConfig();
+  const btnStart = document.getElementById('btn-rpc-start') || document.getElementById('btn-start');
+  const btnStop = document.getElementById('btn-rpc-stop') || document.getElementById('btn-stop');
+  const btnUpdate = document.getElementById('btn-rpc-update') || document.getElementById('btn-update');
+
+  if (btnStart) {
+    btnStart.disabled = true;
+    btnStart.textContent = 'Đang khởi động...';
+  }
+
   try {
-    const r = await fetch('/api/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cfg) });
+    const r = await fetch('/api/start', { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify(cfg) 
+    });
     const d = await r.json();
     if (d.success) {
-      rpcRunning = true; rpcStartTime = Date.now();
-      document.getElementById('btn-start').disabled = true;
-      document.getElementById('btn-update').disabled = false;
-      document.getElementById('btn-stop').disabled = false;
-      setLed('running'); startTimer(); startLogPolling();
-      showToast('RPC da khoi dong!', 'success');
-    } else showToast(d.error || 'Khoi dong that bai', 'error');
-  } catch (e) { showToast('Loi ket noi may chu', 'error'); }
+      rpcRunning = true; 
+      rpcStartTime = Date.now();
+      if (btnStart) {
+        btnStart.disabled = true;
+        btnStart.textContent = 'Đang Chạy Presence';
+      }
+      if (btnUpdate) btnUpdate.disabled = false;
+      if (btnStop) btnStop.disabled = false;
+      setLed('running'); 
+      startTimer(); 
+      startLogPolling();
+      showToast('RPC đã kết nối và phát thành công!', 'success');
+    } else {
+      if (btnStart) {
+        btnStart.disabled = false;
+        btnStart.textContent = 'Bắt Đầu Presence';
+      }
+      showToast(d.message || d.error || 'Khởi động thất bại', 'error');
+    }
+  } catch (e) { 
+    if (btnStart) {
+      btnStart.disabled = false;
+      btnStart.textContent = 'Bắt Đầu Presence';
+    }
+    showToast('Lỗi kết nối máy chủ', 'error'); 
+  }
 }
 
 async function handleUpdateRPC() {
   const cfg = buildRPCConfig();
   try {
-    const r = await fetch('/api/update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cfg) });
+    const r = await fetch('/api/update', { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify(cfg) 
+    });
     const d = await r.json();
-    if (d.success) showToast('Da cap nhat RPC!', 'success');
-    else showToast(d.error || 'Cap nhat that bai', 'error');
-  } catch (e) { showToast('Loi ket noi', 'error'); }
+    if (d.success) showToast('Đã cập nhật RPC thành công!', 'success');
+    else showToast(d.message || d.error || 'Cập nhật thất bại', 'error');
+  } catch (e) { showToast('Lỗi kết nối', 'error'); }
 }
 
 async function handleStopRPC() {
+  const btnStart = document.getElementById('btn-rpc-start') || document.getElementById('btn-start');
+  const btnStop = document.getElementById('btn-rpc-stop') || document.getElementById('btn-stop');
+  const btnUpdate = document.getElementById('btn-rpc-update') || document.getElementById('btn-update');
+
+  if (btnStop) {
+    btnStop.disabled = true;
+    btnStop.textContent = 'Đang dừng...';
+  }
+
   try {
     const r = await fetch('/api/stop', { method: 'POST' });
     const d = await r.json();
     if (d.success) {
-      rpcRunning = false; rpcStartTime = null;
-      document.getElementById('btn-start').disabled = false;
-      document.getElementById('btn-update').disabled = true;
-      document.getElementById('btn-stop').disabled = true;
-      setLed('idle'); stopTimer();
-      showToast('Da dung RPC', 'info');
+      rpcRunning = false; 
+      rpcStartTime = null;
+      if (btnStart) {
+        btnStart.disabled = false;
+        btnStart.textContent = 'Bắt Đầu Presence';
+      }
+      if (btnUpdate) btnUpdate.disabled = true;
+      if (btnStop) {
+        btnStop.disabled = true;
+        btnStop.textContent = 'Dừng';
+      }
+      setLed('idle'); 
+      stopTimer();
+      showToast('Đã dừng RPC', 'info');
+    } else {
+      if (btnStop) {
+        btnStop.disabled = false;
+        btnStop.textContent = 'Dừng';
+      }
+      showToast(d.message || d.error || 'Lỗi dừng RPC', 'error');
     }
-  } catch (e) { showToast('Loi dung RPC', 'error'); }
+  } catch (e) { 
+    if (btnStop) {
+      btnStop.disabled = false;
+      btnStop.textContent = 'Dừng';
+    }
+    showToast('Lỗi dừng RPC', 'error'); 
+  }
 }
 
 
@@ -610,7 +685,9 @@ function updateLivePreview() {
   }
 
   // Đồng bộ hiển thị ảnh lớn: Nếu chưa chọn ảnh thì ẩn hoàn toàn, không hiện icon mặc định
-  const largeImgVal = document.getElementById('input-large-image')?.value.trim() || currentLargeImageUrl;
+  const largeImgVal = document.getElementById('input-large-img')?.value.trim() || 
+                      document.getElementById('input-large-image')?.value.trim() || 
+                      currentLargeImageUrl;
   const pvLarge = document.getElementById('pv-large-img');
   if (pvLarge) {
     if (largeImgVal) {
@@ -628,7 +705,9 @@ function updateLivePreview() {
   }
 
   // Đồng bộ hiển thị ảnh nhỏ
-  const smallImgVal = document.getElementById('input-small-image')?.value.trim() || currentSmallImageUrl;
+  const smallImgVal = document.getElementById('input-small-img')?.value.trim() || 
+                      document.getElementById('input-small-image')?.value.trim() || 
+                      currentSmallImageUrl;
   const pvSmall = document.getElementById('pv-small-img');
   if (pvSmall) {
     if (smallImgVal) {
@@ -997,6 +1076,45 @@ function buildVisualGallery() {
     };
     grid.appendChild(btn);
   });
+}
+
+// ============================================================
+// ANIMATED GIF PRESETS HANDLER
+// ============================================================
+
+function selectGifPreset(url, name) {
+  if (!url) return;
+  const manualWrap = document.getElementById('manual-large-wrap');
+  if (manualWrap) manualWrap.classList.remove('d-none');
+
+  const inp = document.getElementById('input-large-img');
+  if (inp) inp.value = url;
+
+  const inpOld = document.getElementById('input-large-image');
+  if (inpOld) inpOld.value = url;
+
+  currentLargeImageUrl = url;
+
+  const img = document.getElementById('box-large-preview');
+  if (img) {
+    img.src = url;
+    img.style.display = 'block';
+  }
+
+  const lbl = document.getElementById('lbl-large-source');
+  if (lbl) lbl.textContent = name || 'Animated GIF';
+
+  // Highlight active GIF item
+  document.querySelectorAll('#rpc-gif-grid .rgb-item').forEach(el => {
+    el.classList.remove('active');
+  });
+  const clicked = event?.currentTarget;
+  if (clicked && clicked.classList) {
+    clicked.classList.add('active');
+  }
+
+  updateLivePreview();
+  showToast(`Đã áp dụng ảnh động GIF: ${name || 'GIF'}!`, 'success', 2500);
 }
 
 // ============================================================
@@ -3652,10 +3770,151 @@ function syncAllStatusNow() {
   checkVoiceStatus();
 }
 
+// ============================================================
+// BILINGUAL LANGUAGE SYSTEM (VI / EN) FOR DASHBOARD
+// ============================================================
+
+const APP_I18N = {
+  vi: {
+    status_ready: 'Sẵn sàng',
+    topbar_accounts: 'Discord Accounts',
+    nav_home: 'Dashboard',
+    nav_rpc: 'Custom RPC',
+    nav_youtube: 'YouTube RPC',
+    nav_soundcloud: 'SoundCloud RPC',
+    nav_spotify: 'Spotify RPC',
+    nav_status: 'Custom Status',
+    nav_lyric: 'Lyric Status (Karaoke)',
+    nav_voice_afk: 'Treo Voice 24/7 (AFK)',
+    nav_voice_board: 'Voice Soundboard',
+    nav_quest: 'Auto Quest',
+    nav_cleaner: 'Account Cleaner',
+    nav_accounts: 'Quản Lý Đa Token',
+    nav_inbox: 'Inbox Discord',
+    nav_logout: 'Đăng Xuất',
+    group_rpc: 'RPC PRESENCE',
+    group_status: 'STATUS & LYRIC',
+    group_voice: 'VOICE & AUDIO',
+    group_auto: 'AUTOMATION SCRIPT',
+    group_acc: 'ACCOUNT & TOKENS',
+    btn_rpc_start: 'Bắt Đầu Presence',
+    btn_rpc_stop: 'Dừng',
+    btn_rpc_save: 'Lưu Cấu Hình',
+    preview_title: 'Xem Trước Discord'
+  },
+  en: {
+    status_ready: 'Ready',
+    topbar_accounts: 'Discord Accounts',
+    nav_home: 'Dashboard',
+    nav_rpc: 'Custom RPC',
+    nav_youtube: 'YouTube RPC',
+    nav_soundcloud: 'SoundCloud RPC',
+    nav_spotify: 'Spotify RPC',
+    nav_status: 'Custom Status',
+    nav_lyric: 'Lyric Status (Karaoke)',
+    nav_voice_afk: 'Voice 24/7 (AFK)',
+    nav_voice_board: 'Voice Soundboard',
+    nav_quest: 'Auto Quest',
+    nav_cleaner: 'Account Cleaner',
+    nav_accounts: 'Multi-Token Manager',
+    nav_inbox: 'Discord Inbox',
+    nav_logout: 'Sign Out',
+    group_rpc: 'RPC PRESENCE',
+    group_status: 'STATUS & LYRIC',
+    group_voice: 'VOICE & AUDIO',
+    group_auto: 'AUTOMATION SCRIPT',
+    group_acc: 'ACCOUNT & TOKENS',
+    btn_rpc_start: 'Start Presence',
+    btn_rpc_stop: 'Stop',
+    btn_rpc_save: 'Save Config',
+    preview_title: 'Discord Preview'
+  }
+};
+
+function setAppLanguage(lang) {
+  if (!['vi', 'en'].includes(lang)) lang = 'vi';
+  localStorage.setItem('dipre_lang', lang);
+
+  const optEn = document.getElementById('dash-lang-en');
+  const optVi = document.getElementById('dash-lang-vi');
+  if (optEn && optVi) {
+    if (lang === 'en') {
+      optEn.classList.add('active');
+      optVi.classList.remove('active');
+    } else {
+      optVi.classList.add('active');
+      optEn.classList.remove('active');
+    }
+  }
+
+  const dict = APP_I18N[lang];
+  if (!dict) return;
+
+  const setTxt = (id, txt) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = txt;
+  };
+
+  setTxt('status-text', dict.status_ready);
+  setTxt('txt-topbar-accounts', dict.topbar_accounts);
+
+  // Nav buttons
+  const navMap = {
+    'tab-home': dict.nav_home,
+    'tab-rpc': dict.nav_rpc,
+    'tab-rpc-youtube': dict.nav_youtube,
+    'tab-rpc-soundcloud': dict.nav_soundcloud,
+    'tab-rpc-spotify': dict.nav_spotify,
+    'tab-status-custom': dict.nav_status,
+    'tab-lyric': dict.nav_lyric,
+    'tab-voice-afk': dict.nav_voice_afk,
+    'tab-voice-coming': dict.nav_voice_board,
+    'tab-quest': dict.nav_quest,
+    'tab-script-coming': dict.nav_cleaner,
+    'tab-accounts': dict.nav_accounts,
+    'tab-inbox': dict.nav_inbox
+  };
+
+  Object.entries(navMap).forEach(([tab, label]) => {
+    const btn = document.querySelector(`.sidebar-nav-item[data-tab="${tab}"] span`);
+    if (btn) btn.textContent = label;
+  });
+
+  // Nav group titles
+  const groups = document.querySelectorAll('.sidebar-group-title');
+  if (groups.length >= 5) {
+    if (groups[0]) groups[0].textContent = 'COMMAND CENTER';
+    if (groups[1]) groups[1].textContent = dict.group_rpc;
+    if (groups[2]) groups[2].textContent = dict.group_status;
+    if (groups[3]) groups[3].textContent = dict.group_voice;
+    if (groups[4]) groups[4].textContent = dict.group_auto;
+    if (groups[5]) groups[5].textContent = dict.group_acc;
+  }
+
+  // Logout button
+  const logoutBtnSpan = document.querySelector('.sidebar-logout-btn span');
+  if (logoutBtnSpan) logoutBtnSpan.textContent = dict.nav_logout;
+
+  // RPC action buttons (if not currently running)
+  const btnStart = document.getElementById('btn-rpc-start');
+  if (btnStart && !rpcRunning) btnStart.textContent = dict.btn_rpc_start;
+  const btnStop = document.getElementById('btn-rpc-stop');
+  if (btnStop && !rpcRunning) btnStop.textContent = dict.btn_rpc_stop;
+  const btnSave = document.querySelector('.rpc-btn-save');
+  if (btnSave) btnSave.textContent = dict.btn_rpc_save;
+
+  const pvTitle = document.querySelector('.preview-title');
+  if (pvTitle) pvTitle.textContent = dict.preview_title;
+}
+
 function init() {
   initTheme();
   initSystemClock();
   initAntiInspect();
+
+  // Khởi tạo ngôn ngữ đã lưu
+  const savedLang = localStorage.getItem('dipre_lang') || 'vi';
+  setAppLanguage(savedLang);
 
   // Khôi phục tab từ URL hash nếu có (ví dụ: #tab-spotify)
   if (window.location.hash) {

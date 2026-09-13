@@ -200,6 +200,10 @@
             <span class="ping-dot"></span>
             <span class="ping-text">Gateway: <strong id="ping-status">Online</strong></span>
           </div>
+          <div class="beyond-lang-pill topbar-lang-pill" id="dashboard-lang-pill">
+            <span class="lang-opt" id="dash-lang-en" onclick="setAppLanguage('en')">EN</span>
+            <span class="lang-opt active" id="dash-lang-vi" onclick="setAppLanguage('vi')">VI</span>
+          </div>
           <button type="button" class="theme-switch-btn" id="btn-theme-toggle" onclick="toggleTheme()" title="Chuyển đổi giao diện Sáng / Tối">
             <span id="theme-icon-container">
               <svg id="theme-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
@@ -207,7 +211,7 @@
           </button>
           <button type="button" class="btn-token-quick" onclick="toggleAddTokenModal(true)" title="Quản lý & Thêm Token Discord">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
-            <span>Discord Accounts</span>
+            <span id="txt-topbar-accounts">Discord Accounts</span>
           </button>
         </div>
       </header>
@@ -734,6 +738,43 @@
                       <input type="url" id="input-small-img" class="sf-input" placeholder="https://..."
                         oninput="updateLivePreview()">
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Thư viện Ảnh Động / GIF Sống Động Cho RPC -->
+              <div class="rpc-gif-presets-box" style="margin-top: 1rem; margin-bottom: 1rem;">
+                <div class="rgb-header">
+                  <span class="rgb-badge">ANIMATED GIF</span>
+                  <span class="rgb-title">Bộ Ảnh Động &amp; GIF Độc Quyền</span>
+                </div>
+                <div class="rgb-sub">
+                  Chọn ngay các ảnh động / GIF siêu ngầu bên dưới hoặc dán link file <code>.gif</code> trực tiếp vào ô <b>"Nhập link thủ công"</b>. Discord Gateway sẽ tự động đồng bộ và chạy ảnh động mượt mà trên Profile của bạn!
+                </div>
+                <div class="rgb-grid" id="rpc-gif-grid">
+                  <div class="rgb-item" onclick="selectGifPreset('https://media.giphy.com/media/LmN8OYiY4m0X85QbZ8/giphy.gif', 'Cyberpunk Matrix')">
+                    <img src="https://media.giphy.com/media/LmN8OYiY4m0X85QbZ8/giphy.gif" alt="Cyberpunk Matrix" loading="lazy">
+                    <span class="rgb-item-tag">Cyberpunk Matrix</span>
+                  </div>
+                  <div class="rgb-item" onclick="selectGifPreset('https://media.giphy.com/media/3oKIPnAiaMCws8nOsE/giphy.gif', 'Anime Chill Vibes')">
+                    <img src="https://media.giphy.com/media/3oKIPnAiaMCws8nOsE/giphy.gif" alt="Anime Chill Vibes" loading="lazy">
+                    <span class="rgb-item-tag">Anime Chill Vibes</span>
+                  </div>
+                  <div class="rgb-item" onclick="selectGifPreset('https://media.giphy.com/media/13HgwGsXF0aiGY/giphy.gif', 'Neon City Rain')">
+                    <img src="https://media.giphy.com/media/13HgwGsXF0aiGY/giphy.gif" alt="Neon City Rain" loading="lazy">
+                    <span class="rgb-item-tag">Neon City Rain</span>
+                  </div>
+                  <div class="rgb-item" onclick="selectGifPreset('https://media.giphy.com/media/xT9IgzoKnwFNmISR8I/giphy.gif', 'Retro Synthwave')">
+                    <img src="https://media.giphy.com/media/xT9IgzoKnwFNmISR8I/giphy.gif" alt="Retro Synthwave" loading="lazy">
+                    <span class="rgb-item-tag">Retro Synthwave</span>
+                  </div>
+                  <div class="rgb-item" onclick="selectGifPreset('https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif', 'Bongo Cat Jam')">
+                    <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" alt="Bongo Cat Jam" loading="lazy">
+                    <span class="rgb-item-tag">Bongo Cat Jam</span>
+                  </div>
+                  <div class="rgb-item" onclick="selectGifPreset('https://media.giphy.com/media/ule4vhcY1xEKQ/giphy.gif', 'Pixel Lo-Fi Girl')">
+                    <img src="https://media.giphy.com/media/ule4vhcY1xEKQ/giphy.gif" alt="Pixel Lo-Fi Girl" loading="lazy">
+                    <span class="rgb-item-tag">Pixel Lo-Fi Girl</span>
                   </div>
                 </div>
               </div>

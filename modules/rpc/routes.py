@@ -56,25 +56,56 @@ def api_status():
 def api_start():
     raw_data = request.get_json() or {}
     data = normalize_rpc_config(raw_data)
+    user_id = session.get('user_id')
+    account_id = raw_data.get('account_id') or data.get('account_id')
     token = data.get('token', '').strip()
-    if not token:
-        user_id = session.get('user_id')
-        if user_id:
-            with get_db() as conn:
-                cursor = conn.cursor()
+
+    if not token and user_id:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            # 1. Nếu có chỉ định account_id cụ thể từ widget
+            if account_id and str(account_id) != 'main':
+                cursor.execute('SELECT token FROM discord_accounts WHERE id = ? AND user_id = ?', (account_id, user_id))
+                acc_row = cursor.fetchone()
+                if acc_row and acc_row['token']:
+                    token = acc_row['token']
+
+            # 2. Tìm tài khoản active trong discord_accounts
+            if not token:
+                cursor.execute('SELECT token FROM discord_accounts WHERE user_id = ? AND is_active = 1 LIMIT 1', (user_id,))
+                acc_row = cursor.fetchone()
+                if acc_row and acc_row['token']:
+                    token = acc_row['token']
+
+            # 3. Tìm tài khoản mới nhất trong discord_accounts
+            if not token:
+                cursor.execute('SELECT token FROM discord_accounts WHERE user_id = ? ORDER BY id DESC LIMIT 1', (user_id,))
+                acc_row = cursor.fetchone()
+                if acc_row and acc_row['token']:
+                    token = acc_row['token']
+
+            # 4. Tìm trong users.discord_token
+            if not token:
                 cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
                 row = cursor.fetchone()
                 if row and row['discord_token']:
                     token = row['discord_token']
-        if not token and 'discord_token' in session:
-            token = session['discord_token']
+
+    if not token and 'discord_token' in session:
+        token = session['discord_token']
+
+    if not token:
+        showcase_token = os.environ.get('DISCORD_SHOWCASE_TOKEN', '').strip()
+        if showcase_token:
+            token = showcase_token
+
     if not token:
         return (jsonify({'success': False, 'message': 'Chưa có token. Vui lòng liên kết Discord Token tại mục Quản Lý Tài Khoản trước!'}), 400)
+
     data['token'] = token
     activity_name = data.get('activityName', '').strip()
     if not activity_name:
         data['activityName'] = 'Visual Studio Code'
-    user_id = session.get('user_id')
     if user_id:
         track_feature_use(user_id, 'rpc_custom')
     rpc_worker.start(data)
@@ -86,18 +117,44 @@ def api_start():
 def api_update():
     raw_data = request.get_json() or {}
     data = normalize_rpc_config(raw_data)
+    user_id = session.get('user_id')
+    account_id = raw_data.get('account_id') or data.get('account_id')
     token = data.get('token', '').strip()
-    if not token:
-        user_id = session.get('user_id')
-        if user_id:
-            with get_db() as conn:
-                cursor = conn.cursor()
+
+    if not token and user_id:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            if account_id and str(account_id) != 'main':
+                cursor.execute('SELECT token FROM discord_accounts WHERE id = ? AND user_id = ?', (account_id, user_id))
+                acc_row = cursor.fetchone()
+                if acc_row and acc_row['token']:
+                    token = acc_row['token']
+
+            if not token:
+                cursor.execute('SELECT token FROM discord_accounts WHERE user_id = ? AND is_active = 1 LIMIT 1', (user_id,))
+                acc_row = cursor.fetchone()
+                if acc_row and acc_row['token']:
+                    token = acc_row['token']
+
+            if not token:
+                cursor.execute('SELECT token FROM discord_accounts WHERE user_id = ? ORDER BY id DESC LIMIT 1', (user_id,))
+                acc_row = cursor.fetchone()
+                if acc_row and acc_row['token']:
+                    token = acc_row['token']
+
+            if not token:
                 cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
                 row = cursor.fetchone()
                 if row and row['discord_token']:
                     token = row['discord_token']
-        if not token and 'discord_token' in session:
-            token = session['discord_token']
+
+    if not token and 'discord_token' in session:
+        token = session['discord_token']
+
+    if not token:
+        showcase_token = os.environ.get('DISCORD_SHOWCASE_TOKEN', '').strip()
+        if showcase_token:
+            token = showcase_token
     if token:
         data['token'] = token
     activity_name = data.get('activityName', '').strip()
