@@ -213,6 +213,11 @@ async function handleBindToken() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token: tokenEl.value.trim(), app_id: (appIdEl && appIdEl.value) ? appIdEl.value.trim() : '' })
     });
+    if (r.status === 401) {
+      showToast('Phiên đăng nhập đã hết hạn do máy chủ vừa cập nhật. Đang chuyển hướng...', 'error');
+      setTimeout(() => { window.location.href = '/login'; }, 1200);
+      return;
+    }
     const d = await r.json();
     if (d.success) {
       showToast(`Đã liên kết thành công với: ${d.discord_username || d.username}!`, 'success');
@@ -3250,6 +3255,11 @@ async function handleConfirmAddSubToken() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token })
     });
+    if (res.status === 401) {
+      showToast('Phiên đăng nhập đã hết hạn do máy chủ vừa cập nhật. Vui lòng đăng nhập lại...', 'error');
+      setTimeout(() => { window.location.href = '/login'; }, 1200);
+      return;
+    }
     const d = await res.json();
     if (d.success) {
       showToast(d.message || 'Đã nạp Token phụ thành công!', 'success');
