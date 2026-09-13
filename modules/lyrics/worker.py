@@ -61,6 +61,18 @@ class DiscordLyricWorker:
                         if parsed:
                             name = f"{track.get('trackName', keyword)} - {track.get('artistName', '')}".strip(" -")
                             return True, name, parsed
+                
+                # 1b. Nếu không có syncedLyrics, dùng plainLyrics tự tạo nhịp thời gian
+                for track in tracks:
+                    plain = track.get("plainLyrics")
+                    if plain:
+                        lines = [line.strip() for line in plain.splitlines() if line.strip()]
+                        if lines:
+                            dur = float(track.get("duration") or (len(lines) * 4.5))
+                            step = max(3.0, dur / max(1, len(lines)))
+                            parsed = [(round(i * step, 1), l) for i, l in enumerate(lines)]
+                            name = f"{track.get('trackName', keyword)} - {track.get('artistName', '')}".strip(" -")
+                            return True, name, parsed
 
             # 2. Fallback tìm kiếm NCT
             search_url = f"https://www.nhaccuatui.com/tim-kiem/bai-hat.html?q={requests.utils.quote(keyword)}"
@@ -74,6 +86,13 @@ class DiscordLyricWorker:
                         for tr in r3.json():
                             if tr.get("syncedLyrics"):
                                 return True, song_title, self.parse_lrc(tr["syncedLyrics"])
+                            elif tr.get("plainLyrics"):
+                                lines = [l.strip() for l in tr["plainLyrics"].splitlines() if l.strip()]
+                                if lines:
+                                    dur = float(tr.get("duration") or (len(lines) * 4.5))
+                                    step = max(3.0, dur / max(1, len(lines)))
+                                    parsed = [(round(i * step, 1), l) for i, l in enumerate(lines)]
+                                    return True, song_title, parsed
 
             return False, 'Không tìm thấy lời bài hát đồng bộ', []
         except Exception as e:

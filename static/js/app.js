@@ -3001,42 +3001,24 @@ function switchLyricSubTab(subtab) {
   const btn = document.getElementById(`subtab-${subtab}`);
   if (btn) btn.classList.add('active');
 
+  const input = document.getElementById('input-nct-search');
   if (subtab === 'discover') {
     searchNctLyrics(1);
   } else if (subtab === 'playlist') {
-    renderPresetLyricGrid();
+    if (input) input.value = 'Lạc Trôi';
+    searchNctLyrics(1);
   } else if (subtab === 'history') {
-    renderHistoryLyricGrid();
+    if (input) input.value = 'Gửi em người bất tử';
+    searchNctLyrics(1);
   }
 }
 
 function renderPresetLyricGrid() {
-  const grid = document.getElementById('lyric-song-cards-grid');
-  if (!grid) return;
-  grid.innerHTML = `
-    <div class="lyric-song-card" onclick="selectTrackCard('Lạc Trôi', 'Sơn Tùng M-TP', 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=120&auto=format&fit=crop&q=80')">
-      <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=120&auto=format&fit=crop&q=80" class="lsc-thumb">
-      <div class="lsc-meta"><div class="lsc-title">Lạc Trôi</div><div class="lsc-artist">Sơn Tùng M-TP</div></div>
-      <button type="button" class="lsc-add-btn">▶</button>
-    </div>
-    <div class="lyric-song-card" onclick="selectTrackCard('Nàng Thơ', 'Hoàng Dũng', 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=120&auto=format&fit=crop&q=80')">
-      <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=120&auto=format&fit=crop&q=80" class="lsc-thumb">
-      <div class="lsc-meta"><div class="lsc-title">Nàng Thơ</div><div class="lsc-artist">Hoàng Dũng</div></div>
-      <button type="button" class="lsc-add-btn">▶</button>
-    </div>
-  `;
+  searchNctLyrics(1);
 }
 
 function renderHistoryLyricGrid() {
-  const grid = document.getElementById('lyric-song-cards-grid');
-  if (!grid) return;
-  grid.innerHTML = `
-    <div class="lyric-song-card" onclick="selectTrackCard('Gửi em, người bất tử', 'Meliodas', 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=120&auto=format&fit=crop&q=80')">
-      <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=120&auto=format&fit=crop&q=80" class="lsc-thumb">
-      <div class="lsc-meta"><div class="lsc-title">Gửi em, người bất tử</div><div class="lsc-artist">Meliodas</div></div>
-      <button type="button" class="lsc-add-btn">▶</button>
-    </div>
-  `;
+  searchNctLyrics(1);
 }
 
 async function searchNctLyrics(page = 1) {
@@ -3049,7 +3031,7 @@ async function searchNctLyrics(page = 1) {
   const curPageBtn = document.getElementById(`lpg-${page}`);
   if (curPageBtn) curPageBtn.classList.add('active');
 
-  if (grid) grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#94a3b8; padding:1.5rem;">Đang tìm kiếm bài hát có lời...</div>';
+  if (grid) grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#94a3b8; padding:2rem;">Đang tìm kiếm bài hát trên NhacCuaTui & LRCLIB...</div>';
 
   try {
     const res = await fetch(`/api/lyrics/search?q=${encodeURIComponent(query)}`);
@@ -3060,18 +3042,17 @@ async function searchNctLyrics(page = 1) {
       const pageTracks = data.tracks.slice(startIdx, startIdx + 4);
       
       if (pageTracks.length === 0) {
-        // Fallback về trang đầu
         searchNctLyrics(1);
         return;
       }
 
       grid.innerHTML = pageTracks.map(t => {
-        const cover = t.cover || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=120&auto=format&fit=crop&q=80';
+        const cover = t.cover || '/static/img/dipre_logo.png';
         const title = t.name || 'Bài hát không tên';
         const artist = t.artist || 'Nghệ sĩ';
         return `
           <div class="lyric-song-card" onclick="selectTrackCard('${escapeHtml(title)}', '${escapeHtml(artist)}', '${cover}', ${t.id || 0})">
-            <img src="${cover}" alt="${escapeHtml(title)}" class="lsc-thumb">
+            <img src="${cover}" alt="${escapeHtml(title)}" class="lsc-thumb" onerror="this.src='/static/img/dipre_logo.png'">
             <div class="lsc-meta">
               <div class="lsc-title">${title}</div>
               <div class="lsc-artist">${artist}</div>
@@ -3083,43 +3064,24 @@ async function searchNctLyrics(page = 1) {
         `;
       }).join('');
     } else {
-      // Fallback về 4 bài mẫu khớp ảnh
-      renderDefaultMockupCards();
+      if (grid) {
+        grid.innerHTML = `
+          <div style="grid-column: 1/-1; text-align:center; padding: 2.5rem 1rem; color: #94a3b8; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.08);">
+            <div style="font-size: 1.1rem; margin-bottom: 0.5rem; color: #cbd5e1;">Không tìm thấy bài hát nào phù hợp cho từ khóa: <b>"${escapeHtml(query)}"</b></div>
+            <div style="font-size: 0.82rem; color: #64748b;">Hãy thử tìm kiếm với từ khóa khác (ví dụ: "lạc trôi", "nàng thơ", "bước qua nhau", "chạy ngay đi").</div>
+          </div>
+        `;
+      }
     }
   } catch (e) {
-    renderDefaultMockupCards();
+    if (grid) {
+      grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#ef4444; padding:2rem;">Lỗi kết nối máy chủ tìm kiếm. Vui lòng thử lại!</div>';
+    }
   }
 }
 
 function escapeHtml(str) {
   return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-}
-
-function renderDefaultMockupCards() {
-  const grid = document.getElementById('lyric-song-cards-grid');
-  if (!grid) return;
-  grid.innerHTML = `
-    <div class="lyric-song-card" onclick="selectTrackCard('Gửi em, người bất tử', 'Meliodas', 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=120&auto=format&fit=crop&q=80')">
-      <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=120&auto=format&fit=crop&q=80" alt="Meliodas" class="lsc-thumb">
-      <div class="lsc-meta"><div class="lsc-title">Gửi em, người bất tử</div><div class="lsc-artist">Meliodas</div></div>
-      <button type="button" class="lsc-add-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
-    </div>
-    <div class="lyric-song-card" onclick="selectTrackCard('Gửi em, người bất tử (432 Hz)', 'hn1vv', 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=120&auto=format&fit=crop&q=80')">
-      <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=120&auto=format&fit=crop&q=80" alt="hn1vv" class="lsc-thumb">
-      <div class="lsc-meta"><div class="lsc-title">Gửi em, người bất tử (432 Hz)</div><div class="lsc-artist">hn1vv</div></div>
-      <button type="button" class="lsc-add-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
-    </div>
-    <div class="lyric-song-card" onclick="selectTrackCard('Gửi em, người bất tử - QuinvyRemix', 'guest253iwe4g@', 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=120&auto=format&fit=crop&q=80')">
-      <img src="https://images.unsplash.com/photo-1534447677768-be436bb09401?w=120&auto=format&fit=crop&q=80" alt="QuinvyRemix" class="lsc-thumb">
-      <div class="lsc-meta"><div class="lsc-title">Gửi em, người bất tử - QuinvyRemix</div><div class="lsc-artist">guest253iwe4g@</div></div>
-      <button type="button" class="lsc-add-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
-    </div>
-    <div class="lyric-song-card" onclick="selectTrackCard('gui em, nguoi bat tu (demo)', 'w1bi', 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=120&auto=format&fit=crop&q=80')">
-      <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=120&auto=format&fit=crop&q=80" alt="w1bi" class="lsc-thumb">
-      <div class="lsc-meta"><div class="lsc-title">gui em, nguoi bat tu (demo)</div><div class="lsc-artist">w1bi</div></div>
-      <button type="button" class="lsc-add-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
-    </div>
-  `;
 }
 
 // ============================================================
@@ -3381,11 +3343,12 @@ async function selectTrackCard(title, artist, thumb, trackId) {
   
   const coverImg = document.getElementById('latd-cover');
   if (coverImg) {
-    coverImg.src = (thumb && thumb.startsWith('http')) ? thumb : '/static/images/logo.png';
+    coverImg.src = (thumb && (thumb.startsWith('http') || thumb.startsWith('/'))) ? thumb : '/static/img/dipre_logo.png';
+    coverImg.onerror = () => { coverImg.src = '/static/img/dipre_logo.png'; };
   }
 
   const descEl = document.getElementById('latd-desc');
-  if (descEl) descEl.textContent = `Bài hát: ${title} - Trình bày: ${artist}. Nguồn dữ liệu NhacCuaTui Synced.`;
+  if (descEl) descEl.textContent = `Bài hát: ${title} - Trình bày: ${artist}. Dữ liệu lời Karaoke NhacCuaTui.`;
 
   showToast(`Đã chọn bài: ${title}`, 'success', 2000);
 
@@ -3401,14 +3364,11 @@ async function selectTrackCard(title, artist, thumb, trackId) {
       const curText = document.getElementById('lsc-lyric-current');
       if (curText) curText.textContent = `Sẵn sàng phát: "${title}"`;
     } else {
-      currentLyrics = [
-        { t: 0, l: `${title} - ${artist}` },
-        { t: 5, l: 'Gửi em người bất tử, nơi phương trời xa xăm...' },
-        { t: 12, l: 'Từng giọt sầu vương nhẹ trên đôi mi người đi...' },
-        { t: 20, l: 'Thời gian trôi qua, chỉ còn lại nỗi nhớ đong đầy...' }
-      ];
+      currentLyrics = [];
       const curText = document.getElementById('lsc-lyric-current');
-      if (curText) curText.textContent = currentLyrics[0].l;
+      if (curText) curText.textContent = `Không tìm thấy lời bài hát có sẵn cho "${title}"`;
+      const lrcBadge = document.getElementById('latd-lrc-badge');
+      if (lrcBadge) lrcBadge.textContent = `CHƯA CÓ LỜI`;
     }
   } catch (e) {
     currentLyrics = [
@@ -3679,6 +3639,7 @@ function init() {
   initAllMultiTokenWidgets();
   loadDashboardStats();
   checkVoiceStatus();
+  searchNctLyrics(1);
 
   // Chạy background polling định kỳ 3.5s
   setInterval(syncAllStatusNow, 3500);

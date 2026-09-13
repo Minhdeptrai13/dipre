@@ -73,6 +73,18 @@ def api_lyrics_search():
         except Exception:
             pass
 
+        itunes_cover_map = {}
+        try:
+            ir = requests.get(f"https://itunes.apple.com/search?term={requests.utils.quote(q)}&entity=song&limit=10", headers={"User-Agent": "Mozilla/5.0"}, timeout=4)
+            if ir.status_code == 200:
+                for item in ir.json().get('results', []):
+                    it_title = (item.get('trackName') or '').lower().strip()
+                    it_img = item.get('artworkUrl100') or ''
+                    if it_img:
+                        itunes_cover_map[it_title] = it_img.replace('100x100bb', '600x600bb')
+        except Exception:
+            pass
+
         url = f"https://lrclib.net/api/search?q={requests.utils.quote(q)}"
         r = requests.get(url, headers={"User-Agent": "DIPRE-Discord/1.0"}, timeout=6)
         if r.status_code == 200:
@@ -85,22 +97,37 @@ def api_lyrics_search():
                 t_lower = track_name.lower().strip()
 
                 cover_url = ''
-                for k, img in nct_cover_map.items():
+                # 1. Tìm trong itunes_cover_map
+                for k, img in itunes_cover_map.items():
                     if k in t_lower or t_lower in k:
                         cover_url = img
                         break
 
+                # 2. Tìm trong zing_cover_map
                 if not cover_url:
                     for k, img in zing_cover_map.items():
                         if k in t_lower or t_lower in k:
                             cover_url = img
                             break
 
+                # 3. Tìm trong nct_cover_map
                 if not cover_url:
-                    if nct_cover_map:
-                        cover_url = list(nct_cover_map.values())[0]
-                    else:
-                        cover_url = 'https://image-cdn.nct.vn/playlist/2023/01/03/6/2/1/4/1672730677680.jpg'
+                    for k, img in nct_cover_map.items():
+                        if k in t_lower or t_lower in k:
+                            cover_url = img
+                            break
+
+                # 4. Fallback về itunes đầu tiên nếu có
+                if not cover_url and itunes_cover_map:
+                    cover_url = list(itunes_cover_map.values())[0]
+
+                # 5. Fallback về zing đầu tiên nếu có
+                if not cover_url and zing_cover_map:
+                    cover_url = list(zing_cover_map.values())[0]
+
+                # 6. Fallback về logo chính hãng DIPRE nếu hoàn toàn không có bìa
+                if not cover_url:
+                    cover_url = '/static/img/dipre_logo.png'
 
                 results.append({
                     'id': t.get('id'),
@@ -129,7 +156,16 @@ def api_lyrics_song():
             if r.status_code == 200:
                 t = r.json()
                 synced = t.get('syncedLyrics') or ''
-                parsed = lyric_worker.parse_lrc(synced)
+                if synced:
+                    parsed = lyric_worker.parse_lrc(synced)
+                elif t.get('plainLyrics'):
+                    lines = [l.strip() for l in t['plainLyrics'].splitlines() if l.strip()]
+                    dur = float(t.get('duration') or (len(lines) * 4.5))
+                    step = max(3.0, dur / max(1, len(lines)))
+                    parsed = [(round(i * step, 1), l) for i, l in enumerate(lines)]
+                else:
+                    parsed = []
+
                 return jsonify({
                     'success': True,
                     'track': {
