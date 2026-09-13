@@ -19,5 +19,6 @@ import modules.rpc
 import modules.quest
 import modules.lyrics
 import modules.voice
+import modules.template
 
 __all__ = ['registry']

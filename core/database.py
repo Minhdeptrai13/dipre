@@ -62,6 +62,43 @@ def init_db():
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             )
         ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS discord_bots (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                app_id TEXT NOT NULL,
+                bot_name TEXT NOT NULL,
+                bot_avatar_url TEXT DEFAULT '',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS rpc_templates (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                author_id INTEGER NOT NULL,
+                author_name TEXT DEFAULT '',
+                title TEXT NOT NULL,
+                description TEXT DEFAULT '',
+                tags TEXT DEFAULT '[]',
+                rpc_config TEXT NOT NULL,
+                preview_image_url TEXT DEFAULT '',
+                is_public INTEGER DEFAULT 1,
+                likes_count INTEGER DEFAULT 0,
+                uses_count INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS template_favorites (
+                user_id INTEGER NOT NULL,
+                template_id INTEGER NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (user_id, template_id)
+            )
+        ''')
         
         # Tự động migrate các cột cho bảng users
         cursor.execute("PRAGMA table_info(users)")

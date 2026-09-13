@@ -1,0 +1,384 @@
+/* ==========================================================================
+   OCEANIC CYBER-DARK: THEME RPC HUB, BOT SELECTOR, FORUM & BENTO GRID
+   Bảng màu chủ đạo: Deep Obsidian Black, Oceanic Electric Blue, Crisp White
+   ========================================================================== */
+
+/* 1. Bot Application Selector Component */
+.bot-selector-wrap {
+  margin-bottom: 22px;
+  background: rgba(10, 16, 26, 0.7);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  backdrop-filter: blur(14px);
+}
+
+.bot-selector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.bot-selector-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-white);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bot-selector-container {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 4px 4px 10px 4px;
+  scrollbar-width: thin;
+}
+
+.bot-selector-card {
+  flex: 0 0 auto;
+  min-width: 175px;
+  background: rgba(14, 21, 33, 0.88);
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.bot-selector-card:hover {
+  background: rgba(20, 32, 52, 0.95);
+  border-color: rgba(56, 189, 248, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -6px rgba(2, 132, 199, 0.35);
+}
+
+.bot-selector-card.active {
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.25) 0%, rgba(14, 21, 33, 0.92) 100%);
+  border-color: #38bdf8;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
+}
+
+.bot-selector-card.active::after {
+  content: "✓";
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #38bdf8;
+}
+
+.bot-card-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background: #080d16;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.bot-card-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bot-card-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.bot-card-name {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bot-card-id {
+  font-size: 0.7rem;
+  color: #38bdf8;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.bot-card-add {
+  border: 1px dashed rgba(56, 189, 248, 0.35);
+  background: rgba(10, 16, 26, 0.4);
+  justify-content: center;
+  color: var(--text-subtle);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.bot-card-add:hover {
+  border-color: #38bdf8;
+  background: rgba(2, 132, 199, 0.15);
+  color: #38bdf8;
+}
+
+/* 2. Theme RPC 3-Tabs Navigation */
+.theme-rpc-nav {
+  display: flex;
+  gap: 8px;
+  background: rgba(7, 12, 20, 0.88);
+  padding: 6px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  margin-bottom: 24px;
+  width: fit-content;
+}
+
+.theme-tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-subtle);
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 8px 22px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.theme-tab-btn:hover {
+  color: var(--text-white);
+}
+
+.theme-tab-btn.active {
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  color: #06090e;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
+}
+
+/* 3. Diễn đàn Template Cards Grid (Học hỏi Solstice & Asagi) */
+.forum-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.forum-search-box {
+  flex: 1;
+  min-width: 260px;
+  position: relative;
+}
+
+.forum-search-box input {
+  width: 100%;
+  background: rgba(14, 21, 33, 0.82);
+  border: 1px solid rgba(56, 189, 248, 0.16);
+  border-radius: var(--radius-pill);
+  padding: 10px 18px 10px 42px;
+  color: var(--text-white);
+  font-size: 0.88rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.forum-search-box input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.28);
+}
+
+.forum-search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.forum-tags-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.tag-filter-btn {
+  background: rgba(14, 21, 33, 0.6);
+  border: 1px solid rgba(56, 189, 248, 0.12);
+  color: var(--text-subtle);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tag-filter-btn:hover, .tag-filter-btn.active {
+  background: rgba(2, 132, 199, 0.2);
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+
+.templates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 20px;
+}
+
+.template-card {
+  background: rgba(14, 21, 33, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(12px);
+}
+
+.template-card:hover {
+  border-color: rgba(56, 189, 248, 0.45);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px -8px rgba(2, 132, 199, 0.35);
+}
+
+.template-preview-box {
+  background: #070c14;
+  height: 155px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.template-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.88;
+  transition: transform 0.35s ease;
+}
+
+.template-card:hover .template-preview-img {
+  transform: scale(1.05);
+  opacity: 1;
+}
+
+.template-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 10px;
+}
+
+.template-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.template-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-white);
+  line-height: 1.3;
+}
+
+.template-author {
+  font-size: 0.76rem;
+  color: var(--text-subtle);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.template-desc {
+  font-size: 0.82rem;
+  color: var(--text-subtle);
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.template-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.template-tag {
+  background: rgba(2, 132, 199, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+}
+
+.template-footer {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.template-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.template-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.template-btn-use {
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  color: #06090e;
+  font-weight: 700;
+  font-size: 0.82rem;
+  border: none;
+  padding: 7px 16px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.template-btn-use:hover {
+  box-shadow: 0 4px 16px rgba(56, 189, 248, 0.45);
+  transform: translateY(-1px);
+}
