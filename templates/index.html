@@ -2047,8 +2047,13 @@
           <label class="sf-label" for="input-sub-token">Discord User Token (Tài Khoản Phụ)</label>
           <div class="sf-input-with-btn">
             <input type="password" id="input-sub-token" class="sf-input" placeholder="Dán Discord User Token phụ của bạn vào đây..." autocomplete="off">
-            <button type="button" class="btn-paste-token" onclick="handlePasteTokenInput()">Dán</button>
-            <button type="button" class="btn-toggle-eye" onclick="toggleTokenVisibility('input-sub-token')">👁️</button>
+            <button type="button" class="sf-addon-btn btn-action-paste" onclick="handlePasteTokenInput()" title="Dán token từ Clipboard">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+              <span>Dán</span>
+            </button>
+            <button type="button" class="sf-addon-btn btn-action-eye" onclick="toggleTokenVisibility('input-sub-token')" id="btn-eye-sub-token" title="Ẩn/Hiện token">
+              <svg class="icon-eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
           </div>
         </div>
 
