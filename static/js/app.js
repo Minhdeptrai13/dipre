@@ -2651,7 +2651,7 @@ async function loadMultiAccounts() {
       grid.innerHTML = `
         <div style="grid-column: 1/-1; text-align: center; padding: 2.5rem 1rem; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1);">
           <p style="color:#94a3b8; margin-bottom:1rem;">Chưa có tài khoản Discord Token phụ nào được lưu.</p>
-          <button type="button" class="rpc-btn rpc-btn-start" onclick="toggleAccountModal(true)">+ Thêm Token Discord Đầu Tiên</button>
+          <button type="button" class="rpc-btn rpc-btn-start" onclick="toggleAddTokenModal(true)">+ Thêm Token Discord Đầu Tiên</button>
         </div>
       `;
     }
@@ -3196,6 +3196,18 @@ function toggleTokenVisibility(id) {
   const inp = document.getElementById(id);
   if (inp) {
     inp.type = inp.type === 'password' ? 'text' : 'password';
+  }
+}
+
+function handleSubTokenBackdropClick(e) {
+  if (e.target === document.getElementById('token-add-modal-backdrop')) {
+    toggleAddTokenModal(false);
+  }
+}
+
+function handleMultiTokenPickerBackdropClick(e) {
+  if (e.target === document.getElementById('multitoken-picker-modal')) {
+    closeMultiTokenPicker();
   }
 }
 
