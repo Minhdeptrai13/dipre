@@ -92,29 +92,42 @@ class DiscordLyricWorker:
         lines.sort(key=lambda x: x[0])
         return lines
 
-    def start_lyric_stream(self, user_id: int, token: str, lyrics: list, emoji: str = '🎵'):
+    def start_lyric_stream(self, user_id: int, tokens: list | str, lyrics: list, emoji: str = '🎵'):
         self.stop_lyric_stream(user_id)
         stop_event = threading.Event()
+        
+        token_list = [tokens] if isinstance(tokens, str) else list(tokens)
+        token_list = [t.strip() for t in token_list if t and isinstance(t, str) and len(t.strip()) > 20]
+        if not token_list:
+            return
 
         def _worker():
             start_time = time.time()
             idx = 0
             total = len(lyrics)
-            quest_log(f"Bắt đầu phát lyric đồng bộ ({total} câu)...", "info")
+            quest_log(f"Bắt đầu phát lyric đồng bộ ({total} câu) trên {len(token_list)} tài khoản...", "info")
 
             while not stop_event.is_set() and idx < total:
                 elapsed = time.time() - start_time
                 target_sec, text = lyrics[idx]
 
                 if elapsed >= target_sec:
-                    self.update_lyric(token, text, emoji)
-                    quest_log(f"[Lyric] {text}", "info")
+                    for tok in token_list:
+                        try:
+                            self.update_lyric(tok, text, emoji)
+                        except Exception:
+                            pass
+                    quest_log(f"[Multi-Lyric] {text}", "info")
                     idx += 1
                 time.sleep(0.3)
 
             if not stop_event.is_set():
                 time.sleep(3)
-                self.clear_lyric(token)
+                for tok in token_list:
+                    try:
+                        self.clear_lyric(tok)
+                    except Exception:
+                        pass
 
         th = threading.Thread(target=_worker, daemon=True)
         with self.lock:

@@ -3122,10 +3122,258 @@ function renderDefaultMockupCards() {
   `;
 }
 
+// ============================================================
+// MODAL NẠP DISCORD USER TOKEN PHỤ CHUYÊN DỤNG
+// ============================================================
+function toggleAddTokenModal(show) {
+  const modal = document.getElementById('token-add-modal-backdrop');
+  if (!modal) return;
+  if (show) {
+    modal.classList.remove('d-none');
+    setTimeout(() => {
+      document.getElementById('input-sub-token')?.focus();
+    }, 100);
+  } else {
+    modal.classList.add('d-none');
+    const inp = document.getElementById('input-sub-token');
+    if (inp) inp.value = '';
+  }
+}
+
+async function handleConfirmAddSubToken() {
+  const inp = document.getElementById('input-sub-token');
+  const token = inp ? inp.value.trim() : '';
+  if (!token) {
+    showToast('Vui lòng dán Discord User Token phụ!', 'warning');
+    return;
+  }
+  const btn = document.getElementById('btn-submit-add-token');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Đang xác minh token...';
+  }
+
+  try {
+    const res = await fetch('/api/account/bind_token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token })
+    });
+    const d = await res.json();
+    if (d.success) {
+      showToast(d.message || 'Đã nạp Token phụ thành công!', 'success');
+      toggleAddTokenModal(false);
+      loadMultiAccounts();
+      fetchAccountInfo();
+      initAllMultiTokenWidgets();
+    } else {
+      showToast(d.message || 'Lỗi khi nạp token', 'error');
+    }
+  } catch (e) {
+    showToast('Lỗi kết nối máy chủ!', 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '+ Xác Minh & Lưu Token Phụ';
+    }
+  }
+}
+
+async function handlePasteTokenInput() {
+  try {
+    const text = await navigator.clipboard.readText();
+    const inp = document.getElementById('input-sub-token');
+    if (inp && text) {
+      inp.value = text.trim();
+      showToast('Đã dán token từ Clipboard!', 'info', 1000);
+    }
+  } catch (e) {
+    showToast('Không thể truy cập Clipboard, hãy dán thủ công!', 'warning');
+  }
+}
+
+function toggleTokenVisibility(id) {
+  const inp = document.getElementById(id);
+  if (inp) {
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+  }
+}
+
+// ============================================================
+// QUẢN LÝ Ô VUÔNG BO GÓC CHỌN ACC ĐA TOKEN (MULTI-TOKEN TARGET)
+// ============================================================
+const selectedMultiAccounts = {
+  lyric: [],
+  rpc: [],
+  status: [],
+  yt: [],
+  sc: [],
+  sp: [],
+  voice: []
+};
+
+let currentPickerScope = 'lyric';
+let allAvailableAccounts = [];
+
+async function fetchAllAvailableAccounts() {
+  try {
+    const res = await fetch('/api/accounts/list');
+    const data = await res.json();
+    const subAccs = data.accounts || [];
+
+    const resInfo = await fetch('/api/account/info');
+    const info = await resInfo.json();
+
+    const result = [];
+    if (info.success && info.discord_id) {
+      result.push({
+        id: 'main',
+        discord_id: info.discord_id,
+        discord_username: info.discord_username || info.username,
+        discord_avatar: info.discord_avatar || info.avatar_url || 'https://cdn.discordapp.com/embed/avatars/0.png',
+        is_main: true
+      });
+    }
+
+    subAccs.forEach(a => {
+      result.push({
+        id: a.id,
+        discord_id: a.discord_id,
+        discord_username: a.discord_username,
+        discord_avatar: a.discord_avatar || 'https://cdn.discordapp.com/embed/avatars/0.png',
+        is_main: false
+      });
+    });
+
+    allAvailableAccounts = result;
+    return result;
+  } catch (e) {
+    return [];
+  }
+}
+
+async function openMultiTokenPicker(scope) {
+  currentPickerScope = scope || 'lyric';
+  const modal = document.getElementById('multitoken-picker-modal');
+  const container = document.getElementById('mtp-accounts-list');
+  if (!modal || !container) return;
+
+  modal.classList.remove('d-none');
+  container.innerHTML = '<div class="acc-grid-loading">Đang tải danh sách tài khoản...</div>';
+
+  const accounts = await fetchAllAvailableAccounts();
+  if (!accounts || accounts.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding: 1.5rem; color:#94a3b8;">
+        <p>Chưa có tài khoản Discord nào được lưu.</p>
+        <button type="button" class="rpc-btn rpc-btn-start mt-2" onclick="closeMultiTokenPicker(); toggleAddTokenModal(true);">+ Thêm Token Phụ Mới</button>
+      </div>
+    `;
+    return;
+  }
+
+  const selectedSet = new Set((selectedMultiAccounts[currentPickerScope] || []).map(a => String(a.id)));
+  container.innerHTML = accounts.map(acc => {
+    const isSel = selectedSet.has(String(acc.id));
+    return `
+      <div class="mtp-acc-row ${isSel ? 'selected' : ''}" data-acc-id="${acc.id}" onclick="togglePickerAccRow(this)">
+        <img src="${acc.discord_avatar}" class="mtp-acc-avatar" alt="">
+        <div class="mtp-acc-info">
+          <div class="mtp-acc-name">${acc.discord_username} ${acc.is_main ? '<span style="color:#38bdf8; font-size:0.75rem;">(Chính)</span>' : '<span style="color:#a855f7; font-size:0.75rem;">(Phụ)</span>'}</div>
+          <div class="mtp-acc-sub">ID: ${acc.discord_id}</div>
+        </div>
+        <div class="mtp-acc-check">${isSel ? '✓' : ''}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function togglePickerAccRow(el) {
+  el.classList.toggle('selected');
+  const check = el.querySelector('.mtp-acc-check');
+  if (check) {
+    check.textContent = el.classList.contains('selected') ? '✓' : '';
+  }
+}
+
+function closeMultiTokenPicker() {
+  const modal = document.getElementById('multitoken-picker-modal');
+  if (modal) modal.classList.add('d-none');
+}
+
+function applySelectedMultiAccounts() {
+  const container = document.getElementById('mtp-accounts-list');
+  if (!container) return;
+  const rows = container.querySelectorAll('.mtp-acc-row.selected');
+  const chosenIds = [];
+  rows.forEach(r => {
+    const aid = r.getAttribute('data-acc-id');
+    if (aid) chosenIds.push(String(aid));
+  });
+
+  selectedMultiAccounts[currentPickerScope] = allAvailableAccounts.filter(a => chosenIds.includes(String(a.id)));
+  renderMultiTokenSlots(currentPickerScope);
+  closeMultiTokenPicker();
+  showToast(`Đã chọn ${selectedMultiAccounts[currentPickerScope].length} tài khoản!`, 'success', 1500);
+}
+
+function renderMultiTokenSlots(scope) {
+  const grid = document.getElementById(`${scope}-target-slots`);
+  const counter = document.getElementById(`${scope}-selected-count`);
+  if (!grid) return;
+
+  const accounts = selectedMultiAccounts[scope] || [];
+  if (counter) counter.textContent = accounts.length;
+
+  const itemsHtml = accounts.map(acc => `
+    <div class="mtt-slot-item">
+      <img src="${acc.discord_avatar}" class="mtt-slot-avatar" alt="${acc.discord_username}">
+      <button type="button" class="mtt-slot-remove" onclick="removeAccountFromScope('${scope}', '${acc.id}')" title="Bỏ chọn">×</button>
+      <div class="mtt-slot-tooltip">${acc.discord_username}</div>
+    </div>
+  `).join('');
+
+  grid.innerHTML = itemsHtml + `
+    <button type="button" class="mtt-slot-add-btn" onclick="openMultiTokenPicker('${scope}')" title="Bấm để chọn tài khoản Discord">
+      <span class="msab-plus">+</span>
+    </button>
+  `;
+}
+
+function removeAccountFromScope(scope, id) {
+  selectedMultiAccounts[scope] = (selectedMultiAccounts[scope] || []).filter(a => String(a.id) !== String(id));
+  renderMultiTokenSlots(scope);
+}
+
+async function initAllMultiTokenWidgets() {
+  await fetchAllAvailableAccounts();
+  ['lyric', 'rpc', 'status', 'yt', 'sc', 'sp', 'voice'].forEach(s => {
+    if (selectedMultiAccounts[s].length === 0 && allAvailableAccounts.length > 0) {
+      selectedMultiAccounts[s] = [allAvailableAccounts[0]];
+    }
+    renderMultiTokenSlots(s);
+  });
+}
+
+// ============================================================
+// LYRIC STATUS (NHACCUATUI + MULTI-TOKEN SYNC)
+// ============================================================
 async function selectTrackCard(title, artist, thumb, trackId) {
-  if (document.getElementById('dap-title')) document.getElementById('dap-title').textContent = title;
-  if (document.getElementById('dap-artist')) document.getElementById('dap-artist').textContent = `${artist} • NhacCuaTui Synced`;
-  if (document.getElementById('dap-art')) document.getElementById('dap-art').src = thumb;
+  const emptyPrompt = document.getElementById('lyric-empty-prompt');
+  const activeDetail = document.getElementById('lyric-active-track-detail');
+  if (emptyPrompt) emptyPrompt.classList.add('d-none');
+  if (activeDetail) activeDetail.classList.remove('d-none');
+
+  if (document.getElementById('latd-title')) document.getElementById('latd-title').textContent = title;
+  if (document.getElementById('latd-artist')) document.getElementById('latd-artist').textContent = artist || 'Nghệ Sĩ';
+  
+  const coverImg = document.getElementById('latd-cover');
+  if (coverImg) {
+    coverImg.src = (thumb && thumb.startsWith('http')) ? thumb : '/static/images/logo.png';
+  }
+
+  const descEl = document.getElementById('latd-desc');
+  if (descEl) descEl.textContent = `Bài hát: ${title} - Trình bày: ${artist}. Nguồn dữ liệu NhacCuaTui Synced.`;
 
   showToast(`Đã chọn bài: ${title}`, 'success', 2000);
 
@@ -3136,32 +3384,117 @@ async function selectTrackCard(title, artist, thumb, trackId) {
     const data = await res.json();
     if (data.success && data.track && data.track.lyrics && data.track.lyrics.length > 0) {
       currentLyrics = data.track.lyrics;
-      renderKaraokeStage(currentLyrics);
-      showToast('Đã đồng bộ lời bài hát thành công!', 'info');
+      const lrcBadge = document.getElementById('latd-lrc-badge');
+      if (lrcBadge) lrcBadge.textContent = `${currentLyrics.length} CÂU KARAOKE`;
+      const curText = document.getElementById('lsc-lyric-current');
+      if (curText) curText.textContent = `Sẵn sàng phát: "${title}"`;
     } else {
       currentLyrics = [
-        { t: 0, l: 'Gửi em người bất tử...' },
-        { t: 5, l: 'Nơi phương trời xa xăm có hay lòng anh' },
-        { t: 12, l: 'Từng giọt sầu vương nhẹ trên đôi mi người đi' },
-        { t: 20, l: 'Thời gian trôi qua, chỉ còn lại nỗi nhớ đong đầy' }
+        { t: 0, l: `${title} - ${artist}` },
+        { t: 5, l: 'Gửi em người bất tử, nơi phương trời xa xăm...' },
+        { t: 12, l: 'Từng giọt sầu vương nhẹ trên đôi mi người đi...' },
+        { t: 20, l: 'Thời gian trôi qua, chỉ còn lại nỗi nhớ đong đầy...' }
       ];
-      renderKaraokeStage(currentLyrics);
+      const curText = document.getElementById('lsc-lyric-current');
+      if (curText) curText.textContent = currentLyrics[0].l;
     }
   } catch (e) {
     currentLyrics = [
-      { t: 0, l: 'Gửi em người bất tử...' },
-      { t: 5, l: 'Nơi phương trời xa xăm có hay lòng anh' }
+      { t: 0, l: `${title} - ${artist}` },
+      { t: 5, l: 'Nơi phương trời xa xăm có hay lòng anh...' }
     ];
-    renderKaraokeStage(currentLyrics);
   }
 }
 
-function renderKaraokeStage(lyrics) {
-  const wrapper = document.getElementById('lyric-lines-wrapper');
-  if (!wrapper) return;
-  wrapper.innerHTML = lyrics.map((l, idx) => `
-    <div class="lyric-line ${idx === 0 ? 'active' : ''}" data-time="${l.t}">${l.l}</div>
-  `).join('');
+let lyricSyncTimer = null;
+let currentLyricIdx = 0;
+
+async function handleToggleLyricSyncMulti() {
+  const accounts = selectedMultiAccounts['lyric'] || [];
+  if (accounts.length === 0) {
+    showToast('Hãy bấm dấu [+] để chọn ít nhất 1 tài khoản chạy Lyric!', 'warning');
+    return;
+  }
+
+  const btnStart = document.getElementById('btn-lyric-sync-toggle');
+  const btnStop = document.getElementById('btn-lyric-sync-stop');
+  if (btnStart) {
+    btnStart.disabled = true;
+    btnStart.textContent = '⏳ ĐANG ĐỒNG BỘ ĐA TÀI KHOẢN...';
+  }
+  if (btnStop) btnStop.disabled = false;
+
+  const songTitle = document.getElementById('latd-title')?.textContent || 'Gửi em, người bất tử';
+  showToast(`Đang đồng bộ lời bài hát lên ${accounts.length} tài khoản Discord...`, 'info');
+
+  try {
+    const accountIds = accounts.map(a => a.id);
+    const res = await fetch('/api/lyrics/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        song: songTitle,
+        emoji: '🎵',
+        account_ids: accountIds
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(data.message || 'Đã kích hoạt đồng bộ đa token!', 'success');
+      logLyric(`[MULTI-SYNC] ${data.message}`);
+      startLocalKaraokeTicker();
+    } else {
+      showToast(data.message || 'Lỗi đồng bộ', 'error');
+      if (btnStart) {
+        btnStart.disabled = false;
+        btnStart.textContent = '🚀 BẮT ĐẦU ĐỒNG BỘ ĐA TÀI KHOẢN';
+      }
+    }
+  } catch (e) {
+    showToast('Lỗi kết nối máy chủ', 'error');
+    if (btnStart) {
+      btnStart.disabled = false;
+      btnStart.textContent = '🚀 BẮT ĐẦU ĐỒNG BỘ ĐA TÀI KHOẢN';
+    }
+  }
+}
+
+function startLocalKaraokeTicker() {
+  if (lyricSyncTimer) clearInterval(lyricSyncTimer);
+  currentLyricIdx = 0;
+  if (!currentLyrics || currentLyrics.length === 0) return;
+
+  lyricSyncTimer = setInterval(() => {
+    const line = currentLyrics[currentLyricIdx % currentLyrics.length];
+    const textEl = document.getElementById('lsc-lyric-current');
+    if (textEl) textEl.textContent = line.l || line.text || '';
+    logLyric(`[Karaoke] ${line.l || line.text || ''}`);
+    currentLyricIdx++;
+  }, 4500);
+}
+
+function handleStopLyricSync() {
+  if (lyricSyncTimer) clearInterval(lyricSyncTimer);
+  lyricSyncTimer = null;
+
+  const btnStart = document.getElementById('btn-lyric-sync-toggle');
+  const btnStop = document.getElementById('btn-lyric-sync-stop');
+  if (btnStart) {
+    btnStart.disabled = false;
+    btnStart.textContent = '🚀 BẮT ĐẦU ĐỒNG BỘ ĐA TÀI KHOẢN';
+  }
+  if (btnStop) btnStop.disabled = true;
+
+  fetch('/api/lyrics/clear', { method: 'POST' })
+    .then(r => r.json())
+    .then(d => {
+      showToast('Đã dừng đồng bộ và xóa Status trên các tài khoản!', 'info');
+      logLyric('[MULTI-SYNC] Đã dừng toàn bộ luồng phát Lyric.');
+    });
+}
+
+function handleClearDiscordStatus() {
+  handleStopLyricSync();
 }
 
 function initDipreAudioPlayer() {
@@ -3169,7 +3502,6 @@ function initDipreAudioPlayer() {
 }
 
 function handleToggleAudio() {
-  const btn = document.getElementById('btn-audio-play');
   const icon = document.getElementById('btn-play-icon');
   if (icon) {
     if (icon.textContent === '▶') {
@@ -3195,123 +3527,15 @@ function handleVolumeChange(val) {
   if (htmlAudio) htmlAudio.volume = parseFloat(val) || 0.8;
 }
 
-function handlePrevLyricTrack() {
-  showToast('Chuyển về bài hát trước', 'info', 1000);
-}
-
-function handleNextLyricTrack() {
-  showToast('Chuyển sang bài tiếp theo', 'info', 1000);
-}
-
-function handleLoadLocalAudio(input) {
-  if (input.files && input.files[0]) {
-    const file = input.files[0];
-    showToast(`Đã nạp file âm thanh: ${file.name}`, 'success');
-  }
-}
-
-function handleSelectLyricTrack() {
-  const val = document.getElementById('select-lyric-track')?.value;
-  const customBox = document.getElementById('custom-lrc-group');
-  if (val === 'custom') {
-    if (customBox) customBox.classList.remove('d-none');
-  } else {
-    if (customBox) customBox.classList.add('d-none');
-  }
-}
-
-let lyricSyncTimer = null;
-let currentLyricIdx = 0;
-
-async function handleToggleLyricSync() {
-  lyricSyncing = true;
-  const btnStart = document.getElementById('btn-lyric-sync-toggle');
-  const btnStop = document.getElementById('btn-lyric-sync-stop');
-  const ind = document.getElementById('lyric-sync-indicator');
-  const dot = document.getElementById('lyric-live-dot');
-  if (btnStart) btnStart.disabled = true;
-  if (btnStop) btnStop.disabled = false;
-  if (ind) ind.classList.remove('lyric-indicator-hide');
-  if (dot) dot.classList.remove('lyric-dot-hide');
-
-  showToast('Đang bắt đầu đồng bộ Lyric vào Custom Status Discord...', 'success');
-
-  const emoji = document.getElementById('select-lyric-emoji')?.value || '🎵';
-  if (!currentLyrics || currentLyrics.length === 0) {
-    currentLyrics = [
-      { t: 0, l: 'Gửi em người bất tử...' },
-      { t: 5, l: 'Nơi phương trời xa xăm có hay lòng anh' },
-      { t: 12, l: 'Từng giọt sầu vương nhẹ trên đôi mi người đi' },
-      { t: 20, l: 'Thời gian trôi qua, chỉ còn lại nỗi nhớ đong đầy' }
-    ];
-  }
-
-  currentLyricIdx = 0;
-  const syncStep = async () => {
-    if (!lyricSyncing) return;
-    const cur = currentLyrics[currentLyricIdx % currentLyrics.length];
-    const text = cur.l;
-    
-    // Cập nhật thẻ preview
-    const activeEl = document.getElementById('lsc-lyric-current');
-    if (activeEl) {
-      activeEl.textContent = text;
-      activeEl.classList.remove('empty-state');
-    }
-
-    // Cuộn màn hình karaoke
-    document.querySelectorAll('.lyric-line').forEach((el, i) => {
-      el.classList.toggle('active', i === (currentLyricIdx % currentLyrics.length));
-    });
-
-    try {
-      await fetch('/api/status/custom', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, emoji })
-      });
-    } catch (e) {}
-
-    currentLyricIdx++;
-    lyricSyncTimer = setTimeout(syncStep, 4500);
-  };
-
-  syncStep();
-}
-
-function handleStopLyricSync() {
-  lyricSyncing = false;
-  if (lyricSyncTimer) clearTimeout(lyricSyncTimer);
-  const btnStart = document.getElementById('btn-lyric-sync-toggle');
-  const btnStop = document.getElementById('btn-lyric-sync-stop');
-  const ind = document.getElementById('lyric-sync-indicator');
-  const dot = document.getElementById('lyric-live-dot');
-  if (btnStart) btnStart.disabled = false;
-  if (btnStop) btnStop.disabled = true;
-  if (ind) ind.classList.add('lyric-indicator-hide');
-  if (dot) dot.classList.add('lyric-dot-hide');
-  showToast('Đã dừng đồng bộ Lyric', 'info');
-}
-
-async function handleClearDiscordStatus() {
-  showToast('Đang xóa Custom Status trên Discord...', 'info');
-  try {
-    const res = await fetch('/api/status/custom', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: '', emoji: '' })
-    });
-    const d = await res.json();
-    if (d.success) {
-      showToast('Đã xóa Custom Status thành công!', 'success');
-      const activeEl = document.getElementById('lsc-lyric-current');
-      if (activeEl) activeEl.textContent = 'Chưa có câu hát nào được đồng bộ';
-    } else {
-      showToast(d.message || 'Lỗi khi xóa status', 'error');
-    }
-  } catch (e) {
-    showToast('Lỗi kết nối máy chủ', 'error');
-  }
+function logLyric(msg) {
+  const el = document.getElementById('lyric-log-screen');
+  if (!el) return;
+  const line = document.createElement('div');
+  line.className = 'log-line info';
+  const now = new Date().toLocaleTimeString('vi-VN');
+  line.innerHTML = `<span class="log-time">[${now}]</span> <span class="log-msg">${escapeHtml(msg)}</span>`;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
 }
 
 // ============================================================
@@ -3440,6 +3664,7 @@ function init() {
   loadSavedConfig();
   fetchAccountInfo();
   loadMultiAccounts();
+  initAllMultiTokenWidgets();
   loadDashboardStats();
   checkVoiceStatus();
 

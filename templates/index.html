@@ -811,8 +811,22 @@
                 </div>
               </div>
 
+              <!-- Widget Ô Vuông Bo Góc Đa Token cho RPC -->
+              <div class="multi-token-target-card mt-3">
+                <div class="mtt-card-header">
+                  <div class="mtt-card-title">TÀI KHOẢN CHẠY PRESENCE</div>
+                  <div class="mtt-card-sub">Áp dụng Rich Presence này đồng loạt lên các tài khoản được chọn.</div>
+                </div>
+                <div class="mtt-slots-grid" id="rpc-target-slots">
+                  <button type="button" class="mtt-slot-add-btn" onclick="openMultiTokenPicker('rpc')" title="Bấm để chọn tài khoản Discord">
+                    <span class="msab-plus">+</span>
+                  </button>
+                </div>
+                <div class="mtt-slots-counter" id="rpc-slots-counter">Đã chọn: <b id="rpc-selected-count">0</b> tài khoản</div>
+              </div>
+
               <!-- Terminal Console riêng của RPC -->
-              <div class="preview-terminal">
+              <div class="preview-terminal mt-3">
                 <div class="pt-header">
                   <div class="pt-dots"><span class="ptd red"></span><span class="ptd yellow"></span><span class="ptd green"></span></div>
                   <span class="pt-title">Nhật Ký Discord RPC</span>
@@ -942,6 +956,20 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Widget Ô Vuông Bo Góc Đa Token cho Custom Status -->
+              <div class="multi-token-target-card mt-3">
+                <div class="mtt-card-header">
+                  <div class="mtt-card-title">TÀI KHOẢN ĐỔI STATUS</div>
+                  <div class="mtt-card-sub">Áp dụng trạng thái này đồng loạt lên các tài khoản được chọn.</div>
+                </div>
+                <div class="mtt-slots-grid" id="status-target-slots">
+                  <button type="button" class="mtt-slot-add-btn" onclick="openMultiTokenPicker('status')" title="Bấm để chọn tài khoản Discord">
+                    <span class="msab-plus">+</span>
+                  </button>
+                </div>
+                <div class="mtt-slots-counter" id="status-slots-counter">Đã chọn: <b id="status-selected-count">0</b> tài khoản</div>
+              </div>
             </div>
           </div>
         </div>
@@ -1054,161 +1082,106 @@
 
             </div>
 
-            <!-- HTML5 AUDIO PLAYER HIỆN ĐẠI (ĐIỀU KHIỂN & ĐỒNG BỘ DISCORD) -->
-            <div class="settings-section dipre-player-section mt-3">
-              <div class="settings-section-header">
-                <div>
-                  <div class="ssh-title">Trình Phát Nhạc &amp; Đồng Bộ Lyric Discord</div>
-                  <div class="ssh-sub">Đang phát bài đã chọn. Lời Karaoke sẽ tự động đồng bộ lên Discord Profile realtime.</div>
-                </div>
-                <span class="ssh-badge" id="player-track-badge">NCT Audio</span>
+            <!-- KHỐI THÔNG TIN BÀI HÁT & AUDIO PLAYER TINH GỌN (NHACCUATUI SYNC) -->
+            <div class="settings-section lyric-selected-track-box mt-3" id="lyric-selected-track-box">
+              <!-- Trạng thái khi chưa chọn bài hát -->
+              <div class="lyric-empty-track-prompt" id="lyric-empty-prompt">
+                <div class="letp-icon">🎵</div>
+                <div class="letp-title">Chưa chọn bài hát nào</div>
+                <div class="letp-sub">Hãy tìm kiếm bài hát trên NhacCuaTui ở trên và bấm chọn để mở thông tin &amp; đồng bộ lời Karaoke.</div>
               </div>
 
-              <div class="dipre-audio-player-card">
-                <div class="dap-track-info">
-                  <div class="dap-art-wrap">
-                    <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=120&auto=format&fit=crop&q=80" alt="Track Art" class="dap-art-img" id="dap-art">
-                    <div class="dap-art-disc"></div>
+              <!-- Thông tin bài hát được chọn -->
+              <div class="lyric-active-track-detail d-none" id="lyric-active-track-detail">
+                <div class="latd-header">
+                  <div class="latd-cover-wrap">
+                    <img id="latd-cover" src="/static/images/logo.png" alt="Track Cover" class="latd-cover-img" onerror="this.src='/static/images/logo.png'">
+                    <div class="latd-disc-spin"></div>
                   </div>
-                  <div class="dap-meta">
-                    <div class="dap-title" id="dap-title">Gửi em, người bất tử</div>
-                    <div class="dap-artist" id="dap-artist">Meliodas • NhacCuaTui Synced</div>
+                  <div class="latd-info">
+                    <div class="latd-badge-row">
+                      <span class="latd-badge nct">NhacCuaTui Synced</span>
+                      <span class="latd-badge lrc" id="latd-lrc-badge">Karaoke Ready</span>
+                    </div>
+                    <div class="latd-title" id="latd-title">Tên bài hát</div>
+                    <div class="latd-artist" id="latd-artist">Nghệ sĩ</div>
+                    <div class="latd-desc" id="latd-desc">Đang đồng bộ lời bài hát từ hệ thống NhacCuaTui...</div>
                   </div>
                 </div>
 
-                <!-- Native HTML5 Audio Element -->
+                <!-- HTML5 Audio Controller Tinh Gọn -->
                 <audio id="html5-audio-element" preload="auto"></audio>
-
-                <!-- Thanh tiến trình & thời gian -->
-                <div class="dap-progress-bar-wrap">
-                  <div class="dap-time-display">
-                    <span id="dap-cur-time">00:00</span>
-                    <span id="dap-total-time">03:45</span>
-                  </div>
-                  <div class="dap-progress-rail" id="dap-progress-rail" onclick="handleSeekAudio(event)">
-                    <div class="dap-progress-fill" id="dap-progress-fill"></div>
-                  </div>
-                </div>
-
-                <!-- Nút điều khiển bài hát -->
-                <div class="dap-controls-row">
-                  <button type="button" class="dap-btn-ctrl" onclick="handlePrevLyricTrack()" title="Bài trước">⏮️</button>
-                  <button type="button" class="dap-btn-play" id="btn-audio-play" onclick="handleToggleAudio()" title="Phát / Tạm dừng">
+                <div class="latd-player-strip mt-3">
+                  <button type="button" class="latd-btn-play" id="btn-audio-play" onclick="handleToggleAudio()" title="Phát / Tạm dừng">
                     <span id="btn-play-icon">▶</span>
                   </button>
-                  <button type="button" class="dap-btn-ctrl" onclick="handleNextLyricTrack()" title="Bài tiếp">⏭️</button>
-
-                  <div class="dap-volume-box">
+                  <div class="latd-progress-wrap">
+                    <div class="latd-time-row">
+                      <span id="dap-cur-time">00:00</span>
+                      <span id="dap-total-time">00:00</span>
+                    </div>
+                    <div class="latd-progress-rail" id="dap-progress-rail" onclick="handleSeekAudio(event)">
+                      <div class="latd-progress-fill" id="dap-progress-fill"></div>
+                    </div>
+                  </div>
+                  <div class="latd-vol-wrap">
                     <span>🔊</span>
                     <input type="range" id="audio-volume" min="0" max="1" step="0.05" value="0.8" oninput="handleVolumeChange(this.value)">
                   </div>
                 </div>
-              </div>
 
-              <div class="sf-grid-2 mt-3">
-                <div class="sf-row">
-                  <label class="sf-label" for="select-lyric-emoji">Emoji Trạng Thái</label>
-                  <select id="select-lyric-emoji" class="sf-select" title="Chọn emoji trạng thái" aria-label="Emoji trạng thái">
-                    <option value="🎵" selected>🎵 Nốt Nhạc</option>
-                    <option value="🎧">🎧 Tai Nghe</option>
-                    <option value="⚡">⚡ Tia Sét</option>
-                    <option value="✨">✨ Lấp Lánh</option>
-                    <option value="🌙">🌙 Trăng Đêm</option>
-                    <option value="🌸">🌸 Hoa Đào</option>
-                  </select>
+                <!-- Dòng Lời Bài Hát Trực Tiếp -->
+                <div class="latd-lyrics-strip mt-2">
+                  <div class="latd-lyric-cur" id="lsc-lyric-current">Chọn bài hát để bắt đầu hát Karaoke...</div>
                 </div>
-                <div class="sf-row">
-                  <label class="sf-label" for="select-lyric-track">Hoặc chọn nhanh bài mẫu</label>
-                  <select id="select-lyric-track" class="sf-select" onchange="handleSelectLyricTrack()">
-                    <option value="bat_tu">Gửi Em, Người Bất Tử — Meliodas</option>
-                    <option value="lactroi">Lạc Trôi — Sơn Tùng M-TP</option>
-                    <option value="nangtho">Nàng Thơ — Hoàng Dũng</option>
-                    <option value="buocquanhau">Bước Qua Nhau — Vũ</option>
-                    <option value="cyber">Neon Cyber — Synthwave</option>
-                    <option value="custom">Tự Dán Lời Bài Hát (Custom LRC)</option>
-                  </select>
-                </div>
-              </div>
-
-              <!-- Khu vực nhập thủ công / upload LRC nếu muốn -->
-              <div class="lyric-custom-box d-none" id="custom-lrc-group">
-                <label class="sf-label">Lời bài hát thủ công (Định dạng [mm:ss] hoặc lời thường)</label>
-                <textarea id="input-custom-lrc" class="sf-textarea" rows="6"
-                  placeholder="[00:05] Gửi em người bất tử, nơi phương trời xa xăm&#10;[00:15] Từng giọt sầu vương nhẹ trên đôi mi người đi..."></textarea>
-                <div class="sf-row" style="margin-top:10px;">
-                  <label class="sf-label">Hoặc tải file MP3 &amp; File LRC từ máy tính</label>
-                  <div class="sf-input-with-btn">
-                    <input type="file" id="input-custom-mp3-file" class="sf-input" accept=".mp3,.wav,.ogg,.m4a" onchange="handleLoadLocalAudio(this)">
-                  </div>
-                </div>
-              </div>
-
-              <div class="lyric-controls mt-3">
-                <button type="button" class="rpc-btn rpc-btn-start" id="btn-lyric-sync-toggle"
-                  onclick="handleToggleLyricSync()">Bắt Đầu Đồng Bộ Discord</button>
-                <button type="button" class="rpc-btn rpc-btn-stop" id="btn-lyric-sync-stop" onclick="handleStopLyricSync()"
-                  disabled>Dừng Đồng Bộ</button>
-                <button type="button" class="rpc-btn rpc-btn-save" onclick="handleClearDiscordStatus()">Xóa Status</button>
               </div>
             </div>
           </div>
 
-          <!-- MÀN HÌNH KARAOKE & PREVIEW STATUS -->
+          <!-- CỘT BÊN PHẢI: Ô VUÔNG BO GÓC CHỌN ACC ĐA TOKEN (MULTI-TOKEN TARGET) -->
           <div class="panel-preview-col panel-form-relative">
-
             <div class="preview-sticky">
-              <div class="preview-header">
-                <span class="preview-title">Xem Trước Trạng Thái</span>
-                <span class="lyric-sync-ind lyric-indicator-hide" id="lyric-sync-indicator">ĐANG ĐỒNG BỘ</span>
-              </div>
+              <div class="multi-token-target-card">
+                <div class="mtt-card-header">
+                  <div class="mtt-card-title">TÀI KHOẢN ĐỒNG BỘ ĐA TOKEN</div>
+                  <div class="mtt-card-sub">Các tài khoản trong ô này sẽ đồng loạt chạy cùng lúc realtime.</div>
+                </div>
 
-              <!-- Thẻ trạng thái suy nghĩ Discord -->
-              <div class="lyric-status-card dipre-status-box">
-                <div class="lsc-user-row">
-                  <img src="{% if has_token and discord_avatar %}{{ discord_avatar }}{% elif avatar_url %}{{ avatar_url }}{% else %}https://cdn.discordapp.com/embed/avatars/0.png{% endif %}" alt="" class="lsc-avatar" id="lsc-avatar">
-                  <div class="lsc-avatar locked-avatar-block d-none" id="lsc-avatar-locked"></div>
-                  <div class="lsc-user-meta">
-                    <div class="lsc-user-name" id="lsc-username">{{ discord_username if (has_token and discord_username) else username }}</div>
-                    <div class="lsc-user-tag">Custom Status • Realtime</div>
+                <!-- Grid các Slot Tròn Tài Khoản -->
+                <div class="mtt-slots-grid" id="lyric-target-slots">
+                  <!-- Nút tròn dấu cộng viền neon -->
+                  <button type="button" class="mtt-slot-add-btn" onclick="openMultiTokenPicker('lyric')" title="Bấm để chọn tài khoản Discord">
+                    <span class="msab-plus">+</span>
+                  </button>
+                </div>
+
+                <div class="mtt-slots-counter" id="lyric-slots-counter">
+                  Đã chọn: <b id="lyric-selected-count">0</b> tài khoản
+                </div>
+
+                <!-- Nút Hành Động Đồng Bộ -->
+                <div class="mtt-action-area mt-3">
+                  <button type="button" class="rpc-btn rpc-btn-start w-100 mtt-btn-sync" id="btn-lyric-sync-toggle" onclick="handleToggleLyricSyncMulti()">
+                    🚀 BẮT ĐẦU ĐỒNG BỘ ĐA TÀI KHOẢN
+                  </button>
+                  <div class="mtt-sub-actions mt-2">
+                    <button type="button" class="rpc-btn rpc-btn-stop" id="btn-lyric-sync-stop" onclick="handleStopLyricSync()" disabled>Dừng Đồng Bộ</button>
+                    <button type="button" class="rpc-btn rpc-btn-save" onclick="handleClearDiscordStatus()">Xóa Status</button>
                   </div>
                 </div>
-                <div class="lsc-status-display">
-                  <div class="lsc-lyric-active empty-state" id="lsc-lyric-current">Chưa có câu hát nào được đồng bộ</div>
-                </div>
-                <div class="lsc-progress-wrap">
-                  <div class="lsc-time-row">
-                    <span id="audio-time-current">00:00</span>
-                    <span id="audio-time-total">00:00</span>
+
+                <!-- Terminal Nhật Ký Mini -->
+                <div class="preview-terminal mt-3">
+                  <div class="pt-header">
+                    <div class="pt-dots"><span class="ptd red"></span><span class="ptd yellow"></span><span class="ptd green"></span></div>
+                    <span class="pt-title">Nhật Ký Đa Token</span>
+                    <button type="button" class="pt-clear" onclick="clearLyricLog()">Xóa</button>
                   </div>
-                  <div class="lsc-progress-bg">
-                    <div class="lsc-progress-fill progress-fill-init" id="lsc-progress-fill"></div>
+                  <div class="pt-screen" id="lyric-log-screen">
+                    <div class="log-line info"><span class="log-time">[MULTI-SYNC]</span> Sẵn sàng đồng bộ cho các tài khoản được chọn.</div>
                   </div>
                 </div>
               </div>
-
-              <!-- Sân khấu Karaoke cuộn mượt phát sáng -->
-              <div class="lyric-karaoke-card dipre-karaoke-stage">
-                <div class="lkc-header">
-                  <span>Màn Hình Karaoke NhacCuaTui</span>
-                  <span class="live-pulse-dot lyric-dot-hide" id="lyric-live-dot"></span>
-                </div>
-                <div class="lkc-lines" id="lyric-lines-wrapper">
-                  <div class="lyric-line active">Chọn bài hát và bấm Bắt Đầu để hát Karaoke...</div>
-                </div>
-              </div>
-
-              <!-- Terminal Console riêng của Lyric -->
-              <div class="preview-terminal mt-3">
-                <div class="pt-header">
-                  <div class="pt-dots"><span class="ptd red"></span><span class="ptd yellow"></span><span class="ptd green"></span></div>
-                  <span class="pt-title">Nhật Ký Đồng Bộ Lyric</span>
-                  <button type="button" class="pt-clear" onclick="clearLyricLog()">Xóa</button>
-                </div>
-                <div class="pt-screen" id="lyric-log-screen">
-                  <div class="log-line info"><span class="log-time">[LYRIC]</span> <span class="log-msg">Lyric Engine sẵn sàng đồng bộ.</span></div>
-                </div>
-              </div>
-
             </div>
           </div>
         </div>
@@ -1386,6 +1359,20 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Widget Ô Vuông Bo Góc Đa Token cho SoundCloud RPC -->
+              <div class="multi-token-target-card mt-3">
+                <div class="mtt-card-header">
+                  <div class="mtt-card-title">TÀI KHOẢN CHẠY SOUNDCLOUD</div>
+                  <div class="mtt-card-sub">Áp dụng trạng thái này đồng loạt lên các tài khoản được chọn.</div>
+                </div>
+                <div class="mtt-slots-grid" id="sc-target-slots">
+                  <button type="button" class="mtt-slot-add-btn" onclick="openMultiTokenPicker('sc')" title="Bấm để chọn tài khoản Discord">
+                    <span class="msab-plus">+</span>
+                  </button>
+                </div>
+                <div class="mtt-slots-counter" id="sc-slots-counter">Đã chọn: <b id="sc-selected-count">0</b> tài khoản</div>
+              </div>
             </div>
           </div>
         </div>
@@ -1444,6 +1431,20 @@
                   <div class="yt-meta-title" id="yt-pv-title">Rick Astley - Never Gonna Give You Up</div>
                   <div class="yt-meta-channel" id="yt-pv-channel">Rick Astley • Watching</div>
                 </div>
+              </div>
+
+              <!-- Widget Ô Vuông Bo Góc Đa Token cho YouTube RPC -->
+              <div class="multi-token-target-card mt-3">
+                <div class="mtt-card-header">
+                  <div class="mtt-card-title">TÀI KHOẢN CHẠY YOUTUBE</div>
+                  <div class="mtt-card-sub">Áp dụng trạng thái này đồng loạt lên các tài khoản được chọn.</div>
+                </div>
+                <div class="mtt-slots-grid" id="yt-target-slots">
+                  <button type="button" class="mtt-slot-add-btn" onclick="openMultiTokenPicker('yt')" title="Bấm để chọn tài khoản Discord">
+                    <span class="msab-plus">+</span>
+                  </button>
+                </div>
+                <div class="mtt-slots-counter" id="yt-slots-counter">Đã chọn: <b id="yt-selected-count">0</b> tài khoản</div>
               </div>
             </div>
           </div>
@@ -1506,6 +1507,20 @@
                   <span>03:50</span>
                 </div>
               </div>
+
+              <!-- Widget Ô Vuông Bo Góc Đa Token cho Spotify RPC -->
+              <div class="multi-token-target-card mt-3">
+                <div class="mtt-card-header">
+                  <div class="mtt-card-title">TÀI KHOẢN CHẠY SPOTIFY</div>
+                  <div class="mtt-card-sub">Áp dụng trạng thái này đồng loạt lên các tài khoản được chọn.</div>
+                </div>
+                <div class="mtt-slots-grid" id="sp-target-slots">
+                  <button type="button" class="mtt-slot-add-btn" onclick="openMultiTokenPicker('sp')" title="Bấm để chọn tài khoản Discord">
+                    <span class="msab-plus">+</span>
+                  </button>
+                </div>
+                <div class="mtt-slots-counter" id="sp-slots-counter">Đã chọn: <b id="sp-selected-count">0</b> tài khoản</div>
+              </div>
             </div>
           </div>
         </div>
@@ -1535,7 +1550,7 @@
               <div class="ssh-title">Quản Lý Nhiều Tài Khoản Discord (Multi-Token Switcher)</div>
               <div class="ssh-sub">Lưu trữ nhiều Discord User Token. Chuyển đổi 1-click tức thì không cần đăng nhập lại.</div>
             </div>
-            <button type="button" class="rpc-btn rpc-btn-start" onclick="toggleAccountModal(true)">+ Thêm Token Mới</button>
+            <button type="button" class="rpc-btn rpc-btn-start" onclick="toggleAddTokenModal(true)">+ Thêm Token Mới</button>
           </div>
 
           <div id="multi-accounts-grid" class="accounts-cards-grid mt-3">
@@ -1648,6 +1663,20 @@
                     <li>Tài khoản sẽ tự động kết nối lại nếu Discord Gateway bị ngắt hoặc bảo trì.</li>
                   </ul>
                 </div>
+              </div>
+
+              <!-- Widget Ô Vuông Bo Góc Đa Token cho Treo Voice AFK -->
+              <div class="multi-token-target-card mt-3">
+                <div class="mtt-card-header">
+                  <div class="mtt-card-title">TÀI KHOẢN TREO VOICE</div>
+                  <div class="mtt-card-sub">Cùng lúc treo toàn bộ các tài khoản này vào phòng Voice.</div>
+                </div>
+                <div class="mtt-slots-grid" id="voice-target-slots">
+                  <button type="button" class="mtt-slot-add-btn" onclick="openMultiTokenPicker('voice')" title="Bấm để chọn tài khoản Discord">
+                    <span class="msab-plus">+</span>
+                  </button>
+                </div>
+                <div class="mtt-slots-counter" id="voice-slots-counter">Đã chọn: <b id="voice-selected-count">0</b> tài khoản</div>
               </div>
             </div>
           </div>
@@ -2038,6 +2067,68 @@
           <button type="button" class="rpc-btn rpc-btn-save" onclick="toggleAccountModal(false); switchTab('tab-accounts');">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
             Đi Đến Mục Quản Lý Đa Token
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL NẠP DISCORD USER TOKEN PHỤ CHUYÊN DỤNG -->
+  <div class="modal-backdrop-clean d-none" id="token-add-modal-backdrop">
+    <div class="modal-window-clean" style="max-width: 520px;">
+      <div class="modal-header-clean">
+        <div class="modal-header-titles">
+          <div class="modal-title-text">Thêm Discord User Token Phụ</div>
+          <div class="modal-subtitle-text">Nạp tài khoản phụ (Alt/Bot/Clone) để chạy Multi-Token RPC, Voice &amp; Lyric</div>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="toggleAddTokenModal(false)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          <span>Đóng</span>
+        </button>
+      </div>
+      <div class="modal-body-scroll">
+        <div class="sf-row mb-3">
+          <label class="sf-label" for="input-sub-token">Discord User Token (Tài Khoản Phụ)</label>
+          <div class="sf-input-with-btn">
+            <input type="password" id="input-sub-token" class="sf-input" placeholder="Dán Discord User Token phụ của bạn vào đây..." autocomplete="off">
+            <button type="button" class="btn-paste-token" onclick="handlePasteTokenInput()">Dán</button>
+            <button type="button" class="btn-toggle-eye" onclick="toggleTokenVisibility('input-sub-token')">👁️</button>
+          </div>
+        </div>
+
+        <div class="sf-note-box mb-3" style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 8px; padding: 0.75rem; font-size: 0.8rem; color: #cbd5e1; line-height: 1.5;">
+          💡 <b>Lưu ý an toàn:</b> Chỉ nhập <b>Token tài khoản Discord phụ (Clone/Alt)</b>. Hệ thống sẽ tự động từ chối nếu bạn cố tình nhập token của tài khoản chính đang đăng nhập.
+        </div>
+
+        <div class="modal-actions-row">
+          <button type="button" class="rpc-btn rpc-btn-start w-100" id="btn-submit-add-token" onclick="handleConfirmAddSubToken()">
+            + Xác Minh &amp; Lưu Token Phụ
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- POPUP CHỌN TÀI KHOẢN ĐA TOKEN (REUSABLE PICKER MODAL) -->
+  <div class="modal-backdrop-clean d-none" id="multitoken-picker-modal">
+    <div class="modal-window-clean" style="max-width: 480px;">
+      <div class="modal-header-clean">
+        <div class="modal-header-titles">
+          <div class="modal-title-text">Chọn Tài Khoản Đa Token</div>
+          <div class="modal-subtitle-text">Tích chọn các tài khoản để cùng lúc thực thi tác vụ</div>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeMultiTokenPicker()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-body-scroll">
+        <div id="mtp-accounts-list" class="mtp-accounts-list">
+          <!-- Render động danh sách tài khoản kèm checkbox -->
+          <div class="acc-grid-loading">Đang nạp danh sách tài khoản...</div>
+        </div>
+        <div class="mt-3">
+          <button type="button" class="rpc-btn rpc-btn-start w-100" onclick="applySelectedMultiAccounts()">
+            Xác Nhận Lựa Chọn
           </button>
         </div>
       </div>

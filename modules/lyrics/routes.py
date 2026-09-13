@@ -157,30 +157,70 @@ def api_lyrics_song():
 @login_required
 def api_lyrics_sync():
     user_id = session['user_id']
-    with get_db() as conn:
-        cursor = conn.cursor()
-        cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
-        row = cursor.fetchone()
-    token = (row['discord_token'] if row else '') or session.get('discord_token', '')
-    if not token:
-        return jsonify({'success': False, 'message': 'Tài khoản chưa liên kết Discord Token!'}), 400
-
     data = request.get_json() or {}
+    
+    tokens_to_use = []
+    
+    # 1. Nếu client truyền trực tiếp danh sách tokens
+    if isinstance(data.get('tokens'), list):
+        tokens_to_use = [t.strip() for t in data['tokens'] if t and isinstance(t, str) and len(t.strip()) > 20]
+        
+    # 2. Nếu client truyền account_ids
+    if not tokens_to_use and isinstance(data.get('account_ids'), list):
+        ids = data['account_ids']
+        with get_db() as conn:
+            cursor = conn.cursor()
+            if 'main' in ids or -1 in ids:
+                cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
+                u_row = cursor.fetchone()
+                if u_row and u_row['discord_token']:
+                    tokens_to_use.append(u_row['discord_token'])
+            
+            sub_ids = [int(i) for i in ids if str(i).isdigit() and int(i) > 0]
+            if sub_ids:
+                placeholders = ','.join('?' for _ in sub_ids)
+                cursor.execute(f'SELECT token FROM discord_accounts WHERE user_id = ? AND id IN ({placeholders})', [user_id] + sub_ids)
+                for r in cursor.fetchall():
+                    if r['token'] and len(r['token']) > 20:
+                        tokens_to_use.append(r['token'])
+
+    # 3. Fallback: lấy token active của user
+    if not tokens_to_use:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
+            row = cursor.fetchone()
+            tok = (row['discord_token'] if row else '') or session.get('discord_token', '')
+            if tok and len(tok) > 20:
+                tokens_to_use.append(tok)
+
+    if not tokens_to_use:
+        return jsonify({'success': False, 'message': 'Không tìm thấy Discord Token nào để chạy đồng bộ!'}), 400
+
     song_name = data.get('song', '').strip()
     emoji = data.get('emoji', '🎵').strip()
+    
     if song_name:
         ok, title, lyrics = lyric_worker.fetch_nct_lyrics(song_name)
         if not ok:
             return jsonify({'success': False, 'message': title}), 400
         track_feature_use(user_id, 'status_lyric')
-        lyric_worker.start_lyric_stream(user_id, token, lyrics, emoji=emoji)
-        return jsonify({'success': True, 'message': f'Đang phát: {title} ({len(lyrics)} câu)'})
+        lyric_worker.start_lyric_stream(user_id, tokens_to_use, lyrics, emoji=emoji)
+        return jsonify({
+            'success': True,
+            'message': f'Đang phát: {title} ({len(lyrics)} câu) trên {len(tokens_to_use)} tài khoản Discord!',
+            'accounts_count': len(tokens_to_use)
+        })
 
     text = (data.get('text') or data.get('status') or '').strip()
     if text:
         track_feature_use(user_id, 'status_custom')
-        ok, msg = lyric_worker.update_lyric(token, text, emoji=emoji)
-        return jsonify({'success': ok, 'message': msg})
+        success_count = 0
+        for t in tokens_to_use:
+            ok, _ = lyric_worker.update_lyric(t, text, emoji=emoji)
+            if ok:
+                success_count += 1
+        return jsonify({'success': True, 'message': f'Đã cập nhật trạng thái trên {success_count}/{len(tokens_to_use)} tài khoản!'})
     return jsonify({'success': False, 'message': 'Nội dung câu hát trống'}), 400
 
 @lyrics_bp.route('/api/status/custom', methods=['POST'])
@@ -211,18 +251,33 @@ def api_status_custom():
 @login_required
 def api_lyrics_clear():
     user_id = session['user_id']
-    with get_db() as conn:
-        cursor = conn.cursor()
-        cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
-        row = cursor.fetchone()
-    token = (row['discord_token'] if row else '') or session.get('discord_token', '')
-
+    data = request.get_json() or {}
     lyric_worker.stop_lyric_stream(user_id)
-    if not token:
-        return jsonify({'success': False, 'message': 'Tài khoản chưa liên kết Discord Token!'}), 400
+    
+    tokens_to_clear = []
+    if isinstance(data.get('tokens'), list):
+        tokens_to_clear = [t.strip() for t in data['tokens'] if t and len(t.strip()) > 20]
+    
+    if not tokens_to_clear:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
+            row = cursor.fetchone()
+            tok = (row['discord_token'] if row else '') or session.get('discord_token', '')
+            if tok:
+                tokens_to_clear.append(tok)
+            cursor.execute('SELECT token FROM discord_accounts WHERE user_id = ?', (user_id,))
+            for r in cursor.fetchall():
+                if r['token'] and len(r['token']) > 20:
+                    tokens_to_clear.append(r['token'])
 
-    ok, msg = lyric_worker.clear_lyric(token)
-    return jsonify({'success': ok, 'message': msg})
+    success_cnt = 0
+    for tok in set(tokens_to_clear):
+        ok, _ = lyric_worker.clear_lyric(tok)
+        if ok:
+            success_cnt += 1
+            
+    return jsonify({'success': True, 'message': f'Đã xóa Status trên {success_cnt} tài khoản Discord!'})
 
 @lyrics_bp.route('/api/lyrics/transcribe', methods=['POST'])
 @login_required
