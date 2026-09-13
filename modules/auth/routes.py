@@ -453,17 +453,8 @@ def auth_discord_callback():
                                   WHERE id = ?''',
                                (d_id, d_username, avatar_url, avatar_url, 'discord', avatar_decoration, banner_url, profile_effect, badges_json, bio, custom_status, user_id))
             
-            # Cập nhật hoặc lưu vào danh sách discord_accounts
-            cursor.execute('SELECT id FROM discord_accounts WHERE user_id = ? AND (discord_id = ? OR token = ?)', (user_id, d_id, access_token))
-            d_acc = cursor.fetchone()
-            if not d_acc:
-                cursor.execute('''INSERT INTO discord_accounts (user_id, token, discord_id, discord_username, discord_avatar, avatar_decoration, banner, profile_effect, custom_status, is_active)
-                                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)''',
-                               (user_id, access_token, d_id, d_username, avatar_url, avatar_decoration, banner_url, profile_effect, custom_status))
-            else:
-                cursor.execute('''UPDATE discord_accounts SET discord_username = ?, discord_avatar = ?, avatar_decoration = ?, banner = ?, profile_effect = ?, custom_status = ?, is_active = 1
-                                  WHERE id = ?''',
-                               (d_username, avatar_url, avatar_decoration, banner_url, profile_effect, custom_status, d_acc['id']))
+            # Tài khoản chính Discord OAuth2 tuyệt đối không đưa vào Multi-Token Switcher (discord_accounts)
+            cursor.execute('DELETE FROM discord_accounts WHERE user_id = ? AND (discord_id = ? OR token = ?)', (user_id, d_id, access_token))
             conn.commit()
 
         session['user_id'] = user_id

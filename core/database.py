@@ -83,16 +83,10 @@ def init_db():
                 except Exception:
                     pass
 
-        # Tự động migrate token của user vào discord_accounts nếu chưa có
-        cursor.execute("SELECT id, discord_token, discord_id, discord_username, discord_avatar FROM users WHERE discord_token != '' AND discord_token IS NOT NULL")
-        for u in cursor.fetchall():
-            cursor.execute("SELECT id FROM discord_accounts WHERE user_id = ? AND token = ?", (u['id'], u['discord_token']))
-            if not cursor.fetchone():
-                cursor.execute('''
-                    INSERT INTO discord_accounts (user_id, token, discord_id, discord_username, discord_avatar, is_active)
-                    VALUES (?, ?, ?, ?, ?, 1)
-                ''', (u['id'], u['discord_token'], u['discord_id'], u['discord_username'], u['discord_avatar']))
+        # Đảm bảo dọn dẹp các tài khoản chính nếu lỡ bị ghi nhầm vào discord_accounts
+        cursor.execute("DELETE FROM discord_accounts WHERE discord_id IN (SELECT discord_id FROM users WHERE discord_id != '' AND discord_id IS NOT NULL)")
         conn.commit()
+
 
 def track_feature_use(user_id: int, feature_name: str):
     """Ghi nhận lượt sử dụng tính năng của người dùng để làm thống kê Dashboard"""
