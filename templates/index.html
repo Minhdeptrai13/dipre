@@ -1588,13 +1588,13 @@
     </main>
   </div>
 
-  <!-- MODAL QUẢN LÝ TÀI KHOẢN DISCORD TOKEN -->
+  <!-- MODAL QUẢN LÝ HỒ SƠ TÀI KHOẢN DIPRE -->
   <div class="account-modal-backdrop d-none" id="account-modal-backdrop" onclick="handleBackdropClick(event)">
     <div class="account-modal-dialog dipre-modal">
       <div class="modal-header-clean">
         <div class="modal-header-titles">
-          <div class="modal-title-text">Cài Đặt Tài Khoản Discord</div>
-          <div class="modal-subtitle-text">Kết nối Discord User Token dùng chung cho RPC, Lyric Sync và Auto Quest</div>
+          <div class="modal-title-text">Hồ Sơ Tài Khoản DIPRE</div>
+          <div class="modal-subtitle-text">Tùy biến tên, avatar hệ thống DIPRE và xem liên kết xác thực</div>
         </div>
         <button type="button" class="modal-close-btn" onclick="toggleAccountModal(false)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -1602,75 +1602,67 @@
         </button>
       </div>
       <div class="modal-body-scroll">
+        <!-- Card tổng quan tài khoản DIPRE -->
         <div class="acc-discord-card">
-          <img src="{% if has_token and discord_avatar %}{{ discord_avatar }}{% elif avatar_url %}{{ avatar_url }}{% else %}https://cdn.discordapp.com/embed/avatars/0.png{% endif %}" class="acc-discord-avatar" id="account-view-avatar" alt="">
-          <div class="acc-discord-avatar locked-avatar-block d-none" id="account-view-avatar-locked"></div>
+          <div class="user-avatar-wrap" style="width: 52px; height: 52px;">
+            {% if avatar_info and avatar_info.type == 'image' %}
+            <img src="{{ avatar_info.url }}" class="user-avatar-img" id="modal-user-avatar-img" alt="{{ username }}" style="width:52px; height:52px; border-radius:50%; object-fit:cover;">
+            {% else %}
+            <div class="user-avatar-initials" id="modal-user-avatar-initials" style="width:52px; height:52px; font-size:1.1rem; border-radius:50%; display:flex; align-items:center; justify-content:center; background: {{ avatar_info.gradient if avatar_info else 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)' }};">
+              {{ avatar_info.initials if avatar_info else username[:2].upper() }}
+            </div>
+            {% endif %}
+          </div>
           <div class="acc-discord-info">
-            <div class="acc-discord-name" id="account-view-name">{{ discord_username if (has_token and discord_username) else username }}</div>
+            <div class="acc-discord-name" id="modal-user-display-name">{{ username }}</div>
             <div class="acc-discord-status-wrap">
-              <span class="acc-status-pill {% if has_token %}linked{% else %}unlinked{% endif %}" id="account-view-status">
-                <span class="acc-status-dot {% if has_token %}green{% else %}amber{% endif %}"></span>
-                <span>{% if has_token %}Đã liên kết Discord{% else %}Chưa liên kết Discord Token{% endif %}</span>
+              <span class="acc-status-pill linked">
+                <span class="acc-status-dot green"></span>
+                <span>
+                  {% if auth_provider == 'google' %}
+                  Đăng nhập qua Google OAuth2
+                  {% elif auth_provider == 'discord' %}
+                  Đăng nhập qua Discord OAuth2
+                  {% else %}
+                  Tài khoản DIPRE Nội Bộ
+                  {% endif %}
+                </span>
               </span>
             </div>
           </div>
-          <button type="button" class="rpc-btn rpc-btn-stop btn-account-unbind-sm {% if not has_token %}d-none{% endif %}" id="btn-account-unbind" onclick="handleUnbindToken()">Hủy Liên Kết</button>
         </div>
 
+        <!-- Form Đổi Tên & Avatar DIPRE Độc Lập -->
         <div class="modal-section-box">
-          <div class="msb-title">Xác Thực Discord Token</div>
-          <div class="sf-row mb-0">
-            <div class="sf-label-row">
-              <label class="sf-label" for="input-token">Discord User Token</label>
-              <button type="button" class="sf-link-toggle" onclick="toggleTokenVisibility()">Hiện / Ẩn</button>
-            </div>
-            <div class="sf-input-wrap">
-              <input type="password" id="input-token" class="sf-input" placeholder="Dán mã Discord User Token vào đây..."
-                autocomplete="off">
-            </div>
+          <div class="msb-title">TÙY BIẾN HỒ SƠ DIPRE (KHÔNG ẢNH HƯỞNG TÀI KHOẢN LIÊN KẾT)</div>
+          
+          <div class="sf-row mb-3">
+            <label class="sf-label" for="edit-dipre-username">Tên hiển thị DIPRE</label>
+            <input type="text" id="edit-dipre-username" class="sf-input" value="{{ username }}" placeholder="Nhập tên hiển thị mới...">
           </div>
-          <div class="sf-action-row mt-3">
-            <button type="button" class="rpc-btn rpc-btn-start" onclick="handleBindToken()">Xác Minh &amp; Kết Nối</button>
+
+          <div class="sf-row mb-3">
+            <label class="sf-label" for="edit-dipre-avatar">URL Ảnh Đại Diện (Avatar Link)</label>
+            <input type="url" id="edit-dipre-avatar" class="sf-input" value="{{ avatar_url }}" placeholder="https://i.imgur.com/... hoặc để trống để dùng avatar mặc định">
           </div>
+
+          <div style="font-size: 0.76rem; color: #94a3b8; line-height: 1.5; margin-bottom: 1rem; padding: 0.6rem 0.85rem; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+            💡 <b>Ghi chú:</b> Tên và ảnh đại diện này chỉ dùng để định danh tài khoản trên hệ thống DIPRE Studio. Việc thay đổi ở đây hoàn toàn độc lập và không can thiệp đến thông tin tài khoản Google hay Discord gốc của bạn.
+          </div>
+
+          <button type="button" class="rpc-btn rpc-btn-start w-100" id="btn-save-dipre-profile" onclick="handleSaveDipreProfile()">Lưu Thay Đổi Hồ Sơ</button>
         </div>
 
-        <div class="modal-section-box mt-3">
-          <div class="msb-title">Cấu Hình Hoạt Động &amp; Portal</div>
-          <div class="sf-grid-2">
-            <div class="sf-row">
-              <label class="sf-label" for="select-user-status">Trạng Thái Presence</label>
-              <select id="select-user-status" class="sf-select" title="Chọn trạng thái presence"
-                aria-label="Trạng thái presence" onchange="updateLivePreview()">
-                <option value="online" selected>Trực tuyến (Online)</option>
-                <option value="idle">Chờ (Idle)</option>
-                <option value="dnd">Không Làm Phiền (DND)</option>
-              </select>
-            </div>
-            <div class="sf-row">
-              <div class="sf-label-row">
-                <label class="sf-label" for="input-app-id">Application ID</label>
-                <button type="button" class="sf-link-toggle" onclick="scanPortalApps(false)">Quét Portal</button>
-              </div>
-              <input type="text" id="input-app-id" class="sf-input" placeholder="Ví dụ: 1546849576986607657"
-                value="1546849576986607657">
-            </div>
-          </div>
-
-          <div class="sf-toggle-row mt-2">
-            <div class="sf-toggle-meta">
-              <div class="sf-toggle-title">Tự động nhận diện Application Portal</div>
-              <div class="sf-toggle-sub">Dùng app bạn sở hữu trên Dev Portal và trích xuất avatar</div>
-            </div>
-            <label class="switch-pill" for="check-auto-app">
-              <input type="checkbox" id="check-auto-app" checked title="Bật tắt tự động nhận diện Application Portal"
-                aria-label="Tự động nhận diện Application Portal">
-              <span class="switch-pill-slider"></span>
-            </label>
-          </div>
-
-          <div class="sf-action-row mt-3">
-            <button type="button" class="rpc-btn rpc-btn-save" onclick="handleSaveConfig()">Lưu Cấu Hình</button>
-          </div>
+        <!-- Chuyển hướng tới Quản Lý Token Phụ -->
+        <div class="modal-section-box mt-3" style="background: rgba(99, 102, 241, 0.05); border-color: rgba(99, 102, 241, 0.2);">
+          <div class="msb-title">QUẢN LÝ DISCORD USER TOKEN PHỤ</div>
+          <p style="font-size: 0.82rem; color: #cbd5e1; margin-bottom: 0.75rem;">
+            Bạn muốn nạp, xóa hoặc đổi token Discord đang chạy cho các tác vụ RPC, Voice AFK hay Auto Quest?
+          </p>
+          <button type="button" class="rpc-btn rpc-btn-save" onclick="toggleAccountModal(false); switchTab('tab-accounts');">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            Đi Đến Mục Quản Lý Đa Token
+          </button>
         </div>
       </div>
     </div>

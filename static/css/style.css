@@ -7207,59 +7207,538 @@ transition: all var(--trans-fast);
   height: 45px;
 }
 
-/* Card phía trước: Profile thật 100% của Minh (1412818296033775707) + Profile Effect Aura */
-.beyond-card-front {
-  position: absolute;
-  width: 315px;
-  top: 45px;
-  right: 10px;
-  transform: rotate(5deg);
-  border-radius: 20px;
-  transition: transform 0.35s ease, box-shadow 0.35s ease;
-  z-index: 5;
+/* ==========================================================================
+   HEADER THEME TOGGLE BUTTON (LANDING PAGE)
+   ========================================================================== */
+.beyond-theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.real-profile-popout {
+.beyond-theme-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  transform: rotate(15deg) scale(1.08);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.25);
+}
+
+/* Light Mode Overrides for Beyond Landing Page */
+body.light-theme.beyond-landing-body,
+body.light-theme .beyond-landing-body {
+  background-color: #f1f5f9 !important;
+  color: #0f172a;
+}
+
+body.light-theme .beyond-brand-name {
+  background: linear-gradient(135deg, #0f172a 40%, #4f46e5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+body.light-theme .beyond-main-title {
+  color: #0f172a;
+}
+
+body.light-theme .beyond-sub-title {
+  color: #475569;
+}
+
+body.light-theme .beyond-theme-toggle-btn {
+  background: rgba(15, 23, 42, 0.06);
+  border-color: rgba(15, 23, 42, 0.12);
+  color: #1e293b;
+}
+
+body.light-theme .beyond-theme-toggle-btn:hover {
+  background: rgba(15, 23, 42, 0.12);
+  color: #000000;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
+}
+
+body.light-theme .beyond-btn-white {
+  background: #0f172a;
+  color: #ffffff;
+  box-shadow: 0 0 25px rgba(15, 23, 42, 0.25);
+}
+
+body.light-theme .beyond-btn-white:hover {
+  background: #1e293b;
+  box-shadow: 0 0 35px rgba(15, 23, 42, 0.4);
+}
+
+body.light-theme .beyond-btn-glass {
+  background: rgba(15, 23, 42, 0.06);
+  color: #0f172a;
+  border-color: rgba(15, 23, 42, 0.15);
+}
+
+body.light-theme .beyond-btn-glass:hover {
+  background: rgba(15, 23, 42, 0.12);
+}
+
+body.light-theme .beyond-login-btn {
+  color: #0f172a;
+}
+
+body.light-theme .beyond-lang-pill {
+  background: #e2e8f0;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-theme .lang-opt {
+  color: #64748b;
+}
+
+body.light-theme .lang-opt.active {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   DISCORD LIVE 1:1 POPOUT CARD & AUTHENTIC PROFILE EFFECT
+   ========================================================================== */
+.dlp-popout-card {
   position: absolute;
-  width: 315px;
-  top: 45px;
+  width: 320px;
+  top: 40px;
   right: 10px;
   transform: rotate(5deg);
-  border-radius: 20px;
-  border: 1.5px solid rgba(88, 101, 242, 0.45);
-  box-shadow: 0 25px 70px -10px rgba(0, 0, 0, 0.95), 0 0 35px rgba(88, 101, 242, 0.45), 0 0 15px rgba(34, 197, 94, 0.35);
-  animation: profileEffectAura 6s ease infinite alternate;
+  border-radius: 16px;
+  background: #111214;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 65px -10px rgba(0, 0, 0, 0.95), 0 0 35px rgba(88, 101, 242, 0.35);
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
   z-index: 5;
   cursor: pointer;
-}
-
-.real-profile-popout:hover {
-  transform: rotate(0deg) scale(1.05) translateY(-6px) !important;
-  box-shadow: 0 35px 90px -10px rgba(0, 0, 0, 0.98), 0 0 60px rgba(99, 102, 241, 0.65), 0 0 25px rgba(34, 197, 94, 0.5);
-  border-color: rgba(168, 85, 247, 0.75);
-}
-
-.real-discord-card-img {
-  width: 100%;
-  height: auto;
-  border-radius: 18px;
-  display: block;
+  overflow: hidden;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   user-select: none;
+}
+
+.dlp-popout-card:hover {
+  transform: rotate(0deg) scale(1.05) translateY(-6px) !important;
+  box-shadow: 0 35px 85px -10px rgba(0, 0, 0, 0.98), 0 0 55px rgba(99, 102, 241, 0.55), 0 0 30px rgba(236, 72, 153, 0.45);
+  border-color: rgba(168, 85, 247, 0.65);
+}
+
+/* Discord Authentic Profile Effect Layer (Tinh thể, ánh sáng và hạt bụi tinh vân) */
+.dlp-profile-effect-wrap {
+  position: absolute;
+  inset: 0;
   pointer-events: none;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+  z-index: 3;
+  overflow: hidden;
+  border-radius: 16px;
 }
 
-.beyond-card-front:hover {
-  transform: rotate(0deg) scale(1.04);
-  box-shadow: 0 35px 80px -10px rgba(0, 0, 0, 0.98), 0 0 55px rgba(168, 85, 247, 0.4);
+.dlp-pfx-ambient-glow {
+  position: absolute;
+  inset: -20px;
+  background: radial-gradient(circle at 80% 20%, rgba(236, 72, 153, 0.22), transparent 55%),
+              radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.25), transparent 60%);
+  animation: dlpAuraBreathe 6s ease-in-out infinite alternate;
 }
 
-.beyond-card-front-img {
+@keyframes dlpAuraBreathe {
+  0% { opacity: 0.55; transform: scale(0.96); }
+  100% { opacity: 1; transform: scale(1.04); }
+}
+
+.dlp-pfx-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 8px #38bdf8;
+  animation: dlpFloatPfx 7s infinite linear;
+}
+
+.dlp-pfx-particle.p1 { top: 15%; left: 18%; animation-duration: 5.5s; opacity: 0.8; }
+.dlp-pfx-particle.p2 { top: 45%; right: 12%; animation-duration: 7.2s; animation-delay: 1.5s; box-shadow: 0 0 8px #f43f5e; }
+.dlp-pfx-particle.p3 { bottom: 25%; left: 10%; animation-duration: 6.8s; animation-delay: 3s; box-shadow: 0 0 8px #a855f7; }
+.dlp-pfx-particle.p4 { bottom: 12%; right: 22%; animation-duration: 8s; animation-delay: 2s; }
+
+@keyframes dlpFloatPfx {
+  0% { transform: translateY(0) scale(0.8); opacity: 0.2; }
+  50% { transform: translateY(-16px) scale(1.3); opacity: 0.95; }
+  100% { transform: translateY(-32px) scale(0.6); opacity: 0.1; }
+}
+
+.dlp-pfx-crystal {
+  position: absolute;
+  filter: drop-shadow(0 0 10px rgba(236, 72, 153, 0.8));
+  animation: dlpCrystalPulse 4.5s ease-in-out infinite alternate;
+}
+
+.dlp-pfx-crystal.c1 { top: 12%; right: 8%; animation-delay: 0.5s; }
+.dlp-pfx-crystal.c2 { top: 58%; left: 6%; animation-delay: 2s; filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.85)); }
+.dlp-pfx-crystal.c3 { bottom: 8%; right: 8%; animation-delay: 3.5s; }
+
+@keyframes dlpCrystalPulse {
+  0% { transform: scale(0.9) rotate(0deg); opacity: 0.65; }
+  100% { transform: scale(1.18) rotate(15deg); opacity: 1; }
+}
+
+/* Banner Discord */
+.dlp-banner {
+  height: 90px;
   width: 100%;
-  height: auto;
-  border-radius: 18px;
+  background: #111214;
+  position: relative;
+  z-index: 1;
+}
+
+/* Avatar Section & Top Actions */
+.dlp-avatar-section {
+  position: relative;
+  padding: 0 16px;
+  margin-top: -46px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  z-index: 4;
+}
+
+.dlp-avatar-wrapper {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: #111214;
+  padding: 5px;
+}
+
+.dlp-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
   display: block;
+}
+
+/* Avatar Decoration Cá Heo Vờn Sóng & Ngôi Sao Discord 1:1 */
+.dlp-avatar-decor-ring {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  pointer-events: none;
+  border: 2px dashed rgba(147, 197, 253, 0.65);
+  box-shadow: 0 0 14px rgba(96, 165, 250, 0.5);
+  animation: dlpDecorSpin 12s linear infinite;
+}
+
+@keyframes dlpDecorSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.dlp-decor-dolphin {
+  position: absolute;
+  top: 2px;
+  right: 14px;
+  width: 24px;
+  height: 10px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #93c5fd, #3b82f6);
+  box-shadow: 0 0 10px rgba(96, 165, 250, 0.9);
+  transform: rotate(-25deg);
+}
+
+.dlp-decor-star {
+  position: absolute;
+  top: 0px;
+  left: 18px;
+  color: #ffffff;
+  font-size: 13px;
+  text-shadow: 0 0 8px #93c5fd;
+  animation: dlpStarTwinkle 2s ease-in-out infinite alternate;
+}
+
+@keyframes dlpStarTwinkle {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(1.25); opacity: 1; }
+}
+
+.dlp-status-dot {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #23a55a;
+  border: 3px solid #111214;
+  box-shadow: 0 0 6px rgba(35, 165, 90, 0.7);
+}
+
+/* Quick Action Circle Buttons */
+.dlp-quick-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.dlp-action-circle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #2b2d31;
+  color: #dbdee1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.dlp-action-circle:hover {
+  background: #35373c;
+  color: #ffffff;
+  transform: scale(1.08);
+}
+
+/* Profile Info Body */
+.dlp-body {
+  padding: 12px 16px 16px 16px;
+  background: #111214;
+  position: relative;
+  z-index: 4;
+}
+
+/* Custom Status Bubble */
+.dlp-custom-status-bubble {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  color: #dbdee1;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.dlp-cs-icon {
+  display: flex;
+  align-items: center;
+  color: #94a3b8;
+}
+
+/* Name & Badges */
+.dlp-names-row {
+  margin-bottom: 10px;
+}
+
+.dlp-display-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.dlp-username-badges {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 3px;
+}
+
+.dlp-username {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.dlp-badges-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dlp-badge-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  transition: transform 0.2s ease;
+}
+
+.dlp-badge-icon:hover {
+  transform: scale(1.15);
+}
+
+.dlp-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 10px 0;
+}
+
+/* Discord Activity Card */
+.dlp-activity-card {
+  background: #1e1f22;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dlp-act-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.dlp-act-type {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #b5bac1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.dlp-act-dots {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.dlp-act-content {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.dlp-act-thumb-wrapper {
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #2b2d31;
+}
+
+.dlp-act-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.dlp-act-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.dlp-act-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dlp-act-detail,
+.dlp-act-state {
+  font-size: 0.75rem;
+  color: #b5bac1;
+  line-height: 1.3;
+}
+
+.dlp-act-timer {
+  font-size: 0.72rem;
+  color: #23a55a;
+  margin-top: 2px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Roles Section */
+.dlp-roles-section {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.dlp-role-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  background: #2b2d31;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  color: #dbdee1;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dlp-role-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #eab308;
+  box-shadow: 0 0 6px rgba(234, 179, 8, 0.6);
+}
+
+.dlp-role-add {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background: #2b2d31;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+/* Profile Bottom Action Button */
+.dlp-edit-profile-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px;
+  border-radius: 6px;
+  background: #5865f2;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(88, 101, 242, 0.35);
+  transition: all 0.2s ease;
+}
+
+.dlp-edit-profile-btn:hover {
+  background: #4752c4;
+  box-shadow: 0 4px 16px rgba(88, 101, 242, 0.55);
 }
 
 /* ==========================================================================

@@ -252,6 +252,77 @@ async function handleUnbindToken() {
   } catch (e) { showToast('Loi huy lien ket', 'error'); }
 }
 
+async function handleSaveDipreProfile() {
+  const usernameInput = document.getElementById('edit-dipre-username');
+  const avatarInput = document.getElementById('edit-dipre-avatar');
+  const btn = document.getElementById('btn-save-dipre-profile');
+
+  const username = usernameInput ? usernameInput.value.trim() : '';
+  const avatarUrl = avatarInput ? avatarInput.value.trim() : '';
+
+  if (!username) {
+    showToast('Tên hiển thị DIPRE không được để trống', 'warning');
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Đang lưu...';
+  }
+
+  try {
+    const res = await fetch('/api/user/profile/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, avatar_url: avatarUrl })
+    });
+    const d = await res.json();
+    if (d.success) {
+      showToast('Đã cập nhật hồ sơ DIPRE thành công!', 'success');
+      const sysName = document.getElementById('user-sys-name');
+      if (sysName) sysName.textContent = username;
+      const modalName = document.getElementById('modal-user-display-name');
+      if (modalName) modalName.textContent = username;
+      const heroName = document.getElementById('hero-profile-name');
+      if (heroName) heroName.textContent = username;
+
+      if (avatarUrl) {
+        const sysImg = document.getElementById('user-sys-avatar-img');
+        const sysInitials = document.getElementById('user-sys-avatar-initials');
+        if (sysImg) {
+          sysImg.src = avatarUrl;
+          sysImg.style.display = 'block';
+        }
+        if (sysInitials) sysInitials.style.display = 'none';
+
+        const modalImg = document.getElementById('modal-user-avatar-img');
+        const modalInitials = document.getElementById('modal-user-avatar-initials');
+        if (modalImg) {
+          modalImg.src = avatarUrl;
+          modalImg.style.display = 'block';
+        }
+        if (modalInitials) modalInitials.style.display = 'none';
+
+        const heroAv = document.getElementById('hero-avatar-img');
+        if (heroAv) {
+          heroAv.src = avatarUrl;
+          heroAv.classList.remove('d-none');
+        }
+      }
+      setTimeout(() => toggleAccountModal(false), 800);
+    } else {
+      showToast(d.message || 'Lỗi cập nhật hồ sơ', 'error');
+    }
+  } catch (e) {
+    showToast('Lỗi kết nối máy chủ', 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Lưu Thay Đổi Hồ Sơ';
+    }
+  }
+}
+
 function updateAccountUI(data) {
   if (!data) return;
   const isLinked = !!(data.has_token === true || (data.accounts && data.accounts.length > 0));

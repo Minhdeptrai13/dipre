@@ -141,6 +141,36 @@ def api_live_status():
         }
     })
 
+@auth_bp.route('/api/user/profile/update', methods=['POST'])
+@login_required
+def api_user_profile_update():
+    """Cập nhật tên và avatar của tài khoản DIPRE Studio độc lập không ảnh hưởng OAuth2"""
+    user_id = session['user_id']
+    data = request.get_json() or {}
+    new_username = data.get('username', '').strip()
+    new_avatar_url = data.get('avatar_url', '').strip()
+
+    if not new_username:
+        return jsonify({'success': False, 'message': 'Tên tài khoản không được để trống'}), 400
+
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT id FROM users WHERE username = ? AND id != ?', (new_username, user_id))
+        if cursor.fetchone():
+            return jsonify({'success': False, 'message': 'Tên tài khoản này đã được sử dụng bởi người khác'}), 400
+        
+        cursor.execute('UPDATE users SET username = ?, avatar_url = ? WHERE id = ?',
+                       (new_username, new_avatar_url, user_id))
+        conn.commit()
+
+    session['username'] = new_username
+    return jsonify({
+        'success': True,
+        'message': 'Đã cập nhật hồ sơ DIPRE thành công!',
+        'username': new_username,
+        'avatar_url': new_avatar_url
+    })
+
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
