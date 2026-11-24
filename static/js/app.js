@@ -2138,33 +2138,35 @@ async function fetchAccountInfo() {
 }
 
 
-const SVG_SUN = `<svg id="theme-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
-const SVG_MOON = `<svg id="theme-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+const SVG_SUN = `<svg id="theme-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+const SVG_MOON = `<svg id="theme-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
 
 function initTheme() {
-  const savedTheme = localStorage.getItem('dipre_theme') || 'dark';
+  let savedTheme = localStorage.getItem('dipre_theme');
+  if (!savedTheme) {
+    savedTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.dataset.theme = savedTheme;
+  document.body.classList.toggle('light-theme', savedTheme === 'light');
+  
   const container = document.getElementById('theme-icon-container') || document.getElementById('theme-icon');
-  if (savedTheme === 'light') {
-    document.body.classList.add('light-theme');
-    if (container) container.innerHTML = SVG_SUN;
-  } else {
-    document.body.classList.remove('light-theme');
-    if (container) container.innerHTML = SVG_MOON;
+  if (container) {
+    container.innerHTML = savedTheme === 'dark' ? SVG_SUN : SVG_MOON;
   }
 }
 
 function toggleTheme() {
-  const isLight = document.body.classList.toggle('light-theme');
+  const currentTheme = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = newTheme;
+  document.body.classList.toggle('light-theme', newTheme === 'light');
+  localStorage.setItem('dipre_theme', newTheme);
+  
   const container = document.getElementById('theme-icon-container') || document.getElementById('theme-icon');
-  if (isLight) {
-    localStorage.setItem('dipre_theme', 'light');
-    if (container) container.innerHTML = SVG_SUN;
-    showToast('Đã chuyển sang giao diện Sáng (Frost Elegance)', 'info', 2000);
-  } else {
-    localStorage.setItem('dipre_theme', 'dark');
-    if (container) container.innerHTML = SVG_MOON;
-    showToast('Đã chuyển sang giao diện Tối (Cyber Luxury)', 'info', 2000);
+  if (container) {
+    container.innerHTML = newTheme === 'dark' ? SVG_SUN : SVG_MOON;
   }
+  showToast(newTheme === 'dark' ? 'Đã chuyển sang giao diện Tối' : 'Đã chuyển sang giao diện Sáng', 'info', 1500);
 }
 
 
@@ -3148,7 +3150,7 @@ async function searchNctLyrics(page = 1) {
   const curPageBtn = document.getElementById(`lpg-${page}`);
   if (curPageBtn) curPageBtn.classList.add('active');
 
-  if (grid) grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#94a3b8; padding:2rem;">Đang tìm kiếm bài hát trên NhacCuaTui & LRCLIB...</div>';
+  if (grid) grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:2rem;">Đang tải kết quả tìm kiếm NhacCuaTui realtime...</div>';
 
   try {
     const res = await fetch(`/api/lyrics/search?q=${encodeURIComponent(query)}`);
@@ -3183,16 +3185,16 @@ async function searchNctLyrics(page = 1) {
     } else {
       if (grid) {
         grid.innerHTML = `
-          <div style="grid-column: 1/-1; text-align:center; padding: 2.5rem 1rem; color: #94a3b8; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.08);">
-            <div style="font-size: 1.1rem; margin-bottom: 0.5rem; color: #cbd5e1;">Không tìm thấy bài hát nào phù hợp cho từ khóa: <b>"${escapeHtml(query)}"</b></div>
-            <div style="font-size: 0.82rem; color: #64748b;">Hãy thử tìm kiếm với từ khóa khác (ví dụ: "lạc trôi", "nàng thơ", "bước qua nhau", "chạy ngay đi").</div>
+          <div style="grid-column: 1/-1; text-align:center; padding: 2.5rem 1rem; color: var(--text-muted); background: var(--surface-2); border-radius: 12px; border: 1px dashed var(--border);">
+            <div style="font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text);">Không tìm thấy bài hát nào phù hợp cho từ khóa: <b>"${escapeHtml(query)}"</b></div>
+            <div style="font-size: 0.82rem; color: var(--text-muted);">Hãy thử tìm kiếm với từ khóa khác (ví dụ: "lạc trôi", "nàng thơ", "bước qua nhau", "chạy ngay đi").</div>
           </div>
         `;
       }
     }
   } catch (e) {
     if (grid) {
-      grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#ef4444; padding:2rem;">Lỗi kết nối máy chủ tìm kiếm. Vui lòng thử lại!</div>';
+      grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--danger); padding:2rem;">Lỗi kết nối máy chủ tìm kiếm. Vui lòng thử lại!</div>';
     }
   }
 }

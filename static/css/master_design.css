@@ -1,371 +1,1210 @@
 /* ==========================================================================
-   MASTER BESPOKE DESIGN SYSTEM - DIPRE COMMAND ARCHITECTURE
-   Senior UI / Front-end Specification
-   Strict adherence to non-AI bespoke design rules:
-   - Palette 60-30-10: Neutral warm dark (#121110, #1C1A18, #25221F) 
-     + Brand Pine (#0F4C4A) + Accent Terracotta / Warm Amber (#C2410C, #D97706)
-   - Zero gradients for hero/buttons/text. Zero neon glow. Zero blur blobs.
-   - Zero emoji icons. Clean hairline 1px borders. Consistent 8px radius.
-   - Typography: Bricolage Grotesque + Plus Jakarta Sans + JetBrains Mono.
+   DIPRE STUDIO — LYRIC STATUS (KARAOKE) MASTER DESIGN SYSTEM
+   Full Non-AI Bespoke Unified Theme System
+   - Single source of truth for all colors via CSS variables
+   - Light: :root / Dark: :root[data-theme="dark"]
+   - Single accent: Orange / Cam (#D9531E / #F26A2E). Zero blue/purple/gradient.
+   - Fonts: Be Vietnam Pro + Mono for terminal logs.
+   - 200ms universal smooth transition for theme switching.
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  /* 60% Bề mặt & Nền trung tính (ám ấm tự nhiên, tuyệt đối không đen thuần #000000) */
-  --bg-canvas: #121110;
-  --bg-surface: #1C1A18;
-  --bg-surface-elevated: #25221F;
-  --bg-surface-subtle: #181615;
-  --bg-input: #171514;
-  --bg-input-focus: #1F1C1A;
+  color-scheme: light;
+  
+  /* BẢNG MÀU SÁNG */
+  --bg: #F5F3EF;
+  --surface: #FBFAF7;
+  --surface-2: #EFECE6;
+  --border: #DDD8CE;
+  --text: #1E1B16;
+  --text-muted: #6B645A;
+  --primary: #D9531E;
+  --primary-hover: #BF4616;
+  --on-primary: #FFFFFF;
+  --success: #2F9E6B;
+  --danger: #C2362E;
 
-  /* Viền trung tính mảnh (1px hairline) thay thế đổ bóng nặng */
-  --border-hairline: #2B2724;
-  --border-muted: #38332E;
-  --border-active: #544D46;
-
-  /* 30% Màu chủ đạo / Brand Structure (Deep Nordic Pine Teal) */
-  --brand-pine: #0F4C4A;
-  --brand-pine-light: #16605D;
-  --brand-pine-surface: #162423;
-  --brand-pine-border: #234341;
-
-  /* 10% Màu nhấn Accent duy nhất (Terracotta Brick / Warm Amber - chỉ dùng cho nút chính/CTA) */
-  --accent-cta: #C2410C;
-  --accent-cta-hover: #9A3412;
-  --accent-cta-active: #7C2D12;
-  --accent-warm: #D97706;
-
-  /* Màu chữ phân cấp (tương phản > 4.5:1, tuyệt đối không trắng thuần #FFFFFF) */
-  --text-prominent: #EDE8E0;
-  --text-standard: #D6D0C5;
-  --text-muted: #9E9689;
-  --text-dim: #70695E;
-  --text-on-accent: #FAF8F5;
-
-  /* Màu trạng thái nhạt (Soft tones, tuyệt đối không chói, không neon) */
-  --state-success-bg: #1A2E22;
-  --state-success-border: #2C4E3A;
-  --state-success-text: #86EFAC;
-
-  --state-danger-bg: #331C1C;
-  --state-danger-border: #522C2C;
-  --state-danger-text: #FCA5A5;
-
-  --state-warning-bg: #302616;
-  --state-warning-border: #4D3D22;
-  --state-warning-text: #FDE047;
-
-  /* Thang bo góc nhất quán (6 - 10px, tuyệt đối không > 16px) */
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 10px;
-
-  /* Typography */
-  --font-display: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-
-  /* Transition mượt nhẹ (150-200ms) */
-  --ease-snappy: 0.16s ease-out;
+  /* Backward Compatibility Mapping */
+  --bg-canvas: var(--bg);
+  --bg-surface: var(--surface);
+  --bg-surface-elevated: var(--surface-2);
+  --bg-surface-subtle: var(--surface-2);
+  --border-hairline: var(--border);
+  --border-muted: var(--border);
+  --text-prominent: var(--text);
+  --text-standard: var(--text);
+  --accent-cta: var(--primary);
+  --accent-cta-hover: var(--primary-hover);
+  --state-success-text: var(--success);
+  --state-danger-text: var(--danger);
 }
 
-/* Reset nền tảng và triệt tiêu toàn bộ blur blob / background gradient */
-html, body {
-  background-color: var(--bg-canvas) !important;
-  background-image: none !important;
-  color: var(--text-standard) !important;
-  font-family: var(--font-body) !important;
-  letter-spacing: -0.01em;
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  
+  /* BẢNG MÀU TỐI */
+  --bg: #131417;
+  --surface: #1B1C21;
+  --surface-2: #24252B;
+  --border: #2F3037;
+  --text: #ECE9E2;
+  --text-muted: #9A968C;
+  --primary: #F26A2E;
+  --primary-hover: #FF8250;
+  --on-primary: #1C120A;
+  --success: #4CC38A;
+  --danger: #F0645A;
+
+  /* Backward Compatibility Mapping */
+  --bg-canvas: var(--bg);
+  --bg-surface: var(--surface);
+  --bg-surface-elevated: var(--surface-2);
+  --bg-surface-subtle: var(--surface-2);
+  --border-hairline: var(--border);
+  --border-muted: var(--border);
+  --text-prominent: var(--text);
+  --text-standard: var(--text);
+  --accent-cta: var(--primary);
+  --accent-cta-hover: var(--primary-hover);
+  --state-success-text: var(--success);
+  --state-danger-text: var(--danger);
+}
+
+/* UNIVERSAL BASE RESETS & THEME TRANSITIONS */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease, fill 200ms ease, stroke 200ms ease;
+  letter-spacing: 0;
+}
+
+body.app-body {
+  font-family: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif !important;
+  background-color: var(--bg) !important;
+  color: var(--text) !important;
+  line-height: 1.5 !important;
+  font-size: 14px !important;
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
 }
 
-/* Tiêu đề & Typography có cá tính */
-h1, h2, h3, h4, h5, h6,
-.ssh-title, .topbar-tab-title, .dhb-title, .sidebar-brand-name {
-  font-family: var(--font-display) !important;
-  color: var(--text-prominent) !important;
-  letter-spacing: -0.025em !important;
-  font-weight: 700 !important;
+/* SCROLLBAR */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 
-/* Thanh Sidebar kiến trúc chuẩn lề trái */
-.sidebar {
-  background-color: var(--bg-surface) !important;
-  border-right: 1px solid var(--border-hairline) !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
+/* APP SHELL & LAYOUT */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+/* ==========================================================================
+   1. SIDEBAR (Rộng 260px, nền --surface, viền phải 1px --border)
+   ========================================================================== */
+.sidebar.dipre-sidebar {
+  width: 260px !important;
+  min-width: 260px !important;
+  max-width: 260px !important;
+  background: var(--surface) !important;
+  border-right: 1px solid var(--border) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 20px 14px !important;
+  height: 100vh !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 50 !important;
 }
 
 .sidebar-brand {
-  border-bottom: 1px solid var(--border-hairline) !important;
-  padding: 20px 18px !important;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 6px 14px 6px;
+}
+
+.dipre-sidebar-logo-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.dipre-sidebar-logo-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.brand-text-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.brand-name-hl {
+  color: var(--primary);
+}
+
+.brand-ver {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+.sidebar-status-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  margin-bottom: 20px;
+}
+
+.status-led {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  flex-shrink: 0;
+}
+
+.status-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-right: 4px;
 }
 
 .sidebar-group-title {
-  color: var(--text-dim) !important;
-  font-family: var(--font-mono) !important;
-  font-size: 0.68rem !important;
-  letter-spacing: 0.08em !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
   text-transform: uppercase !important;
-  padding: 16px 14px 6px 14px !important;
+  color: var(--text-muted) !important;
+  padding: 0 8px 6px 8px !important;
+  letter-spacing: 0.5px !important;
+}
+
+.sidebar-group-items {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
 .sidebar-nav-item {
-  border-radius: var(--radius-sm) !important;
-  color: var(--text-muted) !important;
-  transition: all var(--ease-snappy) !important;
-  border: 1px solid transparent !important;
+  height: 40px !important;
+  padding: 0 12px !important;
+  border-radius: 8px !important;
+  border: none !important;
   background: transparent !important;
-  margin: 1px 10px !important;
-  padding: 8px 12px !important;
-  box-shadow: none !important;
+  color: var(--text-muted) !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  width: 100% !important;
+  position: relative !important;
 }
 
-.sidebar-nav-item svg {
-  stroke: var(--text-muted) !important;
-  transition: stroke var(--ease-snappy) !important;
+.sidebar-nav-item .sni-svg {
+  width: 18px;
+  height: 18px;
+  stroke: var(--text-muted);
+  fill: none;
+  stroke-width: 2;
+  flex-shrink: 0;
 }
 
 .sidebar-nav-item:hover {
-  background: var(--bg-surface-elevated) !important;
-  color: var(--text-prominent) !important;
-  border-color: var(--border-hairline) !important;
+  background: var(--surface-2) !important;
+  color: var(--text) !important;
 }
 
-.sidebar-nav-item:hover svg {
-  stroke: var(--text-prominent) !important;
+.sidebar-nav-item:hover .sni-svg {
+  stroke: var(--text);
 }
 
+/* Mục đang chọn (Lyric Status): nền --surface-2 và vạch cam 3px bên trái */
 .sidebar-nav-item.active {
-  background: var(--bg-surface-elevated) !important;
-  color: var(--text-prominent) !important;
-  border-left: 3px solid var(--accent-cta) !important;
-  border-color: var(--border-muted) var(--border-muted) var(--border-muted) var(--accent-cta) !important;
-  font-weight: 600 !important;
-}
-
-.sidebar-nav-item.active svg {
-  stroke: var(--accent-cta) !important;
-}
-
-/* Topbar */
-.topbar {
-  background-color: var(--bg-surface) !important;
-  border-bottom: 1px solid var(--border-hairline) !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-}
-
-/* Thẻ Settings Card & Containers */
-.settings-section, .dhb-metric-card, .acc-card-item, .inbox-item-card {
-  background-color: var(--bg-surface) !important;
-  border: 1px solid var(--border-hairline) !important;
-  border-radius: var(--radius-md) !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-}
-
-.settings-section:hover, .acc-card-item:hover {
-  border-color: var(--border-muted) !important;
-}
-
-/* Sub-cards & Metric cards */
-.msc-card {
-  background-color: var(--bg-surface-elevated) !important;
-  border: 1px solid var(--border-hairline) !important;
-  border-radius: var(--radius-sm) !important;
-  box-shadow: none !important;
-}
-
-.msc-label {
-  color: var(--text-dim) !important;
-  font-size: 0.75rem !important;
-  font-family: var(--font-mono) !important;
-  text-transform: uppercase !important;
-}
-
-.msc-value {
-  color: var(--text-prominent) !important;
-  font-family: var(--font-display) !important;
-  font-size: 1.35rem !important;
+  background: var(--surface-2) !important;
+  color: var(--text) !important;
   font-weight: 700 !important;
+  border-left: 3px solid var(--primary) !important;
+  border-radius: 0 8px 8px 0 !important;
 }
 
-/* Cụm Nút Bấm Thực Tế (Không gradient, không glow) */
-.rpc-btn {
-  border-radius: var(--radius-sm) !important;
-  font-family: var(--font-body) !important;
-  font-weight: 600 !important;
-  font-size: 0.82rem !important;
-  padding: 8px 16px !important;
-  cursor: pointer !important;
-  transition: all var(--ease-snappy) !important;
-  box-shadow: none !important;
-  text-shadow: none !important;
+.sidebar-nav-item.active .sni-svg {
+  stroke: var(--primary) !important;
 }
 
-/* Nút CTA Chính (10% Accent Terracotta) */
-.rpc-btn-start {
-  background-color: var(--accent-cta) !important;
-  background-image: none !important;
-  color: var(--text-on-accent) !important;
-  border: 1px solid var(--accent-cta) !important;
+/* SIDEBAR BOTTOM: Thẻ người dùng và nút Đăng Xuất */
+.sidebar-bottom {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.rpc-btn-start:hover:not(:disabled) {
-  background-color: var(--accent-cta-hover) !important;
-  border-color: var(--accent-cta-hover) !important;
-  transform: none !important;
-  box-shadow: none !important;
+.sidebar-user-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
 }
 
-.rpc-btn-start:active:not(:disabled) {
-  background-color: var(--accent-cta-active) !important;
+.user-avatar-initials {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--primary) !important;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-/* Nút Dừng / Thao tác nguy hiểm */
-.rpc-btn-stop {
-  background-color: var(--state-danger-bg) !important;
-  background-image: none !important;
-  color: var(--state-danger-text) !important;
-  border: 1px solid var(--state-danger-border) !important;
+.user-avatar-img {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
 }
 
-.rpc-btn-stop:hover:not(:disabled) {
-  background-color: #422222 !important;
-  border-color: #633636 !important;
-  transform: none !important;
-  box-shadow: none !important;
+.suc-meta {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-/* Nút Thứ Cấp / Lưu / Hành động phụ */
-.rpc-btn-save, .rpc-btn-update, .btn-token-quick {
-  background-color: var(--bg-surface-elevated) !important;
-  background-image: none !important;
-  color: var(--text-prominent) !important;
-  border: 1px solid var(--border-muted) !important;
+.suc-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.rpc-btn-save:hover:not(:disabled), .rpc-btn-update:hover:not(:disabled), .btn-token-quick:hover {
-  background-color: #2F2A26 !important;
-  border-color: var(--border-active) !important;
-  transform: none !important;
-  box-shadow: none !important;
+.suc-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--success);
+  margin-top: 1px;
 }
 
-/* Form Controls (Inputs, Selects, Textareas) */
-.sf-input, .sf-select, .sf-textarea {
-  background-color: var(--bg-input) !important;
-  border: 1px solid var(--border-hairline) !important;
-  color: var(--text-prominent) !important;
-  border-radius: var(--radius-sm) !important;
-  font-family: var(--font-body) !important;
-  font-size: 0.88rem !important;
-  padding: 8px 12px !important;
-  transition: border-color var(--ease-snappy), background-color var(--ease-snappy) !important;
-  box-shadow: none !important;
+.sidebar-logout-btn {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
 }
 
-.sf-input:focus, .sf-select:focus, .sf-textarea:focus {
-  background-color: var(--bg-input-focus) !important;
-  border-color: var(--border-active) !important;
-  outline: 2px solid rgba(194, 65, 12, 0.25) !important;
-  outline-offset: 1px !important;
+.sidebar-logout-btn:hover {
+  background: var(--surface-2);
+  color: var(--danger);
+  border-color: var(--danger);
 }
 
-.sf-label {
-  color: var(--text-muted) !important;
-  font-size: 0.78rem !important;
-  font-weight: 600 !important;
-  margin-bottom: 6px !important;
-  display: block;
+/* ==========================================================================
+   2. TOPBAR (Cao 56px, nền --surface, viền dưới 1px --border)
+   ========================================================================== */
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
-/* Status Pills & Badges (Soft Tones, không chói) */
-.acc-status-pill, .badge-status {
-  border-radius: 4px !important;
-  font-family: var(--font-mono) !important;
-  font-size: 0.72rem !important;
-  font-weight: 600 !important;
-  padding: 2px 8px !important;
+.app-topbar {
+  height: 56px !important;
+  background: var(--surface) !important;
+  border-bottom: 1px solid var(--border) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 24px !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 40 !important;
 }
 
-.acc-status-pill.linked, .userbot-status-on {
-  background-color: var(--state-success-bg) !important;
-  border: 1px solid var(--state-success-border) !important;
-  color: var(--state-success-text) !important;
+.topbar-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
 }
 
-.acc-status-pill.unlinked, .userbot-status-off {
-  background-color: var(--bg-surface-elevated) !important;
-  border: 1px solid var(--border-hairline) !important;
-  color: var(--text-muted) !important;
+.tbc-sep {
+  color: var(--border);
 }
 
-.ssh-badge {
-  background-color: var(--brand-pine-surface) !important;
-  border: 1px solid var(--brand-pine-border) !important;
-  color: #5EEAD4 !important;
-  border-radius: 4px !important;
-  font-family: var(--font-mono) !important;
-  font-size: 0.72rem !important;
-  padding: 3px 8px !important;
+.tbc-current {
+  color: var(--text);
+  font-weight: 800;
 }
 
-/* UserBot Hero Section - Bản thiết kế Bespoke Công Nghệ Nghiêm Túc */
-.userbot-hero-banner {
-  background-color: var(--bg-surface) !important;
-  background-image: none !important;
-  border: 1px solid var(--border-muted) !important;
-  border-radius: var(--radius-md) !important;
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px !important;
+}
+
+.topbar-pill {
+  height: 36px;
+  padding: 0 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.topbar-pill .ping-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+/* Segmented Control EN | VI */
+.beyond-lang-pill {
+  display: flex;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2px;
+  height: 36px;
+}
+
+.lang-opt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.lang-opt.active {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+/* Nút đổi theme */
+.theme-switch-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.theme-switch-btn:hover {
+  background: var(--surface);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.theme-switch-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+/* Nút Discord Accounts Secondary */
+.btn-token-quick {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.btn-token-quick:hover {
+  background: var(--surface);
+  border-color: var(--text-muted);
+}
+
+.btn-token-quick:focus-visible {
+  outline: 2px solid var(--primary);
+}
+
+/* ==========================================================================
+   3. BANNER NHẮC LIÊN KẾT TOKEN (Thanh mỏng nền --surface-2, viền dưới 1px)
+   ========================================================================== */
+.token-alert-bar, .token-notice-banner {
+  background: var(--surface-2) !important;
+  border-bottom: 1px solid var(--border) !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  padding: 10px 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
+
+.token-alert-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--primary);
+  border: 1px solid var(--border);
+  letter-spacing: 0.5px;
+}
+
+.token-alert-text, .tnb-text {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-left: 10px;
+}
+
+.token-alert-text b, .tnb-text b {
+  color: var(--text);
+}
+
+.token-alert-btn, .tnb-cta {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: transparent !important;
+  border: 1px solid var(--primary) !important;
+  color: var(--primary) !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.token-alert-btn:hover, .tnb-cta:hover {
+  background: var(--primary) !important;
+  color: var(--on-primary) !important;
+}
+
+/* ==========================================================================
+   4. KHU NỘI DUNG CHÍNH (2 cột: Cột trái co giãn, Cột phải 340px, gap 24px, padding 24px)
+   ========================================================================== */
+#tab-lyric {
   padding: 24px !important;
 }
 
-.userbot-hero-banner code {
-  background-color: var(--bg-surface-elevated) !important;
-  border: 1px solid var(--border-hairline) !important;
-  color: var(--accent-warm) !important;
-  font-family: var(--font-mono) !important;
-  padding: 2px 6px !important;
-  border-radius: 4px !important;
+.panel-2col-layout {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 340px !important;
+  gap: 24px !important;
+  align-items: start !important;
 }
 
-/* Terminal Console Box */
-#userbot-console-box, .console-terminal-box {
-  background-color: #141211 !important;
-  border: 1px solid var(--border-hairline) !important;
-  border-radius: var(--radius-sm) !important;
-  color: #C7C0B5 !important;
-  font-family: var(--font-mono) !important;
-  line-height: 1.6 !important;
+.panel-form-col {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.panel-preview-col {
+  width: 340px;
+  min-width: 340px;
+}
+
+/* CARDS CHUNG: nền --surface, viền 1px --border, bo góc 12px, không gradient */
+.settings-section, .multi-token-target-card {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  padding: 20px !important;
   box-shadow: none !important;
 }
 
-/* Modal Dialogs */
-.modal-card, .google-account-dialog {
-  background-color: var(--bg-surface) !important;
-  border: 1px solid var(--border-muted) !important;
-  border-radius: var(--radius-md) !important;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45) !important;
+/* CARD 1: "Khám phá" */
+.lyric-subtabs-wrap {
+  display: flex;
+  gap: 20px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+  margin-bottom: 20px;
 }
 
-/* Scrollbar tinh gọn */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+.lyric-subtab-btn {
+  background: transparent !important;
+  border: none !important;
+  color: var(--text-muted) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  padding: 4px 2px 10px 2px !important;
+  cursor: pointer !important;
+  position: relative !important;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--bg-canvas);
+.lyric-subtab-btn:hover {
+  color: var(--text) !important;
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--border-hairline);
+/* Tab đang chọn: chữ --text đậm + gạch chân cam 2px. TUYỆT ĐỐI không dùng nền trắng */
+.lyric-subtab-btn.active {
+  color: var(--text) !important;
+  font-weight: 700 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.lyric-subtab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -11px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--primary);
+  border-radius: 2px;
+}
+
+/* Ô tìm kiếm: Cao 40px, icon kính lúp trái, nút Tìm cam phải */
+.lyric-pill-search-container {
+  margin-bottom: 20px;
+}
+
+.lps-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 40px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0 4px 0 12px;
+}
+
+.lps-input-wrap:focus-within {
+  border-color: var(--primary);
+  outline: 2px solid var(--primary);
+  outline-offset: -1px;
+}
+
+.lps-search-icon {
+  width: 18px;
+  height: 18px;
+  stroke: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.lps-search-input {
+  flex: 1;
+  height: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 14px;
+  padding: 0 10px;
+  outline: none;
+}
+
+.lps-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.lps-search-action-btn {
+  height: 32px;
+  padding: 0 16px;
+  background: var(--primary);
+  color: var(--on-primary);
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lps-search-action-btn:hover {
+  background: var(--primary-hover);
+}
+
+.lps-search-action-btn:focus-visible {
+  outline: 2px solid var(--primary);
+}
+
+.lyric-section-title-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+/* LƯỚI BÀI HÁT & CARDS */
+.lyric-song-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.lyric-song-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface-2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  height: 64px;
+}
+
+.lyric-song-card:hover {
+  border-color: var(--primary) !important;
+  background: var(--surface) !important;
+  transform: none !important;
+}
+
+.lsc-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.lsc-meta {
+  flex: 1;
+  overflow: hidden;
+}
+
+.lsc-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lsc-artist {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.lsc-add-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.lsc-add-btn:hover {
+  background: var(--primary);
+  color: var(--on-primary);
+  border-color: var(--primary);
+}
+
+/* Phân trang 1 2 3: ô vuông 32px */
+.lyric-pagination-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.lpg-btn {
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 6px !important;
+  border: 1px solid var(--border) !important;
+  background: var(--surface-2) !important;
+  color: var(--text) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+}
+
+.lpg-btn:hover {
+  background: var(--surface) !important;
+  border-color: var(--primary) !important;
+}
+
+.lpg-btn.active {
+  background: var(--primary) !important;
+  color: var(--on-primary) !important;
+  border-color: var(--primary) !important;
+}
+
+/* CARD 2: "Chưa chọn bài hát nào" / Active Track */
+.lyric-empty-track-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 160px;
+  text-align: center;
+  padding: 20px;
+}
+
+.letp-icon {
+  margin-bottom: 8px;
+}
+
+.letp-icon svg {
+  width: 28px;
+  height: 28px;
+  stroke: var(--text-muted);
+}
+
+.letp-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.letp-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  max-width: 480px;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* Khi đã chọn bài hát */
+.latd-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.latd-cover-img {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+
+.latd-badge-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.latd-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--primary);
+}
+
+.latd-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.latd-artist {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.latd-player-strip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.latd-btn-play {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--on-primary);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+.latd-progress-wrap {
+  flex: 1;
+}
+
+.latd-time-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.latd-progress-rail {
+  height: 5px;
+  background: var(--border);
   border-radius: 3px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--border-muted);
+.latd-progress-fill {
+  height: 100%;
+  background: var(--primary);
+  width: 0%;
+}
+
+.latd-lyrics-strip {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+
+.latd-lyric-cur {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  min-height: 22px;
+}
+
+/* ==========================================================================
+   CỘT PHẢI: CARD "TÀI KHOẢN ĐỒNG BỘ ĐA TOKEN"
+   ========================================================================== */
+.multi-token-target-card {
+  border: 1px solid var(--border) !important;
+}
+
+.mtt-card-title {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: var(--text) !important;
+}
+
+.mtt-card-sub {
+  font-size: 13px !important;
+  color: var(--text-muted) !important;
+  margin-top: 2px !important;
+  margin-bottom: 14px !important;
+}
+
+.mtt-slots-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.mtt-slot-item {
+  position: relative;
+  width: 44px;
+  height: 44px;
+}
+
+.mtt-slot-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+
+.mtt-slot-remove {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.mtt-slot-add-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px dashed var(--border) !important;
+  background: transparent !important;
+  color: var(--text-muted) !important;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.mtt-slot-add-btn:hover {
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+}
+
+.mtt-slots-counter {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 10px;
+}
+
+.mtt-slots-counter b {
+  color: var(--text);
+}
+
+/* NÚT VÀ ACTION BUTTONS: Chiều cao chuẩn 40px, bo góc 8px */
+.rpc-btn {
+  height: 40px !important;
+  border-radius: 8px !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  padding: 0 16px !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.rpc-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+/* Nút bắt đầu đồng bộ: nền cam primary */
+.rpc-btn-start, .mtt-btn-sync {
+  background: var(--primary) !important;
+  color: var(--on-primary) !important;
+  width: 100%;
+  margin-top: 14px;
+}
+
+.rpc-btn-start:hover, .mtt-btn-sync:hover {
+  background: var(--primary-hover) !important;
+}
+
+.mtt-sub-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* Secondary Buttons */
+.rpc-btn-stop, .rpc-btn-save {
+  background: var(--surface-2) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+}
+
+.rpc-btn-stop:hover, .rpc-btn-save:hover {
+  background: var(--surface) !important;
+  border-color: var(--text-muted) !important;
+}
+
+.rpc-btn:disabled, .rpc-btn[disabled] {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  color: var(--text) !important;
+}
+
+/* KHUNG NHẬT KÝ ĐA TOKEN */
+.preview-terminal {
+  background: var(--surface-2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  padding: 12px !important;
+  margin-top: 16px;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 12px !important;
+}
+
+.pt-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pt-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.pt-clear {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pt-clear:hover {
+  color: var(--primary);
+}
+
+.pt-screen {
+  height: 140px;
+  overflow-y: auto;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.log-line .log-time {
+  color: var(--text-muted);
+}
+
+.log-line [MULTI-SYNC], .log-tag {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN (< 900px)
+   ========================================================================== */
+@media (max-width: 900px) {
+  .app-shell {
+    flex-direction: column;
+  }
+  .sidebar.dipre-sidebar {
+    width: 100% !important;
+    min-width: 100% !important;
+    height: auto !important;
+    position: relative !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border) !important;
+  }
+  .panel-2col-layout {
+    grid-template-columns: 1fr !important;
+  }
+  .panel-preview-col {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
 }

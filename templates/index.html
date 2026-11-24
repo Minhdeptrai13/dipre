@@ -6,13 +6,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title id="app-title">DIPRE Studio | Discord Meets Premium</title>
   <meta name="description" content="DIPRE Studio - Nâng cấp trải nghiệm Discord: Ultra RPC, Lyric Sync NhacCuaTui và Auto Quest thông minh.">
+  <script>
+    (function() {
+      try {
+        var saved = localStorage.getItem('dipre_theme');
+        var theme = saved ? saved : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.dataset.theme = theme;
+      } catch (e) {}
+    })();
+  </script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme_hub.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/master_design.css') }}">
   <link rel="icon" href="{{ url_for('static', filename='img/dipre_logo.png') }}" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 
 <body class="app-body dipre-theme">
@@ -97,7 +106,7 @@
         </div>
 
         <div class="sidebar-group">
-          <div class="sidebar-group-title">AUTOMATION SCRIPT</div>
+          <div class="sidebar-group-title">TỰ ĐỘNG HÓA</div>
           <div class="sidebar-group-items">
             <button type="button" class="sidebar-nav-item" data-tab="tab-quest" onclick="switchTab('tab-quest')">
               <svg class="sni-svg" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
@@ -111,19 +120,13 @@
         </div>
 
         <div class="sidebar-group">
-          <div class="sidebar-group-title" id="sidebar-userbot-group-title">DISCORD USERBOT</div>
+          <div class="sidebar-group-title">TÀI KHOẢN &amp; TOKEN</div>
           <div class="sidebar-group-items">
             <button type="button" class="sidebar-nav-item" data-tab="tab-userbot" onclick="switchTab('tab-userbot')">
               <svg class="sni-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8" y2="16"></line><line x1="16" y1="16" x2="16" y2="16"></line></svg>
               <span id="sidebar-userbot-label">{{ username }}'s Bot</span>
-              <span id="sidebar-userbot-badge" class="badge-status-dot d-none" style="margin-left:auto; width:8px; height:8px; border-radius:50%; background:var(--state-success-text); border:1px solid var(--state-success-border);" title="Đang chạy"></span>
+              <span id="sidebar-userbot-badge" class="badge-status-dot d-none" style="margin-left:auto; width:8px; height:8px; border-radius:50%; background:var(--success); border:1px solid var(--border);" title="Đang chạy"></span>
             </button>
-          </div>
-        </div>
-
-        <div class="sidebar-group">
-          <div class="sidebar-group-title">ACCOUNT &amp; TOKENS</div>
-          <div class="sidebar-group-items">
             <button type="button" class="sidebar-nav-item" data-tab="tab-accounts" onclick="switchTab('tab-accounts')">
               <svg class="sni-svg" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
               <span>Quản Lý Đa Token</span>
@@ -156,29 +159,17 @@
 
         <div class="sidebar-user-card" id="sidebar-user-profile" title="Tài khoản hệ thống: {{ username }}">
           <div class="user-avatar-wrap">
-            {% if avatar_info and avatar_info.type == 'image' %}
-            <img src="{{ avatar_info.url }}" class="user-avatar-img" id="user-sys-avatar-img" alt="{{ username }}">
-            {% else %}
-            <div class="user-avatar-initials" id="user-sys-avatar-initials" style="background: {{ avatar_info.gradient if avatar_info else 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)' }};">
-              {{ avatar_info.initials if avatar_info else username[:2].upper() }}
+            <div class="user-avatar-initials" id="user-sys-avatar-initials">
+              {{ avatar_info.initials if (avatar_info and avatar_info.initials) else 'MI' }}
             </div>
-            {% endif %}
           </div>
           <div class="suc-meta">
             <span class="suc-name" id="user-sys-name">{{ username }}</span>
-            <span class="suc-badge provider-{{ auth_provider }}">
-              {% if auth_provider == 'google' %}
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/></svg> Google
-              {% elif auth_provider == 'discord' %}
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.893.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg> Discord
-              {% else %}
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> DIPRE Member
-              {% endif %}
-            </span>
+            <span class="suc-badge">DIPRE Member</span>
           </div>
         </div>
 
-        <a href="{{ url_for('logout') }}" class="sidebar-logout-btn">
+        <a href="{{ url_for('logout') }}" class="sidebar-logout-btn" title="Đăng xuất khỏi hệ thống">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
           <span>Đăng Xuất</span>
         </a>
@@ -1111,37 +1102,26 @@
 
       <section class="tab-panel" id="tab-lyric">
         <div class="panel-2col-layout">
-          <div class="panel-form-col panel-form-relative">
-
-            <div class="token-notice-banner {% if has_token %}d-none{% endif %}" id="lyric-token-notice">
-              <div class="tnb-left">
-                <div class="tnb-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                </div>
-                <div class="tnb-text">
-                  <b>Lưu ý:</b> Bạn chưa chọn hoặc nạp Discord Token phụ. Hãy vào <b>Quản Lý Token</b> để đồng bộ lời bài hát Karaoke vào Custom Status.
-                </div>
-              </div>
-              <button type="button" class="tnb-cta" onclick="switchTab('tab-accounts')">Quản Lý Token</button>
-            </div>
+          <div class="panel-form-col">
 
             <div class="settings-section lyric-main-discovery-box">
 
-              <div class="lyric-subtabs-wrap">
-                <button type="button" class="lyric-subtab-btn active" id="subtab-discover" onclick="switchLyricSubTab('discover')">Khám phá</button>
-                <button type="button" class="lyric-subtab-btn" id="subtab-playlist" onclick="switchLyricSubTab('playlist')">Playlist (2)</button>
-                <button type="button" class="lyric-subtab-btn" id="subtab-history" onclick="switchLyricSubTab('history')">Lịch sử</button>
+              <div class="lyric-subtabs-wrap" role="tablist">
+                <button type="button" class="lyric-subtab-btn active" id="subtab-discover" role="tab" aria-selected="true" onclick="switchLyricSubTab('discover')">Khám phá</button>
+                <button type="button" class="lyric-subtab-btn" id="subtab-playlist" role="tab" aria-selected="false" onclick="switchLyricSubTab('playlist')">Playlist (2)</button>
+                <button type="button" class="lyric-subtab-btn" id="subtab-history" role="tab" aria-selected="false" onclick="switchLyricSubTab('history')">Lịch sử</button>
               </div>
 
               <div class="lyric-pill-search-container">
                 <div class="lps-input-wrap">
-                  <svg class="lps-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg class="lps-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                   </svg>
                   <input type="text" id="input-nct-search" class="lps-search-input"
                     placeholder="gửi em người bất tử, lạc trôi, nàng thơ, bước qua nhau..." 
                     value="gửi em người bất tử"
+                    aria-label="Tìm kiếm bài hát trên NhacCuaTui"
                     onkeydown="if(event.key==='Enter') searchNctLyrics(1)">
                   <button type="button" class="lps-search-action-btn" onclick="searchNctLyrics(1)">
                     <span>Tìm</span>
@@ -1152,23 +1132,29 @@
               <div class="lyric-section-title-label">KẾT QUẢ TÌM KIẾM</div>
 
               <div class="lyric-song-cards-grid" id="lyric-song-cards-grid">
-                <div style="grid-column: 1/-1; text-align:center; padding: 2rem; color: #94a3b8;">
+                <div style="grid-column: 1/-1; text-align:center; padding: 2rem; color: var(--text-muted);">
                   Đang tải kết quả tìm kiếm NhacCuaTui realtime...
                 </div>
               </div>
 
               <div class="lyric-pagination-container">
-                <button type="button" class="lpg-btn active" id="lpg-1" onclick="searchNctLyrics(1)">1</button>
-                <button type="button" class="lpg-btn" id="lpg-2" onclick="searchNctLyrics(2)">2</button>
-                <button type="button" class="lpg-btn" id="lpg-3" onclick="searchNctLyrics(3)">3</button>
+                <button type="button" class="lpg-btn active" id="lpg-1" onclick="searchNctLyrics(1)" aria-label="Trang 1">1</button>
+                <button type="button" class="lpg-btn" id="lpg-2" onclick="searchNctLyrics(2)" aria-label="Trang 2">2</button>
+                <button type="button" class="lpg-btn" id="lpg-3" onclick="searchNctLyrics(3)" aria-label="Trang 3">3</button>
               </div>
 
             </div>
 
-            <div class="settings-section lyric-selected-track-box mt-3" id="lyric-selected-track-box">
+            <div class="settings-section lyric-selected-track-box" id="lyric-selected-track-box">
               
               <div class="lyric-empty-track-prompt" id="lyric-empty-prompt">
-                <div class="letp-icon">🎵</div>
+                <div class="letp-icon">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 18V5l12-2v13"></path>
+                    <circle cx="6" cy="18" r="3"></circle>
+                    <circle cx="18" cy="16" r="3"></circle>
+                  </svg>
+                </div>
                 <div class="letp-title">Chưa chọn bài hát nào</div>
                 <div class="letp-sub">Hãy tìm kiếm bài hát trên NhacCuaTui ở trên và bấm chọn để mở thông tin &amp; đồng bộ lời Karaoke.</div>
               </div>
@@ -1177,7 +1163,6 @@
                 <div class="latd-header">
                   <div class="latd-cover-wrap">
                     <img id="latd-cover" src="/static/img/dipre_logo.png" alt="Track Cover" class="latd-cover-img" onerror="this.src='/static/img/dipre_logo.png'">
-                    <div class="latd-disc-spin"></div>
                   </div>
                   <div class="latd-info">
                     <div class="latd-badge-row">
@@ -1192,7 +1177,7 @@
 
                 <audio id="html5-audio-element" preload="auto"></audio>
                 <div class="latd-player-strip mt-3">
-                  <button type="button" class="latd-btn-play" id="btn-audio-play" onclick="handleToggleAudio()" title="Phát / Tạm dừng">
+                  <button type="button" class="latd-btn-play" id="btn-audio-play" onclick="handleToggleAudio()" title="Phát / Tạm dừng" aria-label="Phát / Tạm dừng">
                     <span id="btn-play-icon">▶</span>
                   </button>
                   <div class="latd-progress-wrap">
@@ -1205,8 +1190,7 @@
                     </div>
                   </div>
                   <div class="latd-vol-wrap">
-                    <span>🔊</span>
-                    <input type="range" id="audio-volume" min="0" max="1" step="0.05" value="0.8" oninput="handleVolumeChange(this.value)">
+                    <input type="range" id="audio-volume" min="0" max="1" step="0.05" value="0.8" oninput="handleVolumeChange(this.value)" aria-label="Âm lượng">
                   </div>
                 </div>
 
@@ -1217,7 +1201,7 @@
             </div>
           </div>
 
-          <div class="panel-preview-col panel-form-relative">
+          <div class="panel-preview-col">
             <div class="preview-sticky">
               <div class="multi-token-target-card">
                 <div class="mtt-card-header">
@@ -1226,8 +1210,7 @@
                 </div>
 
                 <div class="mtt-slots-grid" id="lyric-target-slots">
-                  
-                  <button type="button" class="mtt-slot-add-btn" onclick="openMultiTokenPicker('lyric')" title="Bấm để chọn tài khoản Discord">
+                  <button type="button" class="mtt-slot-add-btn" onclick="openMultiTokenPicker('lyric')" title="Bấm để chọn tài khoản Discord" aria-label="Thêm tài khoản">
                     <span class="msab-plus">+</span>
                   </button>
                 </div>
@@ -1236,19 +1219,18 @@
                   Đã chọn: <b id="lyric-selected-count">0</b> tài khoản
                 </div>
 
-                <div class="mtt-action-area mt-3">
-                  <button type="button" class="rpc-btn rpc-btn-start w-100 mtt-btn-sync" id="btn-lyric-sync-toggle" onclick="handleToggleLyricSyncMulti()">
-                    🚀 BẮT ĐẦU ĐỒNG BỘ ĐA TÀI KHOẢN
+                <div class="mtt-action-area">
+                  <button type="button" class="rpc-btn rpc-btn-start mtt-btn-sync" id="btn-lyric-sync-toggle" onclick="handleToggleLyricSyncMulti()">
+                    BẮT ĐẦU ĐỒNG BỘ ĐA TÀI KHOẢN
                   </button>
-                  <div class="mtt-sub-actions mt-2">
+                  <div class="mtt-sub-actions">
                     <button type="button" class="rpc-btn rpc-btn-stop" id="btn-lyric-sync-stop" onclick="handleStopLyricSync()" disabled>Dừng Đồng Bộ</button>
                     <button type="button" class="rpc-btn rpc-btn-save" onclick="handleClearDiscordStatus()">Xóa Status</button>
                   </div>
                 </div>
 
-                <div class="preview-terminal mt-3">
+                <div class="preview-terminal">
                   <div class="pt-header">
-                    <div class="pt-dots"><span class="ptd red"></span><span class="ptd yellow"></span><span class="ptd green"></span></div>
                     <span class="pt-title">Nhật Ký Đa Token</span>
                     <button type="button" class="pt-clear" onclick="clearLyricLog()">Xóa</button>
                   </div>
