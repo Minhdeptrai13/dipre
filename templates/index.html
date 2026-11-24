@@ -8,10 +8,11 @@
   <meta name="description" content="DIPRE Studio - Nâng cấp trải nghiệm Discord: Ultra RPC, Lyric Sync NhacCuaTui và Auto Quest thông minh.">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme_hub.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/master_design.css') }}">
   <link rel="icon" href="{{ url_for('static', filename='img/dipre_logo.png') }}" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 
 <body class="app-body dipre-theme">
@@ -115,7 +116,7 @@
             <button type="button" class="sidebar-nav-item" data-tab="tab-userbot" onclick="switchTab('tab-userbot')">
               <svg class="sni-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8" y2="16"></line><line x1="16" y1="16" x2="16" y2="16"></line></svg>
               <span id="sidebar-userbot-label">{{ username }}'s Bot</span>
-              <span id="sidebar-userbot-badge" class="badge-status-dot d-none" style="margin-left:auto; width:8px; height:8px; border-radius:50%; background:#22c55e; box-shadow:0 0 8px #22c55e;" title="Đang chạy"></span>
+              <span id="sidebar-userbot-badge" class="badge-status-dot d-none" style="margin-left:auto; width:8px; height:8px; border-radius:50%; background:var(--state-success-text); border:1px solid var(--state-success-border);" title="Đang chạy"></span>
             </button>
           </div>
         </div>
@@ -1626,19 +1627,19 @@
           </div>
 
           <!-- Banner Tổng Quan & Điều Khiển Nhanh -->
-          <div class="userbot-hero-banner" style="background: linear-gradient(135deg, rgba(88, 101, 242, 0.15), rgba(168, 85, 247, 0.15)); border: 1px solid rgba(88, 101, 242, 0.3); border-radius: 14px; padding: 1.5rem; margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: space-between; align-items: center;">
+          <div class="userbot-hero-banner" style="background: var(--bg-surface-elevated); border: 1px solid var(--border-muted); border-radius: 8px; padding: 1.5rem; margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: space-between; align-items: center;">
             <div style="display: flex; gap: 1rem; align-items: center;">
-              <div style="position: relative; width: 60px; height: 60px; border-radius: 50%; overflow: hidden; background: #1e1f22; border: 2px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;">
+              <div style="position: relative; width: 56px; height: 56px; border-radius: 8px; overflow: hidden; background: var(--bg-surface-subtle); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center;">
                 <img id="userbot-hero-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" style="width: 100%; height: 100%; object-fit: cover;" alt="Bot Avatar">
-                <div id="userbot-hero-pulse" style="position: absolute; bottom: 2px; right: 2px; width: 14px; height: 14px; border-radius: 50%; background: #64748b; border: 2px solid #1e1f22;"></div>
+                <div id="userbot-hero-pulse" style="position: absolute; bottom: 2px; right: 2px; width: 10px; height: 10px; border-radius: 50%; background: var(--text-dim); border: 2px solid var(--bg-surface);"></div>
               </div>
               <div>
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <h3 id="userbot-hero-botname" style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #fff;">Chưa chọn tài khoản</h3>
+                  <h3 id="userbot-hero-botname" style="margin: 0; font-size: 1.2rem; font-weight: 700; color: var(--text-prominent); font-family: 'Bricolage Grotesque', sans-serif;">Chưa chọn tài khoản</h3>
                   <span id="userbot-hero-status-pill" class="acc-status-pill unlinked" style="font-size: 0.72rem; padding: 2px 10px;">Đã Tắt</span>
                 </div>
-                <div style="font-size: 0.82rem; color: #94a3b8; margin-top: 4px;">
-                  Tài khoản đang chọn: <b id="userbot-hero-account-label" style="color: #cbd5e1;">---</b> • Tiền tố lệnh: <code id="userbot-hero-prefix-tag" style="background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; color: #38bdf8;">m</code>
+                <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">
+                  Tài khoản đang chọn: <b id="userbot-hero-account-label" style="color: var(--text-standard);">---</b> • Tiền tố lệnh: <code id="userbot-hero-prefix-tag" style="background: var(--bg-surface-subtle); border: 1px solid var(--border-hairline); padding: 2px 6px; border-radius: 4px; color: var(--accent-warm);">m</code>
                 </div>
               </div>
             </div>
@@ -1646,21 +1647,21 @@
             <!-- Controls: Account picker, Prefix input, Big Toggle button -->
             <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
               <div style="display: flex; flex-direction: column; gap: 4px;">
-                <label style="font-size: 0.75rem; color: #94a3b8; font-weight: 600;">Chọn Tài Khoản</label>
+                <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Chọn Tài Khoản</label>
                 <select id="userbot-account-select" class="sf-select" style="min-width: 200px; padding: 7px 12px; font-size: 0.85rem;" onchange="onUserBotAccountSelectChange()">
                   <option value="">Đang tải danh sách tài khoản...</option>
                 </select>
               </div>
 
               <div style="display: flex; flex-direction: column; gap: 4px;">
-                <label style="font-size: 0.75rem; color: #94a3b8; font-weight: 600;">Prefix (Tiền tố)</label>
+                <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Prefix (Tiền tố)</label>
                 <input type="text" id="userbot-prefix-input" class="sf-input" value="m" style="width: 75px; text-align: center; padding: 7px 8px; font-size: 0.85rem; font-weight: 700;" placeholder="m" maxlength="5">
               </div>
 
               <div style="display: flex; flex-direction: column; gap: 4px;">
                 <label style="font-size: 0.75rem; color: transparent; font-weight: 600;">Hành động</label>
                 <button type="button" id="userbot-btn-toggle" class="rpc-btn rpc-btn-start" style="padding: 8px 18px; font-size: 0.88rem; font-weight: 700;" onclick="toggleSelectedUserBot()">
-                  🚀 Kích Hoạt Chạy Bot
+                  Kích Hoạt Chạy Bot
                 </button>
               </div>
             </div>

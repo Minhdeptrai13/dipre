@@ -4001,16 +4001,16 @@ function updateUserBotHero() {
   if (btnToggle) {
     if (isRunning) {
       btnToggle.className = 'rpc-btn rpc-btn-stop';
-      btnToggle.innerHTML = '🛑 Tắt Bot Này';
+      btnToggle.innerHTML = 'Dừng Bot Này';
     } else {
       btnToggle.className = 'rpc-btn rpc-btn-start';
-      btnToggle.innerHTML = '🚀 Kích Hoạt Chạy Bot';
+      btnToggle.innerHTML = 'Kích Hoạt Chạy Bot';
     }
   }
 
   if (statStatus) {
     statStatus.textContent = isRunning ? 'Đang Hoạt Động (Online)' : 'Đã Tắt (Stopped)';
-    statStatus.style.color = isRunning ? '#22c55e' : '#94a3b8';
+    statStatus.style.color = isRunning ? 'var(--state-success-text)' : 'var(--text-muted)';
   }
   if (statGuilds) {
     statGuilds.textContent = isRunning ? `${acc.details?.guilds_count || 0} Servers` : '0 Servers (Offline)';
@@ -4064,8 +4064,8 @@ function renderUserBotCards(accounts) {
 
         <div class="aci-actions">
           ${isRunning
-            ? `<button type="button" class="rpc-btn rpc-btn-stop" style="padding:6px 12px; font-size:0.78rem;" onclick="toggleUserBot('${acc.account_id}', 'stop')">🛑 Tắt Bot</button>`
-            : `<button type="button" class="rpc-btn rpc-btn-start" style="padding:6px 12px; font-size:0.78rem;" onclick="toggleUserBot('${acc.account_id}', 'start', document.getElementById('card-prefix-${acc.account_id}') ? document.getElementById('card-prefix-${acc.account_id}').value : 'm')">🚀 Kích Hoạt Bot</button>`
+            ? `<button type="button" class="rpc-btn rpc-btn-stop" style="padding:6px 12px; font-size:0.78rem;" onclick="toggleUserBot('${acc.account_id}', 'stop')">Dừng Bot</button>`
+            : `<button type="button" class="rpc-btn rpc-btn-start" style="padding:6px 12px; font-size:0.78rem;" onclick="toggleUserBot('${acc.account_id}', 'start', document.getElementById('card-prefix-${acc.account_id}') ? document.getElementById('card-prefix-${acc.account_id}').value : 'm')">Kích Hoạt Bot</button>`
           }
           <button type="button" class="rpc-btn" style="padding:6px 10px; font-size:0.78rem; background:rgba(255,255,255,0.06);" onclick="selectAndFocusBot('${acc.account_id}')">Chọn Xem</button>
         </div>

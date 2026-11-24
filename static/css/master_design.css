@@ -1,0 +1,371 @@
+/* ==========================================================================
+   MASTER BESPOKE DESIGN SYSTEM - DIPRE COMMAND ARCHITECTURE
+   Senior UI / Front-end Specification
+   Strict adherence to non-AI bespoke design rules:
+   - Palette 60-30-10: Neutral warm dark (#121110, #1C1A18, #25221F) 
+     + Brand Pine (#0F4C4A) + Accent Terracotta / Warm Amber (#C2410C, #D97706)
+   - Zero gradients for hero/buttons/text. Zero neon glow. Zero blur blobs.
+   - Zero emoji icons. Clean hairline 1px borders. Consistent 8px radius.
+   - Typography: Bricolage Grotesque + Plus Jakarta Sans + JetBrains Mono.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* 60% Bề mặt & Nền trung tính (ám ấm tự nhiên, tuyệt đối không đen thuần #000000) */
+  --bg-canvas: #121110;
+  --bg-surface: #1C1A18;
+  --bg-surface-elevated: #25221F;
+  --bg-surface-subtle: #181615;
+  --bg-input: #171514;
+  --bg-input-focus: #1F1C1A;
+
+  /* Viền trung tính mảnh (1px hairline) thay thế đổ bóng nặng */
+  --border-hairline: #2B2724;
+  --border-muted: #38332E;
+  --border-active: #544D46;
+
+  /* 30% Màu chủ đạo / Brand Structure (Deep Nordic Pine Teal) */
+  --brand-pine: #0F4C4A;
+  --brand-pine-light: #16605D;
+  --brand-pine-surface: #162423;
+  --brand-pine-border: #234341;
+
+  /* 10% Màu nhấn Accent duy nhất (Terracotta Brick / Warm Amber - chỉ dùng cho nút chính/CTA) */
+  --accent-cta: #C2410C;
+  --accent-cta-hover: #9A3412;
+  --accent-cta-active: #7C2D12;
+  --accent-warm: #D97706;
+
+  /* Màu chữ phân cấp (tương phản > 4.5:1, tuyệt đối không trắng thuần #FFFFFF) */
+  --text-prominent: #EDE8E0;
+  --text-standard: #D6D0C5;
+  --text-muted: #9E9689;
+  --text-dim: #70695E;
+  --text-on-accent: #FAF8F5;
+
+  /* Màu trạng thái nhạt (Soft tones, tuyệt đối không chói, không neon) */
+  --state-success-bg: #1A2E22;
+  --state-success-border: #2C4E3A;
+  --state-success-text: #86EFAC;
+
+  --state-danger-bg: #331C1C;
+  --state-danger-border: #522C2C;
+  --state-danger-text: #FCA5A5;
+
+  --state-warning-bg: #302616;
+  --state-warning-border: #4D3D22;
+  --state-warning-text: #FDE047;
+
+  /* Thang bo góc nhất quán (6 - 10px, tuyệt đối không > 16px) */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+
+  /* Typography */
+  --font-display: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Transition mượt nhẹ (150-200ms) */
+  --ease-snappy: 0.16s ease-out;
+}
+
+/* Reset nền tảng và triệt tiêu toàn bộ blur blob / background gradient */
+html, body {
+  background-color: var(--bg-canvas) !important;
+  background-image: none !important;
+  color: var(--text-standard) !important;
+  font-family: var(--font-body) !important;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tiêu đề & Typography có cá tính */
+h1, h2, h3, h4, h5, h6,
+.ssh-title, .topbar-tab-title, .dhb-title, .sidebar-brand-name {
+  font-family: var(--font-display) !important;
+  color: var(--text-prominent) !important;
+  letter-spacing: -0.025em !important;
+  font-weight: 700 !important;
+}
+
+/* Thanh Sidebar kiến trúc chuẩn lề trái */
+.sidebar {
+  background-color: var(--bg-surface) !important;
+  border-right: 1px solid var(--border-hairline) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.sidebar-brand {
+  border-bottom: 1px solid var(--border-hairline) !important;
+  padding: 20px 18px !important;
+}
+
+.sidebar-group-title {
+  color: var(--text-dim) !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.68rem !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  padding: 16px 14px 6px 14px !important;
+}
+
+.sidebar-nav-item {
+  border-radius: var(--radius-sm) !important;
+  color: var(--text-muted) !important;
+  transition: all var(--ease-snappy) !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  margin: 1px 10px !important;
+  padding: 8px 12px !important;
+  box-shadow: none !important;
+}
+
+.sidebar-nav-item svg {
+  stroke: var(--text-muted) !important;
+  transition: stroke var(--ease-snappy) !important;
+}
+
+.sidebar-nav-item:hover {
+  background: var(--bg-surface-elevated) !important;
+  color: var(--text-prominent) !important;
+  border-color: var(--border-hairline) !important;
+}
+
+.sidebar-nav-item:hover svg {
+  stroke: var(--text-prominent) !important;
+}
+
+.sidebar-nav-item.active {
+  background: var(--bg-surface-elevated) !important;
+  color: var(--text-prominent) !important;
+  border-left: 3px solid var(--accent-cta) !important;
+  border-color: var(--border-muted) var(--border-muted) var(--border-muted) var(--accent-cta) !important;
+  font-weight: 600 !important;
+}
+
+.sidebar-nav-item.active svg {
+  stroke: var(--accent-cta) !important;
+}
+
+/* Topbar */
+.topbar {
+  background-color: var(--bg-surface) !important;
+  border-bottom: 1px solid var(--border-hairline) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Thẻ Settings Card & Containers */
+.settings-section, .dhb-metric-card, .acc-card-item, .inbox-item-card {
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--border-hairline) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.settings-section:hover, .acc-card-item:hover {
+  border-color: var(--border-muted) !important;
+}
+
+/* Sub-cards & Metric cards */
+.msc-card {
+  background-color: var(--bg-surface-elevated) !important;
+  border: 1px solid var(--border-hairline) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: none !important;
+}
+
+.msc-label {
+  color: var(--text-dim) !important;
+  font-size: 0.75rem !important;
+  font-family: var(--font-mono) !important;
+  text-transform: uppercase !important;
+}
+
+.msc-value {
+  color: var(--text-prominent) !important;
+  font-family: var(--font-display) !important;
+  font-size: 1.35rem !important;
+  font-weight: 700 !important;
+}
+
+/* Cụm Nút Bấm Thực Tế (Không gradient, không glow) */
+.rpc-btn {
+  border-radius: var(--radius-sm) !important;
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  font-size: 0.82rem !important;
+  padding: 8px 16px !important;
+  cursor: pointer !important;
+  transition: all var(--ease-snappy) !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* Nút CTA Chính (10% Accent Terracotta) */
+.rpc-btn-start {
+  background-color: var(--accent-cta) !important;
+  background-image: none !important;
+  color: var(--text-on-accent) !important;
+  border: 1px solid var(--accent-cta) !important;
+}
+
+.rpc-btn-start:hover:not(:disabled) {
+  background-color: var(--accent-cta-hover) !important;
+  border-color: var(--accent-cta-hover) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.rpc-btn-start:active:not(:disabled) {
+  background-color: var(--accent-cta-active) !important;
+}
+
+/* Nút Dừng / Thao tác nguy hiểm */
+.rpc-btn-stop {
+  background-color: var(--state-danger-bg) !important;
+  background-image: none !important;
+  color: var(--state-danger-text) !important;
+  border: 1px solid var(--state-danger-border) !important;
+}
+
+.rpc-btn-stop:hover:not(:disabled) {
+  background-color: #422222 !important;
+  border-color: #633636 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Nút Thứ Cấp / Lưu / Hành động phụ */
+.rpc-btn-save, .rpc-btn-update, .btn-token-quick {
+  background-color: var(--bg-surface-elevated) !important;
+  background-image: none !important;
+  color: var(--text-prominent) !important;
+  border: 1px solid var(--border-muted) !important;
+}
+
+.rpc-btn-save:hover:not(:disabled), .rpc-btn-update:hover:not(:disabled), .btn-token-quick:hover {
+  background-color: #2F2A26 !important;
+  border-color: var(--border-active) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Form Controls (Inputs, Selects, Textareas) */
+.sf-input, .sf-select, .sf-textarea {
+  background-color: var(--bg-input) !important;
+  border: 1px solid var(--border-hairline) !important;
+  color: var(--text-prominent) !important;
+  border-radius: var(--radius-sm) !important;
+  font-family: var(--font-body) !important;
+  font-size: 0.88rem !important;
+  padding: 8px 12px !important;
+  transition: border-color var(--ease-snappy), background-color var(--ease-snappy) !important;
+  box-shadow: none !important;
+}
+
+.sf-input:focus, .sf-select:focus, .sf-textarea:focus {
+  background-color: var(--bg-input-focus) !important;
+  border-color: var(--border-active) !important;
+  outline: 2px solid rgba(194, 65, 12, 0.25) !important;
+  outline-offset: 1px !important;
+}
+
+.sf-label {
+  color: var(--text-muted) !important;
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 6px !important;
+  display: block;
+}
+
+/* Status Pills & Badges (Soft Tones, không chói) */
+.acc-status-pill, .badge-status {
+  border-radius: 4px !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  padding: 2px 8px !important;
+}
+
+.acc-status-pill.linked, .userbot-status-on {
+  background-color: var(--state-success-bg) !important;
+  border: 1px solid var(--state-success-border) !important;
+  color: var(--state-success-text) !important;
+}
+
+.acc-status-pill.unlinked, .userbot-status-off {
+  background-color: var(--bg-surface-elevated) !important;
+  border: 1px solid var(--border-hairline) !important;
+  color: var(--text-muted) !important;
+}
+
+.ssh-badge {
+  background-color: var(--brand-pine-surface) !important;
+  border: 1px solid var(--brand-pine-border) !important;
+  color: #5EEAD4 !important;
+  border-radius: 4px !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.72rem !important;
+  padding: 3px 8px !important;
+}
+
+/* UserBot Hero Section - Bản thiết kế Bespoke Công Nghệ Nghiêm Túc */
+.userbot-hero-banner {
+  background-color: var(--bg-surface) !important;
+  background-image: none !important;
+  border: 1px solid var(--border-muted) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 24px !important;
+}
+
+.userbot-hero-banner code {
+  background-color: var(--bg-surface-elevated) !important;
+  border: 1px solid var(--border-hairline) !important;
+  color: var(--accent-warm) !important;
+  font-family: var(--font-mono) !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+}
+
+/* Terminal Console Box */
+#userbot-console-box, .console-terminal-box {
+  background-color: #141211 !important;
+  border: 1px solid var(--border-hairline) !important;
+  border-radius: var(--radius-sm) !important;
+  color: #C7C0B5 !important;
+  font-family: var(--font-mono) !important;
+  line-height: 1.6 !important;
+  box-shadow: none !important;
+}
+
+/* Modal Dialogs */
+.modal-card, .google-account-dialog {
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--border-muted) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Scrollbar tinh gọn */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-canvas);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-hairline);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-muted);
+}
