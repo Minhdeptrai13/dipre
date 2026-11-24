@@ -126,36 +126,26 @@
         </div>
       </nav>
 
-      <!-- SIDEBAR FOOTER CARD: USER INFO + LOGOUT -->
+      <!-- UNIFIED SIDEBAR BOTTOM DOCK (GỌN GÀNG, SANG TRỌNG, KHÔNG RỜI RẠC) -->
       <div class="sidebar-bottom">
-        <div class="sidebar-account-badge" onclick="switchTab('tab-accounts')" title="Xem danh sách tài khoản Discord">
-          <div class="sab-avatar">
-            {% if has_token and discord_avatar %}
-            <img src="{{ discord_avatar }}" alt="Discord Avatar">
-            {% else %}
-            <div class="sab-avatar-empty">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        <div class="unified-user-dock">
+          <div class="uud-profile-trigger" onclick="switchTab('tab-accounts')" title="Xem chi tiết tài khoản">
+            <div class="uud-avatar-wrap">
+              {% if has_token and discord_avatar %}
+              <img src="{{ discord_avatar }}" alt="Avatar" class="uud-avatar-img">
+              {% else %}
+              <div class="uud-avatar-initials">
+                {{ avatar_info.initials if (avatar_info and avatar_info.initials) else 'MI' }}
+              </div>
+              {% endif %}
+              <span class="uud-status-dot {% if has_token %}active{% endif %}"></span>
             </div>
-            {% endif %}
-          </div>
-          <div class="sab-info">
-            <span class="sab-name">{% if has_token and discord_username %}{{ discord_username }}{% else %}Chưa nạp Token{% endif %}</span>
-            <span class="sab-sub">{% if has_token %}Discord Active{% else %}Click để nạp token{% endif %}</span>
-          </div>
-          <span class="sab-status-indicator {% if has_token %}active{% endif %}"></span>
-        </div>
-
-        <div class="sidebar-user-row">
-          <div class="sur-left">
-            <div class="user-avatar-initials">
-              {{ avatar_info.initials if (avatar_info and avatar_info.initials) else 'US' }}
-            </div>
-            <div class="sur-meta">
-              <span class="sur-name">{{ username }}</span>
-              <span class="sur-role">DIPRE Master</span>
+            <div class="uud-meta">
+              <span class="uud-username">{{ discord_username if (has_token and discord_username) else username }}</span>
+              <span class="uud-sub">{% if has_token %}Discord Active{% else %}Chưa nạp Token{% endif %}</span>
             </div>
           </div>
-          <a href="{{ url_for('logout') }}" class="sur-logout-btn" title="Đăng xuất">
+          <a href="{{ url_for('logout') }}" class="uud-logout-btn" title="Đăng xuất">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
           </a>
         </div>
@@ -164,57 +154,33 @@
 
     <main class="app-main">
 
-      <!-- TOPBAR HIỆN ĐẠI, GỌN GÀNG, ĐẲNG CẤP CYBER -->
+      <!-- TOPBAR TỐI GIẢN — KHÔNG RÁC, KHÔNG LỆCH PHẢI, CÂN ĐỐI 100% -->
       <header class="app-topbar">
         <div class="topbar-left">
           <div class="topbar-breadcrumb">
-            <span class="tbc-root">DIPRE</span>
+            <span class="tbc-root">DIPRE STUDIO</span>
             <span class="tbc-sep">/</span>
             <span class="tbc-current" id="topbar-tab-title">COMMAND CENTER</span>
           </div>
-          {% if not has_token %}
-          <div class="topbar-unlinked-pill" onclick="toggleAddTokenModal(true)">
-            <span class="tup-dot"></span>
-            <span>Chưa liên kết Token</span>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </div>
+
+        <div class="topbar-center">
+          <div class="topbar-search-deck" onclick="switchTab('tab-rpc')" title="Tìm kiếm mẫu RPC hoặc lệnh UserBot">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="opacity:0.6;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" placeholder="Tìm kiếm tính năng, Rich Presence, Cogs..." readonly>
+            <span class="search-kbd-shortcut">Ctrl K</span>
           </div>
-          {% endif %}
         </div>
 
         <div class="topbar-right">
-          <!-- SYSTEM TELEMETRY -->
-          <div class="topbar-telemetry">
-            <div class="telemetry-item" title="Độ trễ Discord Gateway">
-              <span class="telemetry-dot"></span>
-              <span id="ping-status">Online</span>
-              <span class="telemetry-val" id="topbar-ping-ms">18ms</span>
-            </div>
-            <div class="telemetry-divider"></div>
-            <div class="telemetry-item time-item" title="Giờ hệ thống">
-              <span id="system-clock">--:--:--</span>
-            </div>
+          <div class="clean-status-pill">
+            <span class="clean-status-dot"></span>
+            <span>Gateway 18ms</span>
           </div>
-
-          <!-- CONTROLS: LANG & THEME -->
-          <div class="topbar-actions-group">
-            <div class="lang-toggle-capsule">
-              <button type="button" class="ltc-btn" id="dash-lang-en" onclick="setAppLanguage('en')">EN</button>
-              <button type="button" class="ltc-btn active" id="dash-lang-vi" onclick="setAppLanguage('vi')">VI</button>
-            </div>
-
-            <button type="button" class="btn-icon-deck" id="btn-theme-toggle" onclick="toggleTheme()" title="Chuyển đổi Sáng / Tối">
-              <span id="theme-icon-container">
-                <svg id="theme-icon-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-              </span>
-            </button>
-
-            <!-- NẠP/QUẢN LÝ DISCORD TOKENS CAPSULE -->
-            <button type="button" class="btn-primary-capsule" onclick="toggleAddTokenModal(true)">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
-              <span>Discord Accounts</span>
-              <span class="capsule-sub-badge">{% if has_token %}1 Active{% else %}Nạp Token{% endif %}</span>
-            </button>
-          </div>
+          <button type="button" class="clean-token-cta" onclick="toggleAddTokenModal(true)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+            <span>{% if has_token %}Quản Lý Token{% else %}Nạp Token Ngay{% endif %}</span>
+          </button>
         </div>
       </header>
 
@@ -435,121 +401,49 @@
               </div>
             </div>
 
-            <div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.75rem; padding: 0 0.5rem;">
-                <span style="font-size:0.85rem; font-weight:700; color:var(--text-white);">Discord Profile 1:1 Realtime</span>
-                <span class="msc-tag active">Live Card</span>
+            <!-- CỘT 2: LIVE DISCORD PROFILE BENTO HUB (ĐẦY ĐẶN, SANG TRỌNG, CÂN XỨNG CHIỀU CAO) -->
+            <div class="discord-profile-bento-card" id="discord-main-card">
+              <div class="dpbc-banner" id="hero-profile-banner" style="{% if banner and banner.startswith('http') %}background-image: url('{{ banner }}');{% elif banner and banner.startswith('#') %}background: {{ banner }};{% endif %}"></div>
+              
+              <div class="dpbc-avatar-dock">
+                <div class="dpbc-avatar-wrap">
+                  <img src="{% if discord_avatar %}{{ discord_avatar }}{% elif avatar_url %}{{ avatar_url }}{% else %}https://cdn.discordapp.com/embed/avatars/0.png{% endif %}" alt="Avatar" class="dpbc-avatar-img" id="hero-avatar-img">
+                  <span class="dpbc-status-dot {% if has_token %}online{% endif %}" id="hero-status-dot" title="{% if has_token %}Đang hoạt động{% else %}Ngoại tuyến{% endif %}"></span>
+                </div>
+                <div class="dpbc-status-bubble" id="hero-status-bubble" title="{{ custom_status or 'DIPRE Studio v4.5' }}">
+                  <span>{{ custom_status or 'nắng biển?' }}</span>
+                </div>
               </div>
 
-              {% if auth_provider == 'google' and not has_token %}
-              
-              <div class="google-account-dialog" id="google-main-card">
-                <div class="gad-header">
-                  <span class="gad-email" title="{{ username }}">{{ username if '@' in username else (username + '@gmail.com') }}</span>
-                  <button type="button" class="gad-close-btn" title="Đóng">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                  </button>
-                </div>
-
-                <div class="gad-body">
-                  <div class="gad-avatar-wrapper">
-                    <img src="{{ avatar_url or 'https://lh3.googleusercontent.com/a/default-user' }}" 
-                         alt="Avatar" class="gad-avatar-img">
-                    <div class="gad-camera-badge" title="Đổi ảnh đại diện">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                        <circle cx="12" cy="12" r="3.2"/>
-                        <path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
-                      </svg>
-                    </div>
+              <div class="dpbc-body">
+                <div>
+                  <div class="dpbc-names-row">
+                    <div class="dpbc-global-name" id="hero-profile-name">{{ discord_username if discord_username else (username.split('@')[0] if '@' in username else username) }}</div>
+                    <div class="dpbc-handle" id="hero-profile-tag">@{{ (discord_username if discord_username else username).lower().replace(' ', '') }}</div>
                   </div>
 
-                  <div class="gad-greeting">Chào {{ username.split('@')[0] }},</div>
-
-                  <a href="https://myaccount.google.com" target="_blank" class="gad-manage-btn">
-                    Quản lý Tài khoản Google của bạn
-                  </a>
-
-                  <div class="gad-action-buttons">
-                    <button type="button" class="gad-pill-btn" onclick="toggleAddTokenModal(true)" title="Nạp Token Discord vào tài khoản">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                      <span>Thêm tài khoản</span>
-                    </button>
-                    <a href="{{ url_for('logout') }}" class="gad-pill-btn">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                      <span>Đăng xuất</span>
-                    </a>
-                  </div>
-                </div>
-
-                <div class="gad-footer">
-                  <a href="https://policies.google.com/privacy" target="_blank">Chính sách quyền riêng tư</a>
-                  <span class="gad-dot">•</span>
-                  <a href="https://policies.google.com/terms" target="_blank">Điều khoản dịch vụ</a>
-                </div>
-              </div>
-              {% else %}
-              
-              <div class="discord-card-1to1-wrap live-profile-popout" id="discord-main-card">
-                
-                {% if profile_effect_data and profile_effect_data.loop %}
-                <div class="discord-nitro-pfx-container" title="{{ profile_effect_data.title }}">
-                  <img src="{{ profile_effect_data.loop }}" class="discord-nitro-pfx-anim" alt="{{ profile_effect_data.title }}">
-                </div>
-                {% else %}
-                <div class="discord-profile-effect-layer" id="dc1-pfx-layer">
-                  <div class="pfx-particle p1"></div>
-                  <div class="pfx-particle p2"></div>
-                  <div class="pfx-particle p3"></div>
-                  <div class="pfx-particle p4"></div>
-                </div>
-                {% endif %}
-
-                <div class="dc1-banner nitro-animated-banner" id="hero-profile-banner" 
-                     style="{% if banner and banner.startswith('http') %}background-image: url('{{ banner }}');{% elif banner and banner.startswith('#') %}background: {{ banner }};{% else %}background: linear-gradient(135deg, #1f1f24 0%, #2a2a32 50%, rgba(245, 158, 11, 0.2) 100%);{% endif %}">
-                </div>
-
-                <div class="dc1-avatar-row">
-                  <div class="dc1-avatar-wrap">
-                    <img src="{% if discord_avatar %}{{ discord_avatar }}{% elif avatar_url %}{{ avatar_url }}{% else %}https://cdn.discordapp.com/embed/avatars/0.png{% endif %}" 
-                         alt="Avatar" class="dc1-avatar-img" id="hero-avatar-img">
-                    {% if avatar_decoration %}
-                    <img src="{{ avatar_decoration }}" 
-                         alt="Decoration" class="dc1-avatar-decor" id="hero-avatar-decoration">
-                    {% endif %}
-                    <div class="dc1-status-dot dnd" id="hero-status-dot" title="Vui lòng không làm phiền"></div>
+                  <div class="dpbc-bio-box" id="hero-profile-bio">
+                    {{ bio or 'DIPRE Studio Discord Presence & Automation Master Engine' }}
                   </div>
 
-                  <div class="dc1-status-bubble" id="hero-status-bubble">
-                    <span>{{ custom_status or 'nắng biển?' }}</span>
-                  </div>
-
-                  <div class="dc1-badges-bar" id="hero-badges-row">
+                  <div class="dpbc-badges-grid" id="hero-badges-row">
                     {% if badges and badges|length > 0 %}
                       {% for b in badges %}
-                      <img src="{{ b.icon }}" alt="{{ b.name }}" title="{{ b.name }}" class="dc1-badge-icon">
+                      <img src="{{ b.icon }}" alt="{{ b.name }}" title="{{ b.name }}" class="dpbc-badge-icon">
                       {% endfor %}
                     {% else %}
-                      <img src="https://cdn.discordapp.com/badge-icons/3aa41de486fa12454c3761e8e223442e.png?size=64" alt="HypeSquad Balance" title="HypeSquad Balance" class="dc1-badge-icon">
-                      <img src="https://cdn.discordapp.com/badge-icons/6bdc42827b30f498e4a0713f64455d80.png?size=64" alt="Active Developer" title="Active Developer" class="dc1-badge-icon">
-                      <img src="https://cdn.discordapp.com/badge-icons/7d9ae358c8c5e118768335dbe68b4fb8.png?size=64" alt="Completed a Quest" title="Completed a Quest" class="dc1-badge-icon">
+                      <img src="https://cdn.discordapp.com/badge-icons/3aa41de486fa12454c3761e8e223442e.png?size=64" alt="HypeSquad Balance" title="HypeSquad" class="dpbc-badge-icon">
+                      <img src="https://cdn.discordapp.com/badge-icons/6bdc42827b30f498e4a0713f64455d80.png?size=64" alt="Active Developer" title="Active Developer" class="dpbc-badge-icon">
+                      <img src="https://cdn.discordapp.com/badge-icons/7d9ae358c8c5e118768335dbe68b4fb8.png?size=64" alt="Quest Completed" title="Quest Completed" class="dpbc-badge-icon">
                     {% endif %}
                   </div>
                 </div>
 
-                <div class="dc1-content">
-                  <div class="dc1-global-name" id="hero-profile-name">{{ discord_username if discord_username else (username.split('@')[0] if '@' in username else username) }}</div>
-                  
-                  <div class="dc1-username-row">
-                    <span class="dc1-username" id="hero-profile-tag">{{ (discord_username if discord_username else username).lower().replace(' ', '') }}</span>
-                  </div>
-
-                  <div style="font-size:0.86rem; color:#dbdee1; margin-top: 10px; font-weight:400; line-height: 1.5;" id="hero-profile-bio">
-                    {{ bio or 'ai nhìn là lgbt' }}
-                  </div>
+                <div class="dpbc-actions-row">
+                  <button type="button" class="dpbc-btn" onclick="switchTab('tab-accounts')">Quản Lý Token</button>
+                  <button type="button" class="dpbc-btn" onclick="switchTab('tab-rpc')" style="background:rgba(2,132,199,0.18); border-color:var(--accent-border); color:var(--accent-light);">Mở RPC Studio</button>
                 </div>
-
               </div>
-              {% endif %}
             </div>
 
           </div>
