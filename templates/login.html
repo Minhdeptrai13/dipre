@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DIPRE STUDIO v5.0 — Xác Thực & Truy Cập</title>
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/dipre_logo.png') }}" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%20fill%3D%22none%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2215%22%20fill%3D%22%2309090D%22%2F%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22fav-06-p%22%20x1%3D%228%22%20y1%3D%226%22%20x2%3D%2256%22%20y2%3D%2258%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23FFFFFF%22%2F%3E%3Cstop%20offset%3D%2252%25%22%20stop-color%3D%22%23FAFAFA%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23A1A1AA%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22fav-06-a%22%20x1%3D%2210%22%20y1%3D%228%22%20x2%3D%2256%22%20y2%3D%2256%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%236EE7D8%22%2F%3E%3Cstop%20offset%3D%2250%25%22%20stop-color%3D%22%231FCAAD%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%230F766E%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22fav-06-m%22%20x1%3D%2212%22%20y1%3D%2210%22%20x2%3D%2254%22%20y2%3D%2256%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%238E8E98%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2332323D%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cpath%20d%3D%22M14.5%2047.5C11.2%2035%2012.5%2016.5%2020.5%2010.5C26%206.4%2036%206.8%2044%2011.5C51.5%2016%2055.2%2024%2054.2%2033C53.2%2041%2047.5%2046.8%2040%2048.6C45.5%2042.8%2046.8%2034%2044.2%2026.5C41.5%2019.2%2034.2%2015.8%2027%2017.2C21.2%2018.4%2019.2%2025%2019.6%2034.8C19.8%2040.5%2017.5%2045.2%2014.5%2047.5Z%22%20fill%3D%22url(%23fav-06-p)%22%2F%3E%3Cpath%20d%3D%22M14%2051.5C20.5%2056.2%2033.5%2057.2%2042.8%2053C50.5%2049.4%2054.5%2042.2%2054.5%2034.2C51.6%2041.4%2044.5%2046.8%2034.8%2047.6C26.5%2048.3%2020%2047.2%2014%2051.5Z%22%20fill%3D%22url(%23fav-06-m)%22%2F%3E%3Ccircle%20cx%3D%2231.5%22%20cy%3D%2232.2%22%20r%3D%226.4%22%20fill%3D%22url(%23fav-06-a)%22%2F%3E%3Cpath%20d%3D%22M28.6%2029.6A4%204%200%200%201%2034%2029.2%22%20stroke%3D%22%23FFFFFF%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20opacity%3D%220.65%22%20fill%3D%22none%22%2F%3E%3C%2Fsvg%3E" />
 
   <!-- Typography: Inter (UI & Editorial Display) + JetBrains Mono (Telemetry & Protocol) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -220,12 +220,28 @@
   <header class="h-11 shrink-0 bg-obsidian border-b border-hairline px-4 sm:px-6 flex items-center justify-between gap-3 z-30">
     <!-- Left: Minimal Geometric Brand Mark -->
     <a href="#" onclick="event.preventDefault(); resetToAuthForm();" class="flex items-center gap-2.5 group focus:outline-none">
-      <div class="w-6 h-6 rounded-[5px] bg-carbon border border-hairline flex items-center justify-center group-hover:border-hairlineHover transition-colors">
-        <svg class="w-3.5 h-3.5 text-ink" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="8" height="8" rx="1"></rect>
-          <rect x="13" y="13" width="8" height="8" rx="1"></rect>
-          <path d="M13 7h4a4 4 0 0 1 4 4"></path>
-          <path d="M11 17H7a4 4 0 0 1-4-4"></path>
+      <div class="w-6 h-6 rounded-[5px] bg-[#09090D] border border-hairline flex items-center justify-center group-hover:border-teal/50 transition-colors p-0.5 overflow-hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" class="w-full h-full">
+          <defs>
+            <linearGradient id="dipre-liquid-mercury-d-p-log" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#FFFFFF"/>
+              <stop offset="52%" stop-color="#FAFAFA"/>
+              <stop offset="100%" stop-color="#A1A1AA"/>
+            </linearGradient>
+            <linearGradient id="dipre-liquid-mercury-d-a-log" x1="10" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#6EE7D8"/>
+              <stop offset="50%" stop-color="#1FCAAD"/>
+              <stop offset="100%" stop-color="#0F766E"/>
+            </linearGradient>
+            <linearGradient id="dipre-liquid-mercury-d-m-log" x1="12" y1="10" x2="54" y2="56" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#8E8E98"/>
+              <stop offset="100%" stop-color="#32323D"/>
+            </linearGradient>
+          </defs>
+          <path d="M14.5 47.5C11.2 35 12.5 16.5 20.5 10.5C26 6.4 36 6.8 44 11.5C51.5 16 55.2 24 54.2 33C53.2 41 47.5 46.8 40 48.6C45.5 42.8 46.8 34 44.2 26.5C41.5 19.2 34.2 15.8 27 17.2C21.2 18.4 19.2 25 19.6 34.8C19.8 40.5 17.5 45.2 14.5 47.5Z" fill="url(#dipre-liquid-mercury-d-p-log)"/>
+          <path d="M14 51.5C20.5 56.2 33.5 57.2 42.8 53C50.5 49.4 54.5 42.2 54.5 34.2C51.6 41.4 44.5 46.8 34.8 47.6C26.5 48.3 20 47.2 14 51.5Z" fill="url(#dipre-liquid-mercury-d-m-log)"/>
+          <circle cx="31.5" cy="32.2" r="6.4" fill="url(#dipre-liquid-mercury-d-a-log)"/>
+          <path d="M28.6 29.6A4 4 0 0 1 34 29.2" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" opacity="0.65" fill="none"/>
         </svg>
       </div>
       <div class="flex items-center gap-2">

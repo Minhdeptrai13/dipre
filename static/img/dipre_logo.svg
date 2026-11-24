@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="dipre-liquid-mercury-d-p" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="52%" stop-color="#FAFAFA"/>
+      <stop offset="100%" stop-color="#A1A1AA"/>
+    </linearGradient>
+    <linearGradient id="dipre-liquid-mercury-d-a" x1="10" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6EE7D8"/>
+      <stop offset="50%" stop-color="#1FCAAD"/>
+      <stop offset="100%" stop-color="#0F766E"/>
+    </linearGradient>
+    <linearGradient id="dipre-liquid-mercury-d-m" x1="12" y1="10" x2="54" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#8E8E98"/>
+      <stop offset="100%" stop-color="#32323D"/>
+    </linearGradient>
+  </defs>
+  <path d="M14.5 47.5C11.2 35 12.5 16.5 20.5 10.5C26 6.4 36 6.8 44 11.5C51.5 16 55.2 24 54.2 33C53.2 41 47.5 46.8 40 48.6C45.5 42.8 46.8 34 44.2 26.5C41.5 19.2 34.2 15.8 27 17.2C21.2 18.4 19.2 25 19.6 34.8C19.8 40.5 17.5 45.2 14.5 47.5Z" fill="url(#dipre-liquid-mercury-d-p)"/>
+  <path d="M14 51.5C20.5 56.2 33.5 57.2 42.8 53C50.5 49.4 54.5 42.2 54.5 34.2C51.6 41.4 44.5 46.8 34.8 47.6C26.5 48.3 20 47.2 14 51.5Z" fill="url(#dipre-liquid-mercury-d-m)"/>
+  <circle cx="31.5" cy="32.2" r="6.4" fill="url(#dipre-liquid-mercury-d-a)"/>
+  <path d="M28.6 29.6A4 4 0 0 1 34 29.2" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" opacity="0.65" fill="none"/>
+</svg>
