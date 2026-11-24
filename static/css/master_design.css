@@ -1,12 +1,12 @@
 /* ==========================================================================
-   DIPRE STUDIO — LUXURY GOLD & DARK OBSIDIAN MASTER DESIGN SYSTEM
-   Featuring:
-   - Base Obsidian: #0B0C0E
-   - Surface Dark: #131418
-   - Surface Elevated: #1B1D24
-   - Border Hairline: #272A34
-   - Primary Luxury Gold: #F59E0B (Gradient gold #FBBF24 -> #D97706)
-   - Shimmer Animation, Glowing Pulse Waves, Sparkle Particles
+   DIPRE STUDIO — DEEP OCEANIC AZURE & CYBER WATER MASTER DESIGN SYSTEM
+   Theme:
+   - Deep Abyss Navy: #07090E
+   - Surface Abyss: #0E131F
+   - Surface Elevated: #151D2E
+   - Hairline Oceanic Border: #1E293B
+   - Accent Primary: Deep Azure & Cyan Blue #0284C7 / #38BDF8 / #0EA5E9
+   - Fluid Water Waves Animation, Glowing Blue Neon Pulses, Real SVG Illustration Banners
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -14,30 +14,31 @@
 :root {
   color-scheme: dark;
 
-  /* BASE PALETTE - LUXURY GOLD & OBSIDIAN */
-  --bg: #0B0C0E;
-  --bg-canvas: #0B0C0E;
-  --surface: #131418;
-  --surface-2: #1B1D24;
-  --surface-elevated: #232630;
-  --border: #272A34;
-  --border-muted: #343846;
-  --border-active: #F59E0B;
+  /* BASE PALETTE - DEEP OCEANIC */
+  --bg: #07090E;
+  --bg-canvas: #07090E;
+  --surface: #0E131F;
+  --surface-2: #151D2E;
+  --surface-elevated: #1D283E;
+  --border: #1E293B;
+  --border-muted: #28374E;
+  --border-active: #38BDF8;
 
   /* TYPOGRAPHY */
-  --text: #F3F4F6;
+  --text: #F0F6FC;
   --text-prominent: #FFFFFF;
-  --text-muted: #9CA3AF;
-  --text-dim: #6B7280;
-  --text-on-accent: #0B0C0E;
+  --text-muted: #8FA1B7;
+  --text-dim: #5B6D84;
+  --text-on-accent: #07090E;
 
-  /* ACCENT: LUXURY GOLD & CHAMPAGNE */
-  --primary: #F59E0B;
-  --primary-hover: #D97706;
-  --primary-active: #B45309;
-  --primary-subtle: rgba(245, 158, 11, 0.12);
-  --primary-glow: rgba(245, 158, 11, 0.35);
-  --on-primary: #0B0C0E;
+  /* ACCENT: OCEANIC BLUE & ELECTRIC AZURE */
+  --primary: #0284C7;
+  --primary-light: #38BDF8;
+  --primary-hover: #0369A1;
+  --primary-active: #075985;
+  --primary-subtle: rgba(56, 189, 248, 0.12);
+  --primary-glow: rgba(56, 189, 248, 0.35);
+  --on-primary: #FFFFFF;
 
   /* STATUS */
   --success: #10B981;
@@ -46,39 +47,38 @@
   --danger-bg: rgba(239, 68, 68, 0.12);
   --warning: #F59E0B;
 
-  --accent-cta: var(--primary);
-  --accent-cta-hover: var(--primary-hover);
-  --brand-pine: #F59E0B;
-  --accent-warm: #F59E0B;
+  --accent-cta: var(--primary-light);
+  --accent-cta-hover: var(--primary);
+  --brand-pine: #38BDF8;
+  --accent-warm: #38BDF8;
 }
 
 /* ==========================================================================
-   KEYFRAME ANIMATIONS: SHIMMER, PULSE, WAVE, SPARKLE
+   KEYFRAME ANIMATIONS: LIQUID WAVE, CYBER PULSE, SHIMMER
    ========================================================================== */
-@keyframes goldShimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+@keyframes oceanicWave {
+  0% { background-position-x: 0px; }
+  100% { background-position-x: 400px; }
 }
 
-@keyframes goldPulseGlow {
+@keyframes oceanicGlowPulse {
   0%, 100% {
-    box-shadow: 0 0 15px rgba(245, 158, 11, 0.2), inset 0 0 10px rgba(245, 158, 11, 0.05);
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.2), inset 0 0 10px rgba(56, 189, 248, 0.05);
   }
   50% {
-    box-shadow: 0 0 28px rgba(245, 158, 11, 0.45), inset 0 0 18px rgba(245, 158, 11, 0.15);
+    box-shadow: 0 0 28px rgba(56, 189, 248, 0.45), inset 0 0 18px rgba(56, 189, 248, 0.15);
   }
 }
 
-@keyframes waveFlow {
-  0% { transform: translateX(0) translateZ(0) scaleY(1); }
-  50% { transform: translateX(-25%) translateZ(0) scaleY(1.15); }
-  100% { transform: translateX(-50%) translateZ(0) scaleY(1); }
+@keyframes waterFluid {
+  0% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(1deg); }
+  100% { transform: translateY(0) rotate(0deg); }
 }
 
-@keyframes floatParticle {
-  0% { transform: translateY(0px) rotate(0deg); opacity: 0.2; }
-  50% { transform: translateY(-12px) rotate(180deg); opacity: 0.8; }
-  100% { transform: translateY(0px) rotate(360deg); opacity: 0.2; }
+@keyframes textAzureShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 /* ==========================================================================
@@ -102,20 +102,20 @@ body.app-body, body.beyond-landing-body, body.nordic-auth-body {
   overflow-x: hidden;
 }
 
-/* BACKGROUND DYNAMIC AMBIENT GLOW */
+/* AMBIENT DEEP OCEAN BACKLIGHT */
 body::before {
   content: '';
   position: fixed;
   top: -150px;
   right: -100px;
-  width: 600px;
-  height: 600px;
+  width: 650px;
+  height: 650px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(245, 158, 11, 0.08) 0%, transparent 70%);
-  filter: blur(80px);
+  background: radial-gradient(circle, rgba(2, 132, 199, 0.15) 0%, transparent 70%);
+  filter: blur(90px);
   pointer-events: none;
   z-index: 0;
-  animation: floatParticle 12s ease-in-out infinite alternate;
+  animation: waterFluid 10s ease-in-out infinite alternate;
 }
 
 /* ==========================================================================
@@ -137,34 +137,34 @@ body::before {
 }
 
 .brand-name-hl {
-  color: var(--primary);
-  background: linear-gradient(90deg, #F59E0B, #FCD34D, #F59E0B);
+  color: var(--primary-light);
+  background: linear-gradient(90deg, #38BDF8, #7DD3FC, #0284C7);
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: goldShimmer 4s linear infinite;
+  animation: textAzureShimmer 4s linear infinite;
 }
 
 .sidebar-nav-item.active {
   background: var(--surface-2) !important;
-  color: var(--text-prominent) !important;
+  color: #FFFFFF !important;
   font-weight: 700 !important;
-  border-left: 3px solid var(--primary) !important;
+  border-left: 3px solid var(--primary-light) !important;
   border-radius: 0 8px 8px 0 !important;
-  box-shadow: 4px 0 15px rgba(245, 158, 11, 0.15) !important;
+  box-shadow: 4px 0 15px rgba(56, 189, 248, 0.2) !important;
 }
 
 .sidebar-nav-item.active .sni-svg {
-  stroke: var(--primary) !important;
+  stroke: var(--primary-light) !important;
 }
 
 /* ==========================================================================
-   DASHBOARD STATS CARDS & ANIMATED SPARKLINE
+   DASHBOARD STATS CARDS & LIQUID AZURE WAVE
    ========================================================================== */
 .metric-stat-card {
   background: var(--surface) !important;
   border: 1px solid var(--border) !important;
-  border-radius: 12px !important;
+  border-radius: 14px !important;
   padding: 20px !important;
   position: relative !important;
   overflow: hidden !important;
@@ -172,17 +172,16 @@ body::before {
   flex-direction: column !important;
   justify-content: space-between !important;
   min-height: 140px !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
   transition: all 0.25s ease !important;
 }
 
 .metric-stat-card:hover {
-  border-color: var(--primary) !important;
+  border-color: var(--primary-light) !important;
   transform: translateY(-3px) !important;
-  box-shadow: 0 12px 30px rgba(245, 158, 11, 0.18) !important;
+  box-shadow: 0 12px 30px rgba(56, 189, 248, 0.22) !important;
 }
 
-/* DYNAMIC GOLD SPARKLINE WAVE */
 .metric-stat-card::after {
   content: '';
   position: absolute;
@@ -193,10 +192,10 @@ body::before {
   background-repeat: repeat-x;
   background-position: bottom left;
   background-size: 200px 42px;
-  opacity: 0.55;
+  opacity: 0.65;
   pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M0,32 Q25,8 50,25 T100,12 T150,28 T200,6 L200,40 L0,40 Z' fill='%23F59E0B' fill-opacity='0.25' stroke='%23F59E0B' stroke-width='2'/%3E%3C/svg%3E");
-  animation: waveFlow 10s linear infinite;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M0,30 Q25,6 50,22 T100,10 T150,25 T200,5 L200,40 L0,40 Z' fill='%230284C7' fill-opacity='0.25' stroke='%2338BDF8' stroke-width='2'/%3E%3C/svg%3E");
+  animation: oceanicWave 9s linear infinite;
 }
 
 .msc-val {
@@ -208,12 +207,12 @@ body::before {
 .msc-icon {
   background: var(--bg) !important;
   border: 1px solid var(--border) !important;
-  color: var(--primary) !important;
+  color: var(--primary-light) !important;
   border-radius: 8px !important;
 }
 
 /* ==========================================================================
-   QUICK ACTION BENTO TILES (WITH GOLD HOVER GLOW)
+   QUICK ACTION BENTO TILES (OCEANIC SHIMMER)
    ========================================================================== */
 .dash-quickactions-grid {
   display: grid !important;
@@ -237,9 +236,9 @@ body::before {
 
 .quickaction-tile:hover {
   background: var(--surface-elevated) !important;
-  border-color: var(--primary) !important;
+  border-color: var(--primary-light) !important;
   transform: translateY(-2px) !important;
-  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.2) !important;
+  box-shadow: 0 8px 24px rgba(56, 189, 248, 0.22) !important;
 }
 
 .quickaction-tile::before {
@@ -249,7 +248,7 @@ body::before {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.08), transparent);
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.12), transparent);
   transition: 0.5s;
 }
 
@@ -266,62 +265,62 @@ body::before {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  color: var(--primary) !important;
+  color: var(--primary-light) !important;
 }
 
 .quickaction-tile:hover .qat-icon {
-  background: rgba(245, 158, 11, 0.15) !important;
-  border-color: var(--primary) !important;
-  color: #FCD34D !important;
+  background: rgba(56, 189, 248, 0.18) !important;
+  border-color: var(--primary-light) !important;
+  color: #FFFFFF !important;
 }
 
 /* ==========================================================================
-   BUTTONS (LUXURY GOLD CTA)
+   BUTTONS (CYBER OCEANIC AZURE)
    ========================================================================== */
 .rpc-btn-start, .mtt-btn-sync, .beyond-btn-white, .auth-submit-btn, .lps-search-action-btn,
 .latd-btn-play, .btn-action-primary, .hgs-action-btn, .nordic-btn-primary {
-  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%) !important;
-  color: #0B0C0E !important;
+  background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%) !important;
+  color: #FFFFFF !important;
   font-weight: 800 !important;
-  border: none !important;
-  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3) !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  box-shadow: 0 4px 18px rgba(2, 132, 199, 0.4) !important;
   transition: all 0.2s ease !important;
 }
 
 .rpc-btn-start:hover, .mtt-btn-sync:hover, .beyond-btn-white:hover, .auth-submit-btn:hover,
 .lps-search-action-btn:hover, .latd-btn-play:hover, .btn-action-primary:hover, .hgs-action-btn:hover,
 .nordic-btn-primary:hover {
-  background: linear-gradient(135deg, #FCD34D 0%, #F59E0B 100%) !important;
-  box-shadow: 0 6px 22px rgba(245, 158, 11, 0.5) !important;
+  background: linear-gradient(135deg, #38BDF8 0%, #0284C7 100%) !important;
+  box-shadow: 0 6px 24px rgba(56, 189, 248, 0.6) !important;
   transform: translateY(-1px) !important;
 }
 
-/* DISCORD PROFILE 1:1 REALISTIC (LUXURY AMBIENT) */
+/* DISCORD PROFILE 1:1 REALISTIC (DEEP OCEANIC AZURE) */
 .discord-card-1to1-wrap {
   width: 100% !important;
   max-width: 360px !important;
   margin: 0 auto !important;
-  border-radius: 14px !important;
+  border-radius: 16px !important;
   background: var(--surface) !important;
   border: 1px solid var(--border) !important;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6) !important;
   overflow: hidden !important;
 }
 
 .discord-card-1to1-wrap:hover {
-  border-color: var(--primary) !important;
-  box-shadow: 0 20px 45px rgba(245, 158, 11, 0.25) !important;
+  border-color: var(--primary-light) !important;
+  box-shadow: 0 20px 48px rgba(56, 189, 248, 0.28) !important;
 }
 
 .dc1-banner {
   height: 105px !important;
   width: 100% !important;
-  background: #181920 !important;
-  background-image: radial-gradient(circle at 85% 20%, rgba(245, 158, 11, 0.35) 0%, transparent 70%) !important;
+  background: #0B111D !important;
+  background-image: radial-gradient(circle at 85% 20%, rgba(56, 189, 248, 0.4) 0%, transparent 70%) !important;
   position: relative !important;
 }
 
 .fbl-fill {
-  background: linear-gradient(90deg, #F59E0B 0%, #FCD34D 100%) !important;
-  box-shadow: 0 0 10px rgba(245, 158, 11, 0.4) !important;
+  background: linear-gradient(90deg, #0284C7 0%, #38BDF8 100%) !important;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.5) !important;
 }
