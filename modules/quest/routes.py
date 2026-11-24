@@ -15,11 +15,19 @@ quest_bp = Blueprint('quest', __name__)
 @login_required
 def api_quests():
     user_id = session['user_id']
+    account_id = request.args.get('account_id')
     with get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
-        row = cursor.fetchone()
-    token = (row['discord_token'] if row else '') or session.get('discord_token', '')
+        token = ''
+        if account_id and str(account_id) != 'main':
+            cursor.execute('SELECT token FROM discord_accounts WHERE id = ? AND user_id = ?', (account_id, user_id))
+            r = cursor.fetchone()
+            if r:
+                token = r['token']
+        if not token:
+            cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
+            row = cursor.fetchone()
+            token = (row['discord_token'] if row else '') or session.get('discord_token', '')
     
     quests = []
     if token:
@@ -49,12 +57,23 @@ def api_quests():
 @login_required
 def api_quests_enroll_all():
     user_id = session['user_id']
+    data = request.get_json() or {}
+    account_id = data.get('account_id')
+
     with get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
-        row = cursor.fetchone()
-    token = (row['discord_token'] if row else '') or session.get('discord_token', '')
-    if not token:
+        token = ''
+        if account_id and str(account_id) != 'main':
+            cursor.execute('SELECT token FROM discord_accounts WHERE id = ? AND user_id = ?', (account_id, user_id))
+            r = cursor.fetchone()
+            if r:
+                token = r['token']
+        if not token:
+            cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
+            row = cursor.fetchone()
+            token = (row['discord_token'] if row else '') or session.get('discord_token', '')
+
+    if not token or len(token) < 20:
         return jsonify({'success': False, 'message': 'Vui lòng liên kết Discord Token trước!'}), 400
 
     runner = get_user_quest_runner(user_id)
@@ -82,15 +101,25 @@ def api_quests_enroll_all():
 @login_required
 def api_quests_start():
     user_id = session['user_id']
+    data = request.get_json() or {}
+    account_id = data.get('account_id')
+
     with get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
-        row = cursor.fetchone()
-    token = (row['discord_token'] if row else '') or session.get('discord_token', '')
-    if not token:
+        token = ''
+        if account_id and str(account_id) != 'main':
+            cursor.execute('SELECT token FROM discord_accounts WHERE id = ? AND user_id = ?', (account_id, user_id))
+            r = cursor.fetchone()
+            if r:
+                token = r['token']
+        if not token:
+            cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
+            row = cursor.fetchone()
+            token = (row['discord_token'] if row else '') or session.get('discord_token', '')
+
+    if not token or len(token) < 20:
         return jsonify({'success': False, 'message': 'Vui lòng liên kết Discord Token trước khi cày Quest!'}), 400
 
-    data = request.get_json() or {}
     runner = get_user_quest_runner(user_id)
     track_feature_use(user_id, 'auto_quest')
 

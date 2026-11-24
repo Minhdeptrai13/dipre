@@ -134,6 +134,67 @@ def api_start():
         'count': len(configs_to_run)
     })
 
+@rpc_bp.route('/api/custom_status', methods=['POST'])
+@login_required
+def api_custom_status():
+    """Cập nhật Custom Status trực tiếp lên Discord qua User Settings API"""
+    user_id = session.get('user_id')
+    data = request.get_json() or {}
+    text = str(data.get('text', '')).strip()
+    emoji = str(data.get('emoji', '')).strip()
+    account_ids = data.get('account_ids') or []
+
+    tokens = []
+    with get_db() as conn:
+        cursor = conn.cursor()
+        if account_ids:
+            for aid in account_ids:
+                if str(aid) == 'main':
+                    cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
+                    r = cursor.fetchone()
+                    if r and r['discord_token']:
+                        tokens.append(r['discord_token'])
+                else:
+                    cursor.execute('SELECT token FROM discord_accounts WHERE id = ? AND user_id = ?', (aid, user_id))
+                    r = cursor.fetchone()
+                    if r and r['token']:
+                        tokens.append(r['token'])
+        if not tokens:
+            cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
+            r = cursor.fetchone()
+            if r and r['discord_token']:
+                tokens.append(r['discord_token'])
+
+    if not tokens:
+        return jsonify({'success': False, 'message': 'Chưa liên kết token Discord'}), 400
+
+    updated = 0
+    for tok in list(dict.fromkeys(tokens)):
+        try:
+            headers = {
+                'Authorization': tok,
+                'Content-Type': 'application/json',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+            payload = {
+                'custom_status': {
+                    'text': text,
+                    'emoji_name': emoji or None
+                }
+            }
+            res = requests.patch('https://discord.com/api/v9/users/@me/settings', headers=headers, json=payload, timeout=6)
+            if res.status_code == 200:
+                updated += 1
+        except Exception:
+            pass
+
+    log_event(f'Đã cập nhật Custom Status: "{emoji} {text}" trên {updated} tài khoản', 'success')
+    return jsonify({
+        'success': True,
+        'message': f'Đã cập nhật Custom Status thành công trên {updated} tài khoản!',
+        'count': updated
+    })
+
 @rpc_bp.route('/api/update', methods=['POST'])
 @login_required
 def api_update():

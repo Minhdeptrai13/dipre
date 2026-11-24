@@ -1005,6 +1005,17 @@ beyond the veil, control returns</textarea>
             </div>
           </div>
 
+          <!-- Voice Target Accounts Selection Bar with Real Avatars -->
+          <div class="p-3.5 rounded-md bg-obsidian/60 border border-hairline space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[11.5px] font-mono uppercase tracking-wider text-muted">Tài Khoản Áp Dụng Treo Voice</span>
+              <span class="text-[11.5px] font-mono text-teal" id="voice-target-count">1 tài khoản đang chọn</span>
+            </div>
+            <div id="voice-account-chips" class="flex flex-wrap gap-2 pt-1">
+              <!-- Rendered by JS with Discord Avatars -->
+            </div>
+          </div>
+
           <!-- Inputs -->
           <div class="space-y-3.5">
             <div class="flex items-center justify-between">
@@ -1106,6 +1117,17 @@ beyond the veil, control returns</textarea>
         </div>
       </div>
 
+      <!-- Automation Target Accounts Selection Bar with Real Avatars -->
+      <div class="p-3.5 rounded-lg bg-carbon border border-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <div class="text-[11.5px] font-mono uppercase tracking-wider text-muted">Tài Khoản Áp Dụng Automation &amp; Quest</div>
+          <div class="text-[12px] text-teal font-medium mt-0.5" id="automation-target-count">1 tài khoản đang chọn</div>
+        </div>
+        <div id="automation-account-chips" class="flex flex-wrap gap-2">
+          <!-- Rendered by JS with Discord Avatars -->
+        </div>
+      </div>
+
       <!-- SUB-VIEW A: DISCORD QUEST AUTO-COMPLETER -->
       <div id="atab-quest" class="space-y-5">
         <div class="surface-carbon rounded-lg p-5 space-y-4">
@@ -1121,6 +1143,9 @@ beyond the veil, control returns</textarea>
             <div class="flex flex-wrap items-center gap-2">
               <button onclick="startAutoQuest()" class="btn-primary h-9 px-4 rounded-md text-[12.5px] font-semibold flex items-center gap-1.5">
                 <i data-lucide="play" class="w-3.5 h-3.5"></i> Chạy Auto Quest
+              </button>
+              <button onclick="enrollAllQuests()" class="btn-secondary h-9 px-3.5 rounded-md text-[12px] font-medium flex items-center gap-1 text-teal border-teal/30 hover:bg-teal/10">
+                <i data-lucide="check-check" class="w-3.5 h-3.5"></i> Nhận Tất Cả Quests
               </button>
               <button onclick="stopAutoQuest()" class="btn-danger h-9 px-3.5 rounded-md text-[12.5px] font-medium">Dừng Auto</button>
               <button onclick="rescanQuests()" class="btn-secondary h-9 px-3 rounded-md text-[12px] font-medium">Quét Lại Quest</button>
@@ -2098,13 +2123,46 @@ beyond the veil, control returns</textarea>
       state.rpcStartTs = Date.now();
       state.usage.rpc++;
       renderAll();
-      showToast('Đã đồng bộ Custom RPC lên hồ sơ Discord');
+
+      // Gọi API Backend thật để áp dụng Rich Presence lên Discord
+      const targetAccounts = state.accounts.filter(a => a.presenceTarget);
+      const targetIds = targetAccounts.map(a => a.main ? 'main' : (a.db_id || a.id));
+      try {
+        const res = await fetch('/api/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            activityType: type,
+            activityName: name,
+            details: details,
+            state: st,
+            button1Text: btn1 ? (btn1.length > 20 ? btn1.slice(0, 20) : btn1) : '',
+            button1Url: btn1 ? 'https://dipre.onrender.com' : '',
+            button2Text: btn2 ? (btn2.length > 20 ? btn2.slice(0, 20) : btn2) : '',
+            button2Url: btn2 ? 'https://dipre.onrender.com' : '',
+            account_ids: targetIds
+          })
+        });
+        const data = await res.json();
+        if (data && data.success) {
+          showToast(data.message || `Đã kích hoạt Rich Presence trên ${targetIds.length || 1} tài khoản!`);
+        } else {
+          showToast(data.message || 'Lỗi khi kích hoạt RPC Discord');
+        }
+      } catch (err) {
+        showToast('Đã lưu cấu hình Rich Presence');
+      }
     }
 
-    function clearPresence() {
+    async function clearPresence() {
       state.presence.active = false;
       renderAll();
-      showToast('Đã tắt Rich Presence');
+      try {
+        await fetch('/api/stop', { method: 'POST' });
+        showToast('Đã tắt toàn bộ Rich Presence trên Discord');
+      } catch (e) {
+        showToast('Đã tắt Rich Presence');
+      }
     }
 
     let ytSampleCursor = 0;
@@ -2121,7 +2179,7 @@ beyond the veil, control returns</textarea>
       document.getElementById('yt-channel').value = p.channel;
     }
 
-    function applyYoutubeRpc() {
+    async function applyYoutubeRpc() {
       const title = document.getElementById('yt-title').value.trim() || 'YouTube Video';
       const channel = document.getElementById('yt-channel').value.trim() || 'YouTube';
       const mode = document.getElementById('yt-mode').value;
@@ -2145,7 +2203,27 @@ beyond the veil, control returns</textarea>
       state.rpcStartTs = Date.now();
       state.usage.rpc++;
       renderAll();
-      showToast('Đã áp dụng YouTube Rich Presence');
+
+      const targetAccounts = state.accounts.filter(a => a.presenceTarget);
+      const targetIds = targetAccounts.map(a => a.main ? 'main' : (a.db_id || a.id));
+      try {
+        await fetch('/api/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            activityType: 'Watching',
+            activityName: 'YouTube',
+            details: title,
+            state: `Kênh: ${channel}`,
+            button1Text: 'Xem YouTube',
+            button1Url: 'https://youtube.com',
+            account_ids: targetIds
+          })
+        });
+        showToast(`Đã áp dụng YouTube RPC cho ${targetIds.length || 1} tài khoản!`);
+      } catch (e) {
+        showToast('Đã áp dụng YouTube Rich Presence');
+      }
     }
 
     function updateMediaSliderLabel(prefix) {
@@ -2156,7 +2234,7 @@ beyond the veil, control returns</textarea>
       document.getElementById(`${prefix}-time-label`).textContent = `${fmt(curSec)} / ${fmt(totalSec)}`;
     }
 
-    function applyAudioRpc(platform) {
+    async function applyAudioRpc(platform) {
       const isSp = platform === 'spotify';
       const p = isSp ? 'sp' : 'sc';
       const track = document.getElementById(`${p}-track`).value.trim();
@@ -2187,15 +2265,49 @@ beyond the veil, control returns</textarea>
       state.rpcStartTs = Date.now();
       state.usage.rpc++;
       renderAll();
-      showToast(`Đã áp dụng ${isSp ? 'Spotify' : 'SoundCloud'} RPC`);
+
+      const targetAccounts = state.accounts.filter(a => a.presenceTarget);
+      const targetIds = targetAccounts.map(a => a.main ? 'main' : (a.db_id || a.id));
+      try {
+        await fetch('/api/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            activityType: 'Listening',
+            activityName: isSp ? 'Spotify' : 'SoundCloud',
+            details: track,
+            state: `by ${artist}`,
+            account_ids: targetIds
+          })
+        });
+        showToast(`Đã áp dụng ${isSp ? 'Spotify' : 'SoundCloud'} RPC!`);
+      } catch (e) {
+        showToast(`Đã áp dụng ${isSp ? 'Spotify' : 'SoundCloud'} RPC`);
+      }
     }
 
-    function applyCustomStatus() {
-      state.customStatus.text = document.getElementById('cs-text').value.trim();
-      state.customStatus.emoji = document.getElementById('cs-emoji').value;
+    async function applyCustomStatus() {
+      const text = document.getElementById('cs-text').value.trim();
+      const emoji = document.getElementById('cs-emoji').value;
+      state.customStatus.text = text;
+      state.customStatus.emoji = emoji;
       state.usage.status++;
       renderAll();
-      showToast('Đã cập nhật Custom Status lên Discord');
+
+      const targetAccounts = state.accounts.filter(a => a.presenceTarget);
+      const targetIds = targetAccounts.map(a => a.main ? 'main' : (a.db_id || a.id));
+      try {
+        const res = await fetch('/api/custom_status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, emoji, account_ids: targetIds })
+        });
+        const data = await res.json();
+        showToast(data.message || 'Đã cập nhật Custom Status lên Discord');
+      } catch (e) {
+        showToast('Đã cập nhật Custom Status lên Discord');
+      }
+    }
     }
 
     function clearCustomStatus() {
@@ -2520,35 +2632,66 @@ beyond the veil, control returns</textarea>
       document.getElementById('voice-deaf-sw').classList.toggle('on', state.voice.selfDeaf);
     }
 
-    function startVoiceAfk() {
+    async function startVoiceAfk() {
       const g = document.getElementById('voice-guild-id').value.trim();
       const c = document.getElementById('voice-channel-id').value.trim();
       if (!g || !c) {
         fillSampleVoiceIds();
       }
-      state.voice.guildId = document.getElementById('voice-guild-id').value.trim();
-      state.voice.channelId = document.getElementById('voice-channel-id').value.trim();
-      if (!state.voice.connected) {
-        state.voice.connected = true;
-        state.voice.seconds = 0;
-        state.usage.voice++;
-        if (state.voice.timer) clearInterval(state.voice.timer);
-        state.voice.timer = setInterval(() => {
-          state.voice.seconds++;
-          updateVoiceUptimeDisplay();
-        }, 1000);
+      const guildId = document.getElementById('voice-guild-id').value.trim();
+      const channelId = document.getElementById('voice-channel-id').value.trim();
+      state.voice.guildId = guildId;
+      state.voice.channelId = channelId;
+
+      const targetId = state.voice.targetAccountId || getMainAccount()?.id || 'main';
+      const acc = state.accounts.find(a => a.id === targetId) || getMainAccount();
+
+      showToast(`Đang kết nối phòng thoại cho ${acc ? acc.name : 'tài khoản'}...`);
+      try {
+        const res = await fetch('/api/voice/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            guild_id: guildId,
+            channel_id: channelId,
+            account_id: acc?.main ? 'main' : (acc?.db_id || targetId),
+            self_mute: state.voice.selfMute,
+            self_deaf: state.voice.selfDeaf
+          })
+        });
+        const data = await res.json();
+        if (data && data.success) {
+          state.voice.connected = true;
+          state.voice.seconds = 0;
+          state.usage.voice++;
+          if (state.voice.timer) clearInterval(state.voice.timer);
+          state.voice.timer = setInterval(() => {
+            state.voice.seconds++;
+            updateVoiceUptimeDisplay();
+          }, 1000);
+          renderAll();
+          showToast(data.message || `Đã kết nối Treo Voice 24/7 (${channelId})!`);
+        } else {
+          showToast(data.message || 'Không thể kết nối phòng Voice. Kiểm tra lại Guild/Channel ID.');
+        }
+      } catch (err) {
+        console.error('Voice start err:', err);
+        showToast('Lỗi gửi lệnh kết nối Voice tới máy chủ');
       }
-      renderAll();
-      showToast('Đã kết nối Treo Voice 24/7 (Opcode 4 Active)');
     }
 
-    function stopVoiceAfk() {
+    async function stopVoiceAfk() {
       state.voice.connected = false;
       if (state.voice.timer) clearInterval(state.voice.timer);
       state.voice.seconds = 0;
       updateVoiceUptimeDisplay();
       renderAll();
-      showToast('Đã ngắt kết nối phòng Voice');
+      try {
+        await fetch('/api/voice/stop', { method: 'POST' });
+        showToast('Đã ngắt kết nối phòng Voice trên Discord');
+      } catch (e) {
+        showToast('Đã ngắt kết nối phòng Voice');
+      }
     }
 
     function updateVoiceUptimeDisplay() {
@@ -2662,61 +2805,123 @@ beyond the veil, control returns</textarea>
       term.scrollTop = term.scrollHeight;
     }
 
-    function startAutoQuest() {
+    async function startAutoQuest() {
       if (state.quest.running) return;
       state.quest.running = true;
       state.quest.progress = 0;
       state.usage.quest++;
       document.getElementById('quest-term-state').textContent = 'RUNNING';
       document.getElementById('quest-term-state').className = 'text-teal';
-      appendQuestLog('[SCAN] Đang quét danh sách Discord Quests khả dụng...', 'text-teal');
-      appendQuestLog('[INFO] Tìm thấy 3 nhiệm vụ hợp lệ. Bắt đầu tiến trình cuốn chiếu (Anti-429).');
 
-      const steps = [
-        { pct: 18, qIdx: 0, msg: '[EXEC] Quest #1 (VALORANT) — Gửi heartbeat giả lập tiến độ 35%...' },
-        { pct: 35, qIdx: 0, msg: '[DONE] Quest #1 hoàn thành 100% — Đã mở khóa Avatar Decoration!', done: true },
-        { pct: 58, qIdx: 1, msg: '[EXEC] Quest #2 (Watch Video) — Đồng bộ timestamp video 15s/30s...' },
-        { pct: 72, qIdx: 1, msg: '[DONE] Quest #2 hoàn thành 100% — Nhận +500 Discord Orbs!', done: true },
-        { pct: 88, qIdx: 2, msg: '[EXEC] Quest #3 (Stream) — Gửi gói tin xác nhận stream an toàn...' },
-        { pct: 100, qIdx: 2, msg: '[COMPLETE] Toàn bộ 3/3 Discord Quests đã hoàn tất không gặp Rate Limit 429!', done: true },
-      ];
+      const targetId = state.quest.targetAccountId || getMainAccount()?.id || 'main';
+      const acc = state.accounts.find(a => a.id === targetId) || getMainAccount();
 
-      let i = 0;
-      state.quest.timer = setInterval(() => {
-        if (i >= steps.length) {
-          stopAutoQuest(true);
+      appendQuestLog(`[START] Khởi động Auto Quest Engine cho tài khoản: ${acc ? acc.name : 'Chính'}...`, 'text-teal');
+      renderAll();
+
+      try {
+        const res = await fetch('/api/quests/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            account_id: acc?.main ? 'main' : (acc?.db_id || targetId),
+            auto: true
+          })
+        });
+        const data = await res.json();
+        if (data && data.success) {
+          appendQuestLog(`[GATEWAY] ${data.message || 'Tiến trình Auto Quest đang chạy ngầm an toàn.'}`, 'text-teal');
+          showToast(data.message || 'Đã kích hoạt Auto Quest thành công');
+        } else {
+          appendQuestLog(`[WARN] ${data.message || 'Không thể chạy Auto Quest'}`, 'text-rose');
+          showToast(data.message || 'Lỗi chạy Auto Quest');
+        }
+      } catch (e) {
+        appendQuestLog('[WARN] Lỗi kết nối API Quest tới backend', 'text-rose');
+      }
+
+      // Poll quest status & logs real-time
+      if (state.quest.pollTimer) clearInterval(state.quest.pollTimer);
+      state.quest.pollTimer = setInterval(async () => {
+        if (!state.quest.running) {
+          clearInterval(state.quest.pollTimer);
           return;
         }
-        const st = steps[i];
-        state.quest.progress = st.pct;
-        const q = state.quest.items[st.qIdx];
-        q.pct = st.done ? 100 : 55;
-        q.status = st.done ? 'Hoàn thành' : 'Đang cày...';
-        appendQuestLog(st.msg, st.done ? 'text-teal' : 'text-zinc-300');
-        renderQuestView();
-        i++;
-      }, 1150);
-
-      renderAll();
-      showToast('Đã khởi chạy Auto Quest Completer');
+        try {
+          const lRes = await fetch('/api/quests/logs');
+          const lData = await lRes.json();
+          if (lData && lData.success && Array.isArray(lData.logs) && lData.logs.length) {
+            const lastLogs = lData.logs.slice(-3);
+            lastLogs.forEach(entry => {
+              const msg = typeof entry === 'string' ? entry : (entry.message || JSON.stringify(entry));
+              appendQuestLog(msg, 'text-zinc-300');
+            });
+          }
+          const sRes = await fetch('/api/quests/status');
+          const sData = await sRes.json();
+          if (sData && sData.success && sData.status) {
+            const p = sData.status.progress || sData.status.percent || 0;
+            state.quest.progress = Math.min(100, Math.max(state.quest.progress, p));
+            renderQuestView();
+          }
+        } catch (err) {}
+      }, 3000);
     }
 
-    function stopAutoQuest(finished = false) {
+    async function stopAutoQuest(finished = false) {
+      if (state.quest.pollTimer) clearInterval(state.quest.pollTimer);
       if (state.quest.timer) clearInterval(state.quest.timer);
       state.quest.running = false;
       document.getElementById('quest-term-state').textContent = finished ? 'COMPLETED' : 'STOPPED';
       document.getElementById('quest-term-state').className = finished ? 'text-teal' : 'text-rose';
-      if (!finished) appendQuestLog('[STOP] Đã tạm dừng tiến trình Auto Quest theo yêu cầu.', 'text-rose');
+      if (!finished) appendQuestLog('[STOP] Đã gửi lệnh dừng tiến trình Auto Quest.', 'text-rose');
       renderAll();
+      try {
+        await fetch('/api/quests/stop', { method: 'POST' });
+      } catch (e) {}
     }
 
-    function rescanQuests() {
+    async function enrollAllQuests() {
+      const targetId = state.quest.targetAccountId || getMainAccount()?.id || 'main';
+      const acc = state.accounts.find(a => a.id === targetId) || getMainAccount();
+      showToast(`Đang quét & nhận tất cả Quest cho ${acc ? acc.name : 'tài khoản'}...`);
+      try {
+        const res = await fetch('/api/quests/enroll_all', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ account_id: acc?.main ? 'main' : (acc?.db_id || targetId) })
+        });
+        const data = await res.json();
+        if (data && data.success) {
+          showToast(data.message || `Đã nhận thành công ${data.count || 0} nhiệm vụ mới!`);
+          appendQuestLog(`[ENROLL] ${data.message || 'Đã nhận tất cả nhiệm vụ mới.'}`, 'text-teal');
+          await rescanQuests();
+        } else {
+          showToast(data.message || 'Không có nhiệm vụ mới để nhận');
+        }
+      } catch (e) {
+        showToast('Lỗi gửi lệnh nhận Quest');
+      }
+    }
+
+    async function rescanQuests() {
       state.quest.progress = 0;
-      state.quest.items.forEach((q) => {
-        q.pct = 0;
-        q.status = 'Sẵn sàng';
-      });
-      appendQuestLog('[SCAN] Đã làm mới 3 nhiệm vụ khả dụng từ Discord API.');
+      const targetId = state.quest.targetAccountId || getMainAccount()?.id || 'main';
+      appendQuestLog('[SCAN] Đang nạp danh sách Discord Quests chính thức từ Discord API...');
+      try {
+        const res = await fetch(`/api/quests?account_id=${targetId}`);
+        const data = await res.json();
+        if (data && data.success && Array.isArray(data.quests) && data.quests.length) {
+          state.quest.items = data.quests.map((q, idx) => ({
+            id: q.id || idx + 1,
+            title: q.title || q.name || 'Discord Quest',
+            reward: q.reward || 'Avatar Deco / Badges',
+            status: q.completed ? 'Đã hoàn thành' : (q.enrolled ? 'Đang cày' : 'Chưa nhận'),
+            pct: q.progress_percent || (q.completed ? 100 : 0)
+          }));
+          appendQuestLog(`[SCAN] Tìm thấy ${data.quests.length} nhiệm vụ Discord trực tiếp từ tài khoản!`, 'text-teal');
+        }
+      } catch (e) {}
       renderQuestView();
       showToast('Đã quét lại danh sách Discord Quest');
     }
@@ -2769,14 +2974,32 @@ beyond the veil, control returns</textarea>
       showToast(`${names[key]}: ${state.sniper[key] ? 'Đã bật' : 'Đã tắt'}`);
     }
 
-    function saveAndTestWebhook() {
+    async function saveAndTestWebhook() {
       const url = document.getElementById('sn-webhook-url').value.trim();
       if (!url) {
         showToast('Vui lòng nhập Discord Webhook URL');
         return;
       }
-      appendSniperLog(`[WEBHOOK] Đã lưu & gửi tin nhắn thử nghiệm tới ${url.slice(0, 42)}... (204 OK)`, 'text-teal');
-      showToast('Webhook phản hồi 204 OK — Đã lưu cấu hình');
+      appendSniperLog(`[WEBHOOK] Đang gửi tin nhắn thử nghiệm tới Webhook...`, 'text-teal');
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            content: '⚡ **[DIPRE STUDIO RADAR]** Webhook đã được liên kết thành công! Sẵn sàng nhận thông báo Nitro & Giveaway.'
+          })
+        });
+        if (res.ok || res.status === 204) {
+          appendSniperLog(`[WEBHOOK] Gửi thành công 204 OK tới ${url.slice(0, 42)}...`, 'text-teal');
+          showToast('Webhook phản hồi 204 OK — Đã lưu cấu hình');
+        } else {
+          appendSniperLog(`[WARN] Webhook phản hồi: HTTP ${res.status}`, 'text-amber');
+          showToast(`Đã lưu cấu hình Webhook (HTTP ${res.status})`);
+        }
+      } catch (err) {
+        appendSniperLog(`[WEBHOOK] Đã lưu cấu hình Webhook cục bộ`, 'text-teal');
+        showToast('Đã lưu cấu hình Webhook');
+      }
     }
 
     function clearSniperLog() {
@@ -2931,27 +3154,70 @@ beyond the veil, control returns</textarea>
       renderInbox();
     }
 
-    function selectInboxThread(id) {
+    async function selectInboxThread(id) {
       state.activeInboxId = id;
       const item = state.inbox.find((m) => m.id === id);
       if (item) item.unread = false;
       renderInbox();
+
+      // Fetch real messages from Discord channel
+      try {
+        const res = await fetch(`/api/discord/channel_messages/${id}`);
+        const data = await res.json();
+        if (data && data.success && Array.isArray(data.messages) && data.messages.length) {
+          const detailEl = document.getElementById('inbox-detail');
+          if (detailEl) {
+            const mainAcc = getMainAccount();
+            const myDiscordId = mainAcc?.discord_id || SERVER_CONTEXT.discordId || '';
+            detailEl.innerHTML = data.messages.map(m => {
+              const isMe = m.author_id === myDiscordId;
+              return `
+                <div class="flex items-start gap-2.5 ${isMe ? 'justify-end' : ''}">
+                  ${!isMe ? `<img src="${m.author_avatar}" class="w-7 h-7 rounded-full object-cover border border-hairline mt-0.5" />` : ''}
+                  <div class="max-w-[80%] p-2.5 rounded-lg text-[12px] ${isMe ? 'bg-teal/15 text-teal border border-teal/25' : 'bg-panel border border-hairline text-ink'}">
+                    <div class="text-[10px] font-mono text-muted mb-0.5">${m.author_name}</div>
+                    <div class="break-words">${m.content || '<i class="text-muted">[File đính kèm / Embed]</i>'}</div>
+                  </div>
+                  ${isMe ? `<img src="${m.author_avatar}" class="w-7 h-7 rounded-full object-cover border border-hairline mt-0.5" />` : ''}
+                </div>
+              `;
+            }).join('');
+            detailEl.scrollTop = detailEl.scrollHeight;
+          }
+        }
+      } catch (err) {
+        console.warn('Fetch channel messages note:', err);
+      }
     }
 
-    function sendInboxReply() {
+    async function sendInboxReply() {
       const inp = document.getElementById('inbox-reply-input');
       const txt = inp.value.trim();
       if (!txt) return;
-      const item = state.inbox.find((m) => m.id === state.activeInboxId);
-      if (!item) return;
-      const mainName = getMainAccount()?.name || 'minhnvb';
-      const ts = new Date().toTimeString().slice(0, 5);
-      item.messages.push({ sender: mainName, time: ts, text: txt, self: true });
-      item.preview = `Bạn: ${txt}`;
-      item.time = ts;
+      const activeId = state.activeInboxId;
+      if (!activeId) {
+        showToast('Vui lòng chọn một cuộc trò chuyện để gửi tin');
+        return;
+      }
       inp.value = '';
-      renderInbox();
-      showToast(`Đã gửi tin nhắn tới ${item.from}`);
+      showToast('Đang gửi tin nhắn qua Discord...');
+
+      try {
+        const res = await fetch('/api/discord/send_message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ channel_id: activeId, content: txt })
+        });
+        const data = await res.json();
+        if (data && data.success) {
+          showToast('Đã gửi tin nhắn Discord thành công!');
+          await selectInboxThread(activeId);
+        } else {
+          showToast(data.message || 'Lỗi gửi tin nhắn');
+        }
+      } catch (err) {
+        showToast('Lỗi gửi tin nhắn');
+      }
     }
 
     /* ---------- SIMULATOR STATUS CYCLING ---------- */
@@ -3056,6 +3322,8 @@ beyond the veil, control returns</textarea>
       renderOverview();
       renderSimulator();
       renderPresenceAccountChips();
+      renderVoiceAccountChips();
+      renderAutomationAccountChips();
       renderUserbotView();
       renderVoiceView();
       renderQuestView();
@@ -3310,21 +3578,141 @@ beyond the veil, control returns</textarea>
       document.getElementById('presence-target-count').textContent = `${selectedCount} tài khoản đã chọn`;
       wrap.innerHTML = state.accounts
         .map(
-          (a) => `
+          (a) => {
+            const hasAvt = a.avatar && a.avatar.startsWith('http');
+            const hasDecor = a.avatar_decoration && a.avatar_decoration.startsWith('http');
+            return `
             <button
               onclick="togglePresenceTarget('${a.id}')"
-              class="px-2.5 py-1.5 rounded-md text-[12px] font-medium flex items-center gap-2 border transition-colors ${
+              class="px-2.5 py-1.5 rounded-md text-[12px] font-medium flex items-center gap-2 border transition-all ${
                 a.presenceTarget
-                  ? 'bg-teal/10 border-teal/40 text-ink'
+                  ? 'bg-teal/15 border-teal/50 text-ink ring-1 ring-teal/30 shadow-sm'
                   : 'bg-panel border-hairline text-muted hover:text-ink'
               }"
             >
-              <span class="w-1.5 h-1.5 rounded-full ${a.presenceTarget ? 'bg-teal' : 'bg-zinc-600'}"></span>
+              <div class="relative w-5 h-5 shrink-0 flex items-center justify-center">
+                ${hasAvt ? `
+                  <img src="${a.avatar}" alt="${a.name}" class="w-5 h-5 rounded-full object-cover border border-hairline" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-5 h-5 rounded-full bg-obsidian border border-hairline flex items-center justify-center text-[9px] font-bold\\'>${a.initials}</div>';" />
+                  ${hasDecor ? `<img src="${a.avatar_decoration}" alt="Decor" class="absolute -inset-0.5 w-6 h-6 object-contain pointer-events-none select-none z-10" />` : ''}
+                ` : `
+                  <div class="w-5 h-5 rounded-full bg-obsidian border border-hairline flex items-center justify-center text-[9px] font-bold">${a.initials}</div>
+                `}
+              </div>
               <span>${a.name}</span>
-              ${a.main ? '<span class="font-mono text-[9.5px] text-muted">[CHÍNH]</span>' : ''}
+              ${a.main ? '<span class="font-mono text-[9.5px] px-1 py-0.2 rounded bg-teal/20 text-teal font-semibold">[CHÍNH]</span>' : ''}
+              <span class="w-1.5 h-1.5 rounded-full ${a.presenceTarget ? 'bg-teal' : 'bg-zinc-600'} ml-0.5"></span>
             </button>
-          `
+          `;
+          }
         )
+        .join('');
+    }
+
+    function selectVoiceAccount(id) {
+      state.voice.targetAccountId = id;
+      renderVoiceAccountChips();
+      const a = state.accounts.find(acc => acc.id === id);
+      if (a) showToast(`Treo Voice: Đã chọn tài khoản ${a.name}`);
+    }
+
+    function renderVoiceAccountChips() {
+      const wrap = document.getElementById('voice-account-chips');
+      if (!wrap) return;
+      if (!state.accounts.length) {
+        wrap.innerHTML = `<span class="text-[12px] text-muted">Chưa có tài khoản. Nạp token trong Vault.</span>`;
+        const tc = document.getElementById('voice-target-count');
+        if (tc) tc.textContent = '0 tài khoản';
+        return;
+      }
+      if (!state.voice.targetAccountId) {
+        state.voice.targetAccountId = getMainAccount()?.id || state.accounts[0]?.id;
+      }
+      const activeAcc = state.accounts.find(a => a.id === state.voice.targetAccountId) || state.accounts[0];
+      const tc = document.getElementById('voice-target-count');
+      if (tc) tc.textContent = activeAcc ? `Đang chọn: ${activeAcc.name}` : 'Chưa chọn';
+
+      wrap.innerHTML = state.accounts
+        .map((a) => {
+          const isSelected = a.id === state.voice.targetAccountId;
+          const hasAvt = a.avatar && a.avatar.startsWith('http');
+          const hasDecor = a.avatar_decoration && a.avatar_decoration.startsWith('http');
+          return `
+            <button
+              onclick="selectVoiceAccount('${a.id}')"
+              class="px-2.5 py-1.5 rounded-md text-[12px] font-medium flex items-center gap-2 border transition-all ${
+                isSelected
+                  ? 'bg-teal/15 border-teal/50 text-ink ring-1 ring-teal/30 shadow-sm'
+                  : 'bg-panel border-hairline text-muted hover:text-ink'
+              }"
+            >
+              <div class="relative w-5 h-5 shrink-0 flex items-center justify-center">
+                ${hasAvt ? `
+                  <img src="${a.avatar}" alt="${a.name}" class="w-5 h-5 rounded-full object-cover border border-hairline" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-5 h-5 rounded-full bg-obsidian border border-hairline flex items-center justify-center text-[9px] font-bold\\'>${a.initials}</div>';" />
+                  ${hasDecor ? `<img src="${a.avatar_decoration}" alt="Decor" class="absolute -inset-0.5 w-6 h-6 object-contain pointer-events-none select-none z-10" />` : ''}
+                ` : `
+                  <div class="w-5 h-5 rounded-full bg-obsidian border border-hairline flex items-center justify-center text-[9px] font-bold">${a.initials}</div>
+                `}
+              </div>
+              <span>${a.name}</span>
+              ${a.main ? '<span class="font-mono text-[9.5px] px-1 py-0.2 rounded bg-teal/20 text-teal font-semibold">[CHÍNH]</span>' : ''}
+              <span class="w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-teal' : 'bg-zinc-600'} ml-0.5"></span>
+            </button>
+          `;
+        })
+        .join('');
+    }
+
+    function selectAutomationAccount(id) {
+      state.quest.targetAccountId = id;
+      renderAutomationAccountChips();
+      const a = state.accounts.find(acc => acc.id === id);
+      if (a) showToast(`Automation: Đã chọn tài khoản ${a.name}`);
+    }
+
+    function renderAutomationAccountChips() {
+      const wrap = document.getElementById('automation-account-chips');
+      if (!wrap) return;
+      if (!state.accounts.length) {
+        wrap.innerHTML = `<span class="text-[12px] text-muted">Chưa có tài khoản. Nạp token trong Vault.</span>`;
+        const tc = document.getElementById('automation-target-count');
+        if (tc) tc.textContent = '0 tài khoản';
+        return;
+      }
+      if (!state.quest.targetAccountId) {
+        state.quest.targetAccountId = getMainAccount()?.id || state.accounts[0]?.id;
+      }
+      const activeAcc = state.accounts.find(a => a.id === state.quest.targetAccountId) || state.accounts[0];
+      const tc = document.getElementById('automation-target-count');
+      if (tc) tc.textContent = activeAcc ? `Đang chọn: ${activeAcc.name}` : 'Chưa chọn';
+
+      wrap.innerHTML = state.accounts
+        .map((a) => {
+          const isSelected = a.id === state.quest.targetAccountId;
+          const hasAvt = a.avatar && a.avatar.startsWith('http');
+          const hasDecor = a.avatar_decoration && a.avatar_decoration.startsWith('http');
+          return `
+            <button
+              onclick="selectAutomationAccount('${a.id}')"
+              class="px-2.5 py-1.5 rounded-md text-[12px] font-medium flex items-center gap-2 border transition-all ${
+                isSelected
+                  ? 'bg-teal/15 border-teal/50 text-ink ring-1 ring-teal/30 shadow-sm'
+                  : 'bg-panel border-hairline text-muted hover:text-ink'
+              }"
+            >
+              <div class="relative w-5 h-5 shrink-0 flex items-center justify-center">
+                ${hasAvt ? `
+                  <img src="${a.avatar}" alt="${a.name}" class="w-5 h-5 rounded-full object-cover border border-hairline" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-5 h-5 rounded-full bg-obsidian border border-hairline flex items-center justify-center text-[9px] font-bold\\'>${a.initials}</div>';" />
+                  ${hasDecor ? `<img src="${a.avatar_decoration}" alt="Decor" class="absolute -inset-0.5 w-6 h-6 object-contain pointer-events-none select-none z-10" />` : ''}
+                ` : `
+                  <div class="w-5 h-5 rounded-full bg-obsidian border border-hairline flex items-center justify-center text-[9px] font-bold">${a.initials}</div>
+                `}
+              </div>
+              <span>${a.name}</span>
+              ${a.main ? '<span class="font-mono text-[9.5px] px-1 py-0.2 rounded bg-teal/20 text-teal font-semibold">[CHÍNH]</span>' : ''}
+              <span class="w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-teal' : 'bg-zinc-600'} ml-0.5"></span>
+            </button>
+          `;
+        })
         .join('');
     }
 

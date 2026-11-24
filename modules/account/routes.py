@@ -386,9 +386,94 @@ def api_discord_inbox():
                     'last_message_id': last_msg_id,
                     'type': ch.get('type')
                 })
-            return jsonify({'success': True, 'channels': formatted})
+            return jsonify({'success': True, 'channels': formatted, 'conversations': formatted})
         else:
             return jsonify({'success': False, 'message': f'Lỗi Discord API ({res.status_code})'}), 400
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@account_bp.route('/api/discord/channel_messages/<channel_id>', methods=['GET'])
+@login_required
+def api_discord_channel_messages(channel_id):
+    """Lấy danh sách tin nhắn của channel/DM cụ thể"""
+    user_id = session['user_id']
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
+        row = cursor.fetchone()
+    token = (row['discord_token'] if row else '') or session.get('discord_token', '')
+    if not token:
+        return jsonify({'success': False, 'message': 'Chưa liên kết token Discord'}), 400
+
+    try:
+        headers = {
+            'Authorization': token,
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+        res = requests.get(f'https://discord.com/api/v9/channels/{channel_id}/messages?limit=25', headers=headers, timeout=8)
+        if res.status_code == 200:
+            msgs = res.json()
+            formatted = []
+            for m in reversed(msgs):
+                author = m.get('author', {})
+                a_id = author.get('id')
+                a_av = author.get('avatar')
+                av_url = f"https://cdn.discordapp.com/avatars/{a_id}/{a_av}.png?size=64" if (a_id and a_av) else "https://cdn.discordapp.com/embed/avatars/0.png"
+                formatted.append({
+                    'id': m.get('id'),
+                    'content': m.get('content', ''),
+                    'author_name': author.get('global_name') or author.get('username', 'User'),
+                    'author_id': a_id,
+                    'author_avatar': av_url,
+                    'timestamp': m.get('timestamp', '')
+                })
+            return jsonify({'success': True, 'messages': formatted})
+        else:
+            return jsonify({'success': False, 'message': f'Discord API trả về {res.status_code}'}), 400
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@account_bp.route('/api/discord/send_message', methods=['POST'])
+@login_required
+def api_discord_send_message():
+    """Gửi tin nhắn trực tiếp qua tài khoản Discord đang chọn"""
+    user_id = session['user_id']
+    data = request.get_json() or {}
+    channel_id = data.get('channel_id')
+    content = str(data.get('content', '')).strip()
+    account_id = data.get('account_id')
+
+    if not channel_id or not content:
+        return jsonify({'success': False, 'message': 'Thiếu channel_id hoặc nội dung tin nhắn'}), 400
+
+    with get_db() as conn:
+        cursor = conn.cursor()
+        token = ''
+        if account_id and str(account_id) != 'main':
+            cursor.execute('SELECT token FROM discord_accounts WHERE id = ? AND user_id = ?', (account_id, user_id))
+            r = cursor.fetchone()
+            if r:
+                token = r['token']
+        if not token:
+            cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
+            row = cursor.fetchone()
+            token = (row['discord_token'] if row else '') or session.get('discord_token', '')
+
+    if not token:
+        return jsonify({'success': False, 'message': 'Chưa liên kết token Discord'}), 400
+
+    try:
+        headers = {
+            'Authorization': token,
+            'Content-Type': 'application/json',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+        payload = {'content': content}
+        res = requests.post(f'https://discord.com/api/v9/channels/{channel_id}/messages', headers=headers, json=payload, timeout=8)
+        if res.status_code in (200, 201):
+            return jsonify({'success': True, 'message': 'Đã gửi tin nhắn thành công', 'data': res.json()})
+        else:
+            return jsonify({'success': False, 'message': f'Lỗi Discord API ({res.status_code}): {res.text}'}), 400
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 

@@ -135,24 +135,42 @@ def api_voice_start():
     data = request.get_json() or {}
     guild_id = data.get('guild_id', '').strip()
     channel_id = data.get('channel_id', '').strip()
+    account_id = data.get('account_id')
     self_mute = bool(data.get('self_mute', True))
     self_deaf = bool(data.get('self_deaf', True))
 
     with get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
-        row = cursor.fetchone()
-    token = (row['discord_token'] if row else '') or session.get('discord_token', '')
+        token = ''
+        acc_name = ''
+        if account_id and str(account_id) != 'main':
+            cursor.execute('SELECT token, discord_username FROM discord_accounts WHERE id = ? AND user_id = ?', (account_id, user_id))
+            r = cursor.fetchone()
+            if r:
+                token = r['token']
+                acc_name = r['discord_username'] or f'Sub-{account_id}'
+        if not token:
+            cursor.execute('SELECT discord_token, discord_username FROM users WHERE id = ?', (user_id,))
+            row = cursor.fetchone()
+            if row:
+                token = row['discord_token'] or ''
+                acc_name = row['discord_username'] or session.get('username', 'Main')
+            if not token:
+                token = session.get('discord_token', '')
 
-    if not token:
-        return jsonify({'success': False, 'message': 'Chưa kết nnối tài khoản Discord token'}), 400
+    if not token or len(token) < 20:
+        return jsonify({'success': False, 'message': 'Chưa có Discord User Token hợp lệ cho tài khoản này!'}), 400
     if not guild_id or not channel_id:
         return jsonify({'success': False, 'message': 'Vui lòng điền đầy đủ Guild ID (Server) và Channel ID (Phòng Voice)'}), 400
 
     voice_worker.start(token, guild_id, channel_id, self_mute, self_deaf)
     track_feature_use(user_id, 'voice_afk')
-    log_event(f'Tài khoản {session.get("username")} đã kích hoạt Treo Voice 24/7 trên kênh {channel_id}', 'success')
-    return jsonify({'success': True, 'message': 'Đã khởi động treo voice 24/7 thành công!'})
+    log_event(f'Tài khoản {acc_name} đã kích hoạt Treo Voice 24/7 trên kênh {channel_id} (Server: {guild_id})', 'success')
+    return jsonify({
+        'success': True,
+        'message': f'Đã khởi động treo voice 24/7 thành công cho {acc_name}!',
+        'account_name': acc_name
+    })
 
 @voice_bp.route('/api/voice/stop', methods=['POST'])
 @login_required
