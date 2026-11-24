@@ -4087,7 +4087,8 @@ function selectAndFocusBot(accountId) {
 async function toggleSelectedUserBot() {
   const selectedId = window.userbotState.selectedAccountId || 'main';
   const pfxInput = document.getElementById('userbot-prefix-input');
-  const prefix = (pfxInput ? pfxInput.value : 'm').trim() || 'm';
+  let prefix = pfxInput ? pfxInput.value.trim() : '';
+  if (prefix.toLowerCase() === 'none') prefix = '';
 
   const accounts = window.userbotState.accounts || [];
   const acc = accounts.find(a => String(a.account_id) === String(selectedId));

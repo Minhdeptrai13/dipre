@@ -120,7 +120,7 @@ def api_userbot_status():
                 'banner': u['banner'] or '',
                 'has_token': has_token,
                 'bot_enabled': db_enabled,
-                'bot_prefix': u['bot_prefix'] or 'm',
+                'bot_prefix': '' if u['bot_prefix'] is None else str(u['bot_prefix']),
                 'is_running': effective_running,
                 'status': 'running' if effective_running else (u['bot_status'] or 'stopped'),
                 'details': details
@@ -155,7 +155,7 @@ def api_userbot_status():
                 'banner': s['banner'] or '',
                 'has_token': has_token,
                 'bot_enabled': db_enabled,
-                'bot_prefix': s['bot_prefix'] or 'm',
+                'bot_prefix': '' if s['bot_prefix'] is None else str(s['bot_prefix']),
                 'is_running': effective_running,
                 'status': 'running' if effective_running else (s['bot_status'] or 'stopped'),
                 'is_active': s['is_active'] == 1,

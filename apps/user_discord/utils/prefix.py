@@ -309,16 +309,14 @@ def resolve(bot: Any) -> Tuple[str, str]:
 def get_prefix(bot: Any) -> str:
     """Prefix dang hoat dong cua dung bot nay - khong bao gio cua bot khac."""
     p, src = resolve(bot)
-    if src != SRC_DEFAULT:
-        try:
-            setattr(bot, _ATTR_PFX, p)
-            ident = getattr(bot, _ATTR_ID, None)
-            if isinstance(ident, dict):
-                ident.setdefault("source", src)
-        except Exception:
-            pass
-        return p
-    return DEFAULT_PREFIX
+    try:
+        setattr(bot, _ATTR_PFX, p)
+        ident = getattr(bot, _ATTR_ID, None)
+        if isinstance(ident, dict):
+            ident.setdefault("source", src)
+    except Exception:
+        pass
+    return p
 
 
 def get_prefixes(bot: Any) -> List[str]:

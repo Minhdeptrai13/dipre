@@ -103,7 +103,9 @@ class UserBotWorker:
         if not token:
             return {'success': False, 'message': 'Token không hợp lệ hoặc để trống'}
 
-        prefix = (prefix or "m").strip()
+        prefix = "" if prefix is None else str(prefix).strip()
+        if prefix.lower() in ("none", "null", "empty", "không", "khong"):
+            prefix = ""
         name = name or f"UserBot-{account_id}"
 
         # Kiểm tra nếu đang chạy rồi thì chỉ cập nhật prefix nếu cần
