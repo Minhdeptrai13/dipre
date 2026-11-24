@@ -1333,26 +1333,34 @@ beyond the veil, control returns</textarea>
         </button>
       </div>
 
-      <!-- Authentic Dark Discord Profile Card (#111214) -->
-      <div class="rounded-lg overflow-hidden bg-[#111214] border border-white/[0.08]">
+      <!-- Authentic Dark Discord Profile Card (#111214) with Profile Effect & Banner Support -->
+      <div id="sim-profile-card" class="relative rounded-lg overflow-hidden bg-[#111214] border border-white/[0.08]">
+        <!-- Profile Effect Overlay APNG Loop -->
+        <div id="sim-profile-effect-wrap" class="hidden absolute inset-0 w-full h-full pointer-events-none select-none z-20 overflow-hidden">
+          <img id="sim-profile-effect-img" src="" alt="Profile Effect" class="w-full h-full object-cover opacity-95" />
+        </div>
+
         <!-- Banner -->
-        <div class="h-[68px] w-full relative" style="background: linear-gradient(125deg, #18181B 0%, #1F2937 55%, #0F2E2A 100%);">
-          <div id="sim-status-bubble" class="hidden absolute bottom-2 right-2.5 max-w-[195px] px-2.5 py-1 rounded-full bg-[#111214]/90 border border-white/10 text-[11px] text-zinc-200 truncate shadow">
+        <div id="sim-banner" class="h-[74px] w-full relative bg-cover bg-center transition-all duration-300" style="background: linear-gradient(125deg, #18181B 0%, #1F2937 55%, #0F2E2A 100%);">
+          <div id="sim-status-bubble" class="hidden absolute bottom-2 right-2.5 max-w-[195px] px-2.5 py-1 rounded-full bg-[#111214]/90 border border-white/10 text-[11px] text-zinc-200 truncate shadow z-10">
             💻 Đang code DIPRE Studio
           </div>
         </div>
 
-        <div class="px-4 pb-4">
+        <div class="relative px-4 pb-4 z-10">
           <!-- Avatar + Badges -->
-          <div class="flex items-end justify-between -mt-8 mb-2.5">
+          <div class="flex items-end justify-between -mt-9 mb-2.5">
             <button onclick="cycleSimStatus()" title="Bấm để đổi Online / Idle / DND" class="relative rounded-full p-[3.5px] bg-[#111214] focus:outline-none">
-              <div id="sim-avatar-bg" class="w-14 h-14 rounded-full bg-[#232329] border border-white/10 flex items-center justify-center font-display font-bold text-lg text-white">
-                MN
+              <div class="relative w-16 h-16 flex items-center justify-center">
+                <div id="sim-avatar-bg" class="w-14 h-14 rounded-full bg-[#232329] border border-white/10 flex items-center justify-center font-display font-bold text-lg text-white overflow-hidden">
+                  MN
+                </div>
+                <img id="sim-avatar-decor" src="" alt="Decoration" class="hidden absolute -inset-1.5 w-[76px] h-[76px] object-contain pointer-events-none select-none z-10" />
               </div>
-              <span id="sim-avatar-dot" class="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-[#23A55A] ring-[3px] ring-[#111214]"></span>
+              <span id="sim-avatar-dot" class="absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full bg-[#23A55A] ring-[3px] ring-[#111214] z-20"></span>
             </button>
 
-            <div class="flex items-center gap-1.5 px-2 py-1 rounded-md bg-[#18191C] border border-white/[0.06] mb-1">
+            <div id="sim-badges-list" class="flex items-center gap-1.5 px-2 py-1 rounded-md bg-[#18191C] border border-white/[0.06] mb-1">
               <span title="Discord Nitro" class="text-[#F47FFF]"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i></span>
               <span title="HypeSquad Balance" class="text-[#1FCAAD]"><i data-lucide="diamond" class="w-3.5 h-3.5"></i></span>
               <span title="Active Developer" class="text-[#23A55A]"><i data-lucide="code-2" class="w-3.5 h-3.5"></i></span>
@@ -1549,10 +1557,13 @@ beyond the veil, control returns</textarea>
       discordUsername: {{ discord_username|tojson }},
       discordAvatar: {{ discord_avatar|tojson }},
       discordId: {{ discord_id|default('', true)|tojson }},
+      avatarDecoration: {{ avatar_decoration|default('', true)|tojson }},
+      banner: {{ banner|default('', true)|tojson }},
+      profileEffect: {{ profile_effect|default('', true)|tojson }},
+      profileEffectData: {{ profile_effect_data|tojson if profile_effect_data else 'null' }},
       customStatus: {{ custom_status|default('', true)|tojson }},
       bio: {{ bio|default('', true)|tojson }},
       badges: {{ badges|default([], true)|tojson }},
-      banner: {{ banner|default('', true)|tojson }},
       initials: {{ (avatar_info.initials if (avatar_info and avatar_info.initials) else 'MN')|tojson }}
     };
 
@@ -1574,6 +1585,10 @@ beyond the veil, control returns</textarea>
               id: SERVER_CONTEXT.discordId || '1',
               name: SERVER_CONTEXT.discordUsername,
               initials: SERVER_CONTEXT.initials || SERVER_CONTEXT.discordUsername.slice(0, 2).toUpperCase(),
+              avatar: SERVER_CONTEXT.discordAvatar,
+              avatar_decoration: SERVER_CONTEXT.avatarDecoration,
+              banner: SERVER_CONTEXT.banner,
+              profile_effect_data: SERVER_CONTEXT.profileEffectData,
               main: true,
               nitro: true,
               ping: 18,
@@ -1801,7 +1816,10 @@ beyond the veil, control returns</textarea>
             initials: (acc.discord_username || 'DU').slice(0, 2).toUpperCase(),
             main: Boolean(acc.is_active || acc.account_type === 'main'),
             avatar: acc.discord_avatar,
-            nitro: Boolean(acc.premium_type && acc.premium_type > 0),
+            avatar_decoration: acc.avatar_decoration,
+            banner: acc.banner,
+            profile_effect: acc.profile_effect,
+            nitro: true,
             ping: state.ping || 18,
             botOn: false,
             prefix: '!',
@@ -1820,6 +1838,9 @@ beyond the veil, control returns</textarea>
                 initials: SERVER_CONTEXT.initials || 'DU',
                 main: true,
                 avatar: SERVER_CONTEXT.discordAvatar,
+                avatar_decoration: SERVER_CONTEXT.avatarDecoration,
+                banner: SERVER_CONTEXT.banner,
+                profile_effect_data: SERVER_CONTEXT.profileEffectData,
                 nitro: true,
                 ping: 18,
                 botOn: false,
@@ -2573,63 +2594,104 @@ beyond the veil, control returns</textarea>
       else f.classList.toggle('hidden');
     }
 
-    function addAccount(token, label) {
+    async function addAccount(token, label) {
       if (!token) {
         showToast('Vui lòng dán Discord User Token');
         return false;
       }
-      const cleanName = label || `discord_user_${state.accounts.length + 1}`;
-      const initials = cleanName.slice(0, 2).toUpperCase();
-      const newAcc = {
-        id: String(Math.floor(1000000000000000 + Math.random() * 8999999999999999)),
-        name: cleanName,
-        initials,
-        main: state.accounts.length === 0,
-        nitro: Math.random() > 0.4,
-        ping: Math.floor(15 + Math.random() * 10),
-        botOn: false,
-        prefix: 'm',
-        servers: Math.floor(8 + Math.random() * 40),
-        presenceTarget: state.accounts.length === 0,
-      };
-      state.accounts.push(newAcc);
-      renderAll();
-      showToast(`Đã nạp token tài khoản "${cleanName}"`);
-      return true;
+      showToast('Đang kết nối Discord & lấy thông tin profile, avatar, hiệu ứng...');
+      try {
+        const res = await fetch('/api/account/bind_token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: token })
+        });
+        const data = await res.json();
+        if (data && data.success) {
+          showToast(`Đã kết nối thành công: ${data.username || data.discord_username || 'Discord User'}`);
+          await syncAccountsFromBackend();
+          return true;
+        } else {
+          showToast(data.message || 'Token không hợp lệ hoặc lỗi kết nối');
+          return false;
+        }
+      } catch (err) {
+        console.error('Error binding token:', err);
+        showToast('Lỗi khi gửi yêu cầu kết nối Discord Token');
+        return false;
+      }
     }
 
-    function addAccountFromDrawer() {
+    async function addAccountFromDrawer() {
       const t = document.getElementById('drawer-token-input').value.trim();
       const l = document.getElementById('drawer-label-input').value.trim();
-      if (addAccount(t, l)) {
+      const ok = await addAccount(t, l);
+      if (ok) {
         document.getElementById('drawer-token-input').value = '';
         document.getElementById('drawer-label-input').value = '';
       }
     }
 
-    function addAccountFromVault() {
+    async function addAccountFromVault() {
       const t = document.getElementById('vault-new-token').value.trim();
       const l = document.getElementById('vault-new-label').value.trim();
-      if (addAccount(t, l)) {
+      const ok = await addAccount(t, l);
+      if (ok) {
         document.getElementById('vault-new-token').value = '';
         document.getElementById('vault-new-label').value = '';
         toggleInlineAddToken(false);
       }
     }
 
-    function setMainAccount(accId) {
+    async function setMainAccount(accId) {
+      const target = state.accounts.find(a => a.id === accId);
+      if (target && target.db_id && target.db_id !== 'main') {
+        try {
+          const res = await fetch('/api/accounts/switch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ account_id: target.db_id })
+          });
+          const data = await res.json();
+          if (data && data.success) {
+            showToast(`Đã chuyển tài khoản hoạt động: ${target.name}`);
+            await syncAccountsFromBackend();
+            return;
+          }
+        } catch (err) {
+          console.warn('Switch account API error:', err);
+        }
+      }
       state.accounts.forEach((a) => (a.main = a.id === accId));
       const main = getMainAccount();
       renderAll();
-      if (main) showToast(`Đã chuyển tài khoản chính sang ${main.name}`);
+      if (main) showToast(`Đã chọn tài khoản chính: ${main.name}`);
     }
 
-    function deleteAccount(accId) {
-      const wasMain = state.accounts.find((a) => a.id === accId)?.main;
+    async function deleteAccount(accId) {
+      const target = state.accounts.find(a => a.id === accId);
+      if (target && target.db_id && target.db_id !== 'main') {
+        try {
+          const res = await fetch('/api/accounts/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ account_id: target.db_id })
+          });
+          const data = await res.json();
+          if (data && data.success) {
+            showToast(`Đã xóa tài khoản "${target.name}" khỏi Vault`);
+            await syncAccountsFromBackend();
+            return;
+          }
+        } catch (err) {
+          console.warn('Delete account API error:', err);
+        }
+      }
+      const wasMain = target?.main;
       state.accounts = state.accounts.filter((a) => a.id !== accId);
       if (wasMain && state.accounts.length > 0) state.accounts[0].main = true;
       renderAll();
-      showToast('Đã gỡ tài khoản khỏi Vault');
+      showToast('Đã gỡ tài khoản khỏi danh sách');
     }
 
     function loadDemoTokenPack() {
@@ -2906,15 +2968,70 @@ beyond the veil, control returns</textarea>
       const st = SIM_STATUSES[state.simStatusIdx];
       document.getElementById('sim-status-cycle-btn').textContent = `STATUS: ${st.label}`;
       document.getElementById('sim-avatar-dot').style.backgroundColor = st.color;
-            const simAvatarEl = document.getElementById('sim-avatar-bg');
-      if (SERVER_CONTEXT.hasToken && SERVER_CONTEXT.discordAvatar && SERVER_CONTEXT.discordAvatar.startsWith('http')) {
-        simAvatarEl.innerHTML = `<img src="${SERVER_CONTEXT.discordAvatar}" alt="Avatar" class="w-full h-full rounded-full object-cover" onerror="this.parentElement.textContent='${main ? main.initials : 'MN'}'" />`;
+
+      // 1. Avatar & Decoration
+      const simAvatarEl = document.getElementById('sim-avatar-bg');
+      const simDecorEl = document.getElementById('sim-avatar-decor');
+      const activeAvatar = (main && main.avatar) || (SERVER_CONTEXT.hasToken && SERVER_CONTEXT.discordAvatar) || '';
+      const activeDecor = (main && main.avatar_decoration) || (SERVER_CONTEXT.hasToken && SERVER_CONTEXT.avatarDecoration) || '';
+
+      if (activeAvatar && activeAvatar.startsWith('http')) {
+        simAvatarEl.innerHTML = `<img src="${activeAvatar}" alt="Avatar" class="w-full h-full rounded-full object-cover" onerror="this.onerror=null; this.parentElement.textContent='${main ? main.initials : 'MN'}'" />`;
       } else {
         simAvatarEl.textContent = main ? main.initials : 'MN';
       }
+
+      if (simDecorEl) {
+        if (activeDecor && activeDecor.startsWith('http')) {
+          simDecorEl.src = activeDecor;
+          simDecorEl.classList.remove('hidden');
+        } else {
+          simDecorEl.src = '';
+          simDecorEl.classList.add('hidden');
+        }
+      }
+
+      // 2. Banner
+      const bannerEl = document.getElementById('sim-banner');
+      const activeBanner = (main && main.banner) || (SERVER_CONTEXT.hasToken && SERVER_CONTEXT.banner) || '';
+      if (bannerEl) {
+        if (activeBanner && activeBanner.startsWith('http')) {
+          bannerEl.style.background = `url('${activeBanner}') center/cover no-repeat`;
+        } else if (activeBanner && activeBanner.startsWith('#')) {
+          bannerEl.style.background = activeBanner;
+        } else {
+          bannerEl.style.background = 'linear-gradient(125deg, #18181B 0%, #1F2937 55%, #0F2E2A 100%)';
+        }
+      }
+
+      // 3. Profile Effect Animation (APNG Loop)
+      const pfxWrap = document.getElementById('sim-profile-effect-wrap');
+      const pfxImg = document.getElementById('sim-profile-effect-img');
+      const pfxData = (main && main.profile_effect_data) || SERVER_CONTEXT.profileEffectData;
+      if (pfxWrap && pfxImg) {
+        if (pfxData && (pfxData.loop || pfxData.intro)) {
+          pfxImg.src = pfxData.loop || pfxData.intro;
+          pfxWrap.classList.remove('hidden');
+        } else {
+          pfxImg.src = '';
+          pfxWrap.classList.add('hidden');
+        }
+      }
+
+      // 4. Badges List
+      const badgesContainer = document.getElementById('sim-badges-list');
+      if (badgesContainer && Array.isArray(SERVER_CONTEXT.badges) && SERVER_CONTEXT.badges.length > 0) {
+        badgesContainer.innerHTML = SERVER_CONTEXT.badges.map(b => {
+          if (b.icon) {
+            return `<img src="${b.icon}" title="${b.name || 'Badge'}" class="w-4 h-4 object-contain inline-block" />`;
+          }
+          return `<span title="${b.name || 'Badge'}" class="text-teal font-mono text-[10px]">•</span>`;
+        }).join('');
+      }
+
       document.getElementById('sim-display-name').textContent = main ? main.name : SERVER_CONTEXT.username;
       document.getElementById('sim-handle').textContent = main
-        ? `@${main.name} • ID ${main.id.slice(0, 6)}...`
+        ? `@${main.name} • ID ${(main.discord_id || main.id).slice(0, 8)}...`
         : `@${SERVER_CONTEXT.username} • Standby Mode`;
 
       // Custom Status Bubble + Inline Row
@@ -3178,10 +3295,20 @@ beyond the veil, control returns</textarea>
 
       list.innerHTML = state.accounts
         .map(
-          (a) => `
+          (a) => {
+            const hasAvt = a.avatar && a.avatar.startsWith('http');
+            const hasDecor = a.avatar_decoration && a.avatar_decoration.startsWith('http');
+            return `
             <div class="p-3.5 rounded-md bg-panel border ${a.main ? 'border-teal/40' : 'border-hairline'} flex flex-wrap items-center justify-between gap-3">
               <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-md bg-obsidian border border-hairline flex items-center justify-center font-display font-bold text-[12.5px]">${a.initials}</div>
+                <div class="relative w-10 h-10 shrink-0 flex items-center justify-center">
+                  ${hasAvt ? `
+                    <img src="${a.avatar}" alt="${a.name}" class="w-9 h-9 rounded-full object-cover border border-hairline" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-9 h-9 rounded-md bg-obsidian border border-hairline flex items-center justify-center font-display font-bold text-[12.5px]\'>${a.initials}</div>';" />
+                    ${hasDecor ? `<img src="${a.avatar_decoration}" alt="Decoration" class="absolute -inset-1 w-12 h-12 object-contain pointer-events-none select-none z-10" />` : ''}
+                  ` : `
+                    <div class="w-9 h-9 rounded-md bg-obsidian border border-hairline flex items-center justify-center font-display font-bold text-[12.5px]">${a.initials}</div>
+                  `}
+                </div>
                 <div>
                   <div class="flex items-center gap-2 text-[13px] font-semibold text-ink">
                     <span>${a.name}</span>
@@ -3202,7 +3329,8 @@ beyond the veil, control returns</textarea>
                 </button>
               </div>
             </div>
-          `
+          `;
+          }
         )
         .join('');
     }
@@ -3212,15 +3340,25 @@ beyond the veil, control returns</textarea>
       document.getElementById('drawer-count-lbl').textContent = state.accounts.length;
       if (!list) return;
       if (!state.accounts.length) {
-        list.innerHTML = `<div class="p-4 rounded-md bg-obsidian border border-dashed border-hairline text-center text-[12px] text-muted">Trống — Dán token ở trên hoặc bấm Nạp Bộ Demo.</div>`;
+        list.innerHTML = `<div class="p-4 rounded-md bg-obsidian border border-dashed border-hairline text-center text-[12px] text-muted">Trống — Dán token ở trên để kết nối Discord chính chủ.</div>`;
         return;
       }
       list.innerHTML = state.accounts
         .map(
-          (a) => `
+          (a) => {
+            const hasAvt = a.avatar && a.avatar.startsWith('http');
+            const hasDecor = a.avatar_decoration && a.avatar_decoration.startsWith('http');
+            return `
             <div class="p-3 rounded-md bg-panel border ${a.main ? 'border-teal/40' : 'border-hairline'} flex items-center justify-between gap-2">
               <div class="flex items-center gap-2.5 min-w-0">
-                <div class="w-8 h-8 rounded bg-obsidian border border-hairline flex items-center justify-center font-display text-[11.5px] font-bold shrink-0">${a.initials}</div>
+                <div class="relative w-9 h-9 shrink-0 flex items-center justify-center">
+                  ${hasAvt ? `
+                    <img src="${a.avatar}" alt="${a.name}" class="w-8 h-8 rounded-full object-cover border border-hairline" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-8 h-8 rounded bg-obsidian border border-hairline flex items-center justify-center font-display text-[11.5px] font-bold shrink-0\'>${a.initials}</div>';" />
+                    ${hasDecor ? `<img src="${a.avatar_decoration}" alt="Decoration" class="absolute -inset-1 w-11 h-11 object-contain pointer-events-none select-none z-10" />` : ''}
+                  ` : `
+                    <div class="w-8 h-8 rounded bg-obsidian border border-hairline flex items-center justify-center font-display text-[11.5px] font-bold shrink-0">${a.initials}</div>
+                  `}
+                </div>
                 <div class="min-w-0">
                   <div class="text-[12.5px] font-semibold text-ink truncate">${a.name}</div>
                   <div class="font-mono text-[10.5px] text-muted">${a.main ? 'Đang làm chính' : 'Tài khoản phụ'} • ${a.ping}ms</div>
@@ -3234,7 +3372,8 @@ beyond the veil, control returns</textarea>
                 }
               </div>
             </div>
-          `
+          `;
+          }
         )
         .join('');
     }

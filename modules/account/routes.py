@@ -198,14 +198,14 @@ def api_accounts_list():
             cursor.execute('DELETE FROM discord_accounts WHERE user_id = ? AND discord_id = ?', (user_id, str(main_discord_id)))
             conn.commit()
             cursor.execute('''
-                SELECT id, discord_id, discord_username, discord_avatar, avatar_decoration, banner, is_active, created_at 
+                SELECT id, discord_id, discord_username, discord_avatar, avatar_decoration, banner, profile_effect, is_active, created_at 
                 FROM discord_accounts 
                 WHERE user_id = ? AND discord_id != ?
                 ORDER BY is_active DESC, id DESC
             ''', (user_id, str(main_discord_id)))
         else:
             cursor.execute('''
-                SELECT id, discord_id, discord_username, discord_avatar, avatar_decoration, banner, is_active, created_at 
+                SELECT id, discord_id, discord_username, discord_avatar, avatar_decoration, banner, profile_effect, is_active, created_at 
                 FROM discord_accounts 
                 WHERE user_id = ?
                 ORDER BY is_active DESC, id DESC
@@ -244,7 +244,8 @@ def api_accounts_switch():
         'discord_username': target['discord_username'],
         'discord_avatar': target['discord_avatar'],
         'avatar_decoration': target['avatar_decoration'],
-        'banner': target['banner']
+        'banner': target['banner'],
+        'profile_effect': target['profile_effect']
     })
 
 @account_bp.route('/api/accounts/delete', methods=['POST'])
