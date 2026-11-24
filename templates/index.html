@@ -348,7 +348,7 @@
                 </div>
                 <div class="flex items-end justify-between">
                   <div>
-                    <div class="font-mono tabular-nums text-3xl font-semibold text-ink leading-none" id="ov-token-count">3</div>
+                    <div class="font-mono tabular-nums text-3xl font-semibold text-ink leading-none" id="ov-token-count">0</div>
                     <div class="text-[12px] text-muted mt-1.5" id="ov-token-sub">Đang hoạt động: minhnvb [Chính]</div>
                   </div>
                   <span id="ov-token-pill" class="font-mono text-[10.5px] px-2 py-0.5 rounded bg-teal/10 text-teal border border-teal/25">SYNCED</span>
@@ -1245,7 +1245,7 @@ beyond the veil, control returns</textarea>
           <h1 class="font-display text-2xl font-semibold tracking-tight text-ink mt-0.5">Vault &amp; Discord Inbox</h1>
         </div>
         <div class="flex items-center gap-2">
-          <button onclick="loadDemoTokenPack()" class="btn-secondary h-9 px-3.5 rounded-md text-[12px] font-medium">Nạp Bộ Demo (3 Tài Khoản)</button>
+          
           <button onclick="clearAllTokens()" class="btn-danger h-9 px-3 rounded-md text-[12px] font-medium">Xóa Tất Cả</button>
         </div>
       </div>
@@ -1444,7 +1444,7 @@ beyond the veil, control returns</textarea>
       </div>
 
       <span class="hidden md:inline text-hairline">|</span>
-      <span id="rail-acc-count" class="hidden md:inline text-muted shrink-0">3 TOKENS</span>
+      <span id="rail-acc-count" class="hidden md:inline text-muted shrink-0">0 TOKENS</span>
     </div>
 
     <!-- Right Clock & Shortcut Hint -->
@@ -1498,7 +1498,7 @@ beyond the veil, control returns</textarea>
       </div>
 
       <div class="p-4 border-t border-hairline flex items-center justify-between gap-2 bg-obsidian/70">
-        <button onclick="loadDemoTokenPack(); closeTokenDrawer();" class="btn-secondary h-9 px-3 rounded-md text-[12px] font-medium">Nạp Bộ Demo (3)</button>
+        <button onclick="openTokenDrawer()" class="btn-secondary h-9 px-3 rounded-md text-[12px] font-medium">Làm Mới Vault</button>
         <div class="flex items-center gap-2">
           <button onclick="clearAllTokens()" class="btn-danger h-9 px-3 rounded-md text-[12px] font-medium">Ngắt Tất Cả</button>
           <a href="{{ url_for('logout') }}" class="btn-secondary h-9 px-3 rounded-md text-[12px] font-medium text-rose flex items-center gap-1.5 hover:border-rose/50">
@@ -1566,12 +1566,26 @@ beyond the veil, control returns</textarea>
       simStatusIdx: 0, // 0: Online, 1: Idle, 2: DND
       rpcStartTs: Date.now(),
 
-      // Pre-loaded demo accounts (so UI shines immediately; user can clear all to inspect empty state)
-      accounts: [
-        { id: '9482019482710421', name: 'minhnvb', initials: 'MN', main: true, nitro: true, ping: 17, botOn: false, prefix: 'm', servers: 42, presenceTarget: true },
-        { id: '8812049102849102', name: 'minh_alt01', initials: 'A1', main: false, nitro: false, ping: 21, botOn: false, prefix: '.', servers: 18, presenceTarget: false },
-        { id: '7749102948102934', name: 'dipre_worker', initials: 'DW', main: false, nitro: true, ping: 19, botOn: true, prefix: '!', servers: 64, presenceTarget: false },
-      ],
+      // Real accounts only: use server active account if authenticated with token; zero dummy demo accounts
+      accounts: (function() {
+        if (SERVER_CONTEXT.hasToken && SERVER_CONTEXT.discordUsername) {
+          return [
+            {
+              id: SERVER_CONTEXT.discordId || '1',
+              name: SERVER_CONTEXT.discordUsername,
+              initials: SERVER_CONTEXT.initials || SERVER_CONTEXT.discordUsername.slice(0, 2).toUpperCase(),
+              main: true,
+              nitro: true,
+              ping: 18,
+              botOn: false,
+              prefix: '!',
+              servers: 0,
+              presenceTarget: true
+            }
+          ];
+        }
+        return [];
+      })(),
 
       // Telemetry usage counters
       usage: {
@@ -1865,7 +1879,7 @@ beyond the veil, control returns</textarea>
 
     function handleOverviewPrimaryCta() {
       if (state.accounts.length === 0) {
-        loadDemoTokenPack();
+        openTokenDrawer();
       } else {
         setWorkspace('presence');
       }
@@ -2534,10 +2548,11 @@ beyond the veil, control returns</textarea>
     }
 
     function loadDemoTokenPack() {
-      state.accounts = [
-        { id: '9482019482710421', name: 'minhnvb', initials: 'MN', main: true, nitro: true, ping: 17, botOn: true, prefix: 'm', servers: 42, presenceTarget: true },
-        { id: '8812049102849102', name: 'minh_alt01', initials: 'A1', main: false, nitro: false, ping: 21, botOn: false, prefix: '.', servers: 18, presenceTarget: false },
-        { id: '7749102948102934', name: 'dipre_worker', initials: 'DW', main: false, nitro: true, ping: 19, botOn: true, prefix: '!', servers: 64, presenceTarget: false },
+      openTokenDrawer();
+      showToast('Vui lòng nhập Discord User Token vào Drawer để kết nối.');
+    },
+        
+        
       ];
       renderAll();
       showToast('Đã nạp bộ 3 tài khoản Demo (minhnvb • Active)');
@@ -2602,7 +2617,7 @@ beyond the veil, control returns</textarea>
         { label: 'Mở Nitro & Vanity Sniper Radar', hint: 'Automation', icon: 'crosshair', action: () => jumpTo('automation', 'sniper') },
         { label: 'Mở Vault Quản Lý Đa Token & Inbox', hint: 'Phím 6', icon: 'key-round', action: () => setWorkspace('vault') },
         { label: 'Bật / Tắt UserBot Tài Khoản Chính', hint: 'Action', icon: 'power', action: () => toggleMasterBot() },
-        { label: 'Nạp Bộ 3 Tài Khoản Demo', hint: 'Demo', icon: 'layers', action: () => loadDemoTokenPack() },
+        
       ];
     }
 
@@ -2728,10 +2743,12 @@ beyond the veil, control returns</textarea>
       document.getElementById('ov-greeting-name').textContent = main ? main.name : 'minhnvb';
       document.getElementById('ov-status-tag').textContent = main ? 'GATEWAY OPERATIONAL' : 'STANDBY — NO TOKEN';
       document.getElementById('ov-status-tag').className = main ? 'text-teal' : 'text-amber';
-      document.getElementById('ov-primary-cta-text').textContent = main ? 'Mở Presence Studio' : 'Kích Hoạt Demo Token';
+      document.getElementById('ov-primary-cta-text').textContent = main ? 'Mở Presence Studio' : 'Nạp Token Ngay';
 
       // Cell 1: Tokens
       document.getElementById('ov-token-count').textContent = state.accounts.length;
+      const rCnt = document.getElementById('rail-acc-count');
+      if (rCnt) rCnt.textContent = `${state.accounts.length} TOKEN${state.accounts.length !== 1 ? 'S' : ''}`;
       document.getElementById('ov-token-sub').textContent = main
         ? `Đang hoạt động: ${main.name} [Chính]`
         : 'Chưa liên kết tài khoản Discord';
@@ -2816,10 +2833,10 @@ beyond the veil, control returns</textarea>
       } else {
         simAvatarEl.textContent = main ? main.initials : 'MN';
       }
-      document.getElementById('sim-display-name').textContent = main ? main.name : 'minhnvb';
+      document.getElementById('sim-display-name').textContent = main ? main.name : SERVER_CONTEXT.username;
       document.getElementById('sim-handle').textContent = main
         ? `@${main.name} • ID ${main.id.slice(0, 6)}...`
-        : '@minhnvb • Standby Mode';
+        : `@${SERVER_CONTEXT.username} • Standby Mode`;
 
       // Custom Status Bubble + Inline Row
       const hasCs = Boolean(state.customStatus.text);
@@ -3074,7 +3091,7 @@ beyond the veil, control returns</textarea>
         list.innerHTML = `
           <div class="p-8 rounded-md bg-obsidian border border-dashed border-hairline text-center space-y-3">
             <p class="text-[13px] text-muted">Chưa có tài khoản Discord Token nào được lưu.</p>
-            <button onclick="loadDemoTokenPack()" class="btn-primary h-8 px-3.5 rounded-md text-[12px] font-semibold">Nạp Bộ Demo (3 Tài Khoản)</button>
+            <button onclick="openTokenDrawer()" class="btn-primary h-8 px-3.5 rounded-md text-[12px] font-semibold">Nạp Token Ngay</button>
           </div>
         `;
         return;
