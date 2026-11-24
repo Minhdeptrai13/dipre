@@ -113,8 +113,8 @@
               <span>Auto Quest</span>
             </button>
             <button type="button" class="sidebar-nav-item" data-tab="tab-script-coming" onclick="switchTab('tab-script-coming')">
-              <svg class="sni-svg" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
-              <span>Account Cleaner</span>
+              <svg class="sni-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+              <span>Nitro Sniper &amp; Giveaway</span>
             </button>
           </div>
         </div>
@@ -354,15 +354,76 @@
                 </div>
               </div>
 
-              <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.08);">
-                <div style="font-size:0.85rem; font-weight:700; color:var(--text-white); margin-bottom: 0.85rem;">Phím Tắt Kích Hoạt Nhanh 5 Mục</div>
-                <div style="display: flex; flex-wrap: wrap; gap: 0.6rem;">
-                  <button type="button" class="ssh-action" onclick="switchTab('tab-rpc')">Tùy biến RPC</button>
-                  <button type="button" class="ssh-action" onclick="switchTab('tab-status-custom')">Đổi Custom Status</button>
-                  <button type="button" class="ssh-action" onclick="switchTab('tab-lyric')">Hát Lyric Karaoke</button>
-                  <button type="button" class="ssh-action" onclick="switchTab('tab-voice-afk')">Treo Voice 24/7</button>
-                  <button type="button" class="ssh-action" onclick="switchTab('tab-quest')">Cày Auto Quest</button>
-                  <button type="button" class="ssh-action" onclick="switchTab('tab-accounts')">Quản Lý Tokens</button>
+              <!-- QUICK ACTIONS BENTO TILES (CONCEPT 3) -->
+              <div class="dash-quickactions-section" style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.85rem;">
+                  <span style="font-size:0.85rem; font-weight:700; color:#FFFFFF; display:flex; align-items:center; gap:6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    Quick Actions Command
+                  </span>
+                  <span class="msc-tag active" style="font-size:0.68rem;">6 phím tắt</span>
+                </div>
+                
+                <div class="dash-quickactions-grid">
+                  <div class="quickaction-tile" onclick="switchTab('tab-rpc')">
+                    <div class="qat-icon red">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    </div>
+                    <div class="qat-info">
+                      <div class="qat-title">Restart RPC</div>
+                      <div class="qat-desc">Khởi động Presence</div>
+                    </div>
+                  </div>
+
+                  <div class="quickaction-tile" onclick="switchTab('tab-userbot')">
+                    <div class="qat-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    </div>
+                    <div class="qat-info">
+                      <div class="qat-title">Deploy UserBot</div>
+                      <div class="qat-desc">Nạp 30+ Cogs vũ khí</div>
+                    </div>
+                  </div>
+
+                  <div class="quickaction-tile" onclick="switchTab('tab-lyric')">
+                    <div class="qat-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                    </div>
+                    <div class="qat-info">
+                      <div class="qat-title">Karaoke Sync</div>
+                      <div class="qat-desc">Đồng bộ Lyric real-time</div>
+                    </div>
+                  </div>
+
+                  <div class="quickaction-tile" onclick="switchTab('tab-quest')">
+                    <div class="qat-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    </div>
+                    <div class="qat-info">
+                      <div class="qat-title">Auto Quest</div>
+                      <div class="qat-desc">Cày Quest không cần game</div>
+                    </div>
+                  </div>
+
+                  <div class="quickaction-tile" onclick="switchTab('tab-script-coming')">
+                    <div class="qat-icon red">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    </div>
+                    <div class="qat-info">
+                      <div class="qat-title">Nitro Sniper</div>
+                      <div class="qat-desc">Săn gift &amp; Giveaway 24/7</div>
+                    </div>
+                  </div>
+
+                  <div class="quickaction-tile" onclick="toggleAddTokenModal(true)">
+                    <div class="qat-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+                    </div>
+                    <div class="qat-info">
+                      <div class="qat-title">Multi-Tokens</div>
+                      <div class="qat-desc">Quản lý kho token</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2036,15 +2097,15 @@
           <div class="settings-section-header flex-wrap gap-3">
             <div>
               <div class="ssh-title dipre-text-gradient" style="font-size: 1.25rem;">
-                Discord Account Cleaner &amp; Privacy Shield
+                Discord Nitro Sniper &amp; Giveaway Automator
               </div>
               <div class="ssh-sub">
-                Dọn dẹp tin nhắn riêng tư, hủy yêu cầu kết bạn, rời server rác hàng loạt chống Rate Limit 429 an toàn.
+                Lắng nghe Gateway thời gian thực, tự động phát hiện link Discord Nitro Gift, mã mời và Giveaway trúng thưởng siêu tốc trong 0.05s.
               </div>
             </div>
             <div class="ssh-action-group gap-2">
-              <button type="button" class="rpc-btn rpc-btn-stop" id="btn-cleaner-stop" onclick="stopAccountCleaner()" disabled>Dừng Dọn Dẹp</button>
-              <button type="button" class="ssh-action" onclick="clearCleanerLog()">Xóa Nhật Ký</button>
+              <button type="button" class="rpc-btn rpc-btn-start" id="btn-sniper-toggle" onclick="toggleNitroSniper()">Bật Sniper 24/7</button>
+              <button type="button" class="ssh-action" onclick="clearSniperLog()">Xóa Nhật Ký</button>
             </div>
           </div>
 
@@ -2052,67 +2113,69 @@
 
             <div class="cleaner-tool-card">
               <div class="ctc-header">
-                <div class="ctc-icon red">🗑️</div>
+                <div class="ctc-icon red">⚡</div>
                 <div class="ctc-meta">
-                  <div class="ctc-title">Dọn Dẹp Tin Nhắn Riêng (DM Purge)</div>
-                  <div class="ctc-desc">Tự động tìm và xóa tất cả tin nhắn bạn đã gửi trong cuộc trò chuyện riêng.</div>
+                  <div class="ctc-title">Auto Nitro Code Sniping</div>
+                  <div class="ctc-desc">Tự động bắt và gửi request claim mã gift discord.gift/ ngay khi tin nhắn xuất hiện trong bất kỳ server hoặc DM nào.</div>
                 </div>
               </div>
               <div class="sf-row mt-2">
-                <label class="sf-label">Channel ID hoặc DM ID cần xóa:</label>
-                <input type="text" id="cleaner-dm-id" class="sf-input" placeholder="Ví dụ: 104712345678901234">
+                <label class="sf-label">Độ trễ phản hồi (ms delay):</label>
+                <input type="number" id="sniper-delay-ms" class="sf-input" value="15" min="0" max="2000" placeholder="0 - 50ms">
               </div>
-              <button type="button" class="rpc-btn rpc-btn-start w-100 mt-2" onclick="startCleanerTask('dm_purge')">
-                Quét &amp; Xóa Tin Nhắn DM
+              <button type="button" class="rpc-btn rpc-btn-start w-100 mt-2" onclick="startSniperMode('nitro')">
+                Kích Hoạt Turbo Nitro Sniping
               </button>
             </div>
 
             <div class="cleaner-tool-card">
               <div class="ctc-header">
-                <div class="ctc-icon orange">🚪</div>
+                <div class="ctc-icon orange">🎁</div>
                 <div class="ctc-meta">
-                  <div class="ctc-title">Rời Server Rác Hàng Loạt (Bulk Leave)</div>
-                  <div class="ctc-desc">Quét toàn bộ server tài khoản đang tham gia và rời khỏi server không hoạt động.</div>
+                  <div class="ctc-title">Auto Giveaway Reaction Clicker</div>
+                  <div class="ctc-desc">Tự động bấm Reaction biểu tượng 🎉 vào các bot giveaway phổ biến (GiveawayBot, Dyno, Carl-bot).</div>
                 </div>
               </div>
               <div class="sf-row mt-2">
-                <label class="sf-label">Giữ lại Server ID này (Không rời):</label>
-                <input type="text" id="cleaner-keep-guilds" class="sf-input" placeholder="Guild ID 1, Guild ID 2 (cách nhau dấu phẩy)">
+                <label class="sf-label">Độ trễ trước khi bấm (giây):</label>
+                <input type="number" id="sniper-giveaway-wait" class="sf-input" value="2" min="1" max="60" placeholder="1 - 10s">
               </div>
-              <button type="button" class="rpc-btn rpc-btn-start w-100 mt-2" onclick="startCleanerTask('server_leave')">
-                Quét &amp; Rời Hàng Loạt Server
+              <button type="button" class="rpc-btn rpc-btn-start w-100 mt-2" onclick="startSniperMode('giveaway')">
+                Kích Hoạt Auto Claim Giveaway
               </button>
             </div>
 
             <div class="cleaner-tool-card">
               <div class="ctc-header">
-                <div class="ctc-icon blue">👥</div>
+                <div class="ctc-icon blue">🔗</div>
                 <div class="ctc-meta">
-                  <div class="ctc-title">Thu Hồi Lời Mời Kết Bạn Đang Chờ</div>
-                  <div class="ctc-desc">Hủy tất cả các yêu cầu kết bạn bạn đã gửi đi mà chưa được đối phương đồng ý.</div>
+                  <div class="ctc-title">Vanity URL Sniper &amp; Monitor</div>
+                  <div class="ctc-desc">Canh chừng và chiếm link mời độc quyền của server Discord ngay khi vừa được giải phóng.</div>
                 </div>
               </div>
-              <div style="font-size: 0.8rem; color: #94a3b8; margin: 12px 0;">
-                Giúp làm sạch danh sách Pending Relationships và bảo vệ tài khoản khỏi các báo cáo Spam của Discord.
+              <div class="sf-row mt-2">
+                <label class="sf-label">Vanity Code muốn săn:</label>
+                <input type="text" id="sniper-vanity-target" class="sf-input" placeholder="Ví dụ: vip, dipre, gang">
               </div>
-              <button type="button" class="rpc-btn rpc-btn-start w-100 mt-2" onclick="startCleanerTask('cancel_friends')">
-                Thu Hồi Toàn Bộ Lời Mời
+              <button type="button" class="rpc-btn rpc-btn-start w-100 mt-2" onclick="startSniperMode('vanity')">
+                Khóa &amp; Giám Sát Vanity
               </button>
             </div>
 
             <div class="cleaner-tool-card">
               <div class="ctc-header">
-                <div class="ctc-icon purple">🧹</div>
+                <div class="ctc-icon purple">🛡️</div>
                 <div class="ctc-meta">
-                  <div class="ctc-title">Đóng Cuộc Trò Chuyện DM Không Dùng</div>
-                  <div class="ctc-desc">Ẩn toàn bộ các cuộc hội thoại DM đã cũ khỏi thanh bên trái ứng dụng Discord.</div>
+                  <div class="ctc-title">Discord Webhook Alert</div>
+                  <div class="ctc-desc">Bắn thông báo về kênh Discord riêng của bạn ngay khi claim thành công Gift hoặc trúng thưởng.</div>
                 </div>
               </div>
-              <div style="font-size: 0.8rem; color: #94a3b8; margin: 12px 0;">
-                Giao diện Discord của bạn sẽ trở nên gọn gàng, siêu tốc và không còn bị rối mắt bởi hàng trăm tin nhắn cũ.
+              <div class="sf-row mt-2">
+                <label class="sf-label">Discord Webhook URL:</label>
+                <input type="text" id="sniper-webhook-url" class="sf-input" placeholder="https://discord.com/api/webhooks/...">
               </div>
-              <button type="button" class="rpc-btn rpc-btn-start w-100 mt-2" onclick="startCleanerTask('close_dms')">
-                Đóng Toàn Bộ DM Cũ
+              <button type="button" class="rpc-btn rpc-btn-start w-100 mt-2" onclick="saveSniperWebhook()">
+                Lưu Cấu Hình Webhook
               </button>
             </div>
 

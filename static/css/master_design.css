@@ -962,3 +962,83 @@ body.nordic-auth-body::before {
 .log-line [MULTI-SYNC], .log-tag, .pt-title {
   color: var(--primary) !important;
 }
+
+
+/* ==========================================================================
+   QUICK ACTIONS BENTO TILES (DASHBOARD REDESIGN)
+   ========================================================================== */
+.dash-quickactions-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 12px !important;
+}
+
+@media (max-width: 768px) {
+  .dash-quickactions-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+.quickaction-tile {
+  background: var(--surface-2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  padding: 12px 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  position: relative !important;
+}
+
+.quickaction-tile:hover {
+  background: var(--surface-elevated) !important;
+  border-color: var(--primary) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35) !important;
+}
+
+.qat-icon {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 8px !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: var(--text-prominent) !important;
+  flex-shrink: 0 !important;
+  transition: all 0.2s ease !important;
+}
+
+.quickaction-tile:hover .qat-icon, .qat-icon.red {
+  color: var(--primary) !important;
+  border-color: rgba(225, 29, 72, 0.4) !important;
+  background: var(--primary-subtle) !important;
+}
+
+.qat-info {
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.qat-title {
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+  color: #FFFFFF !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.qat-desc {
+  font-size: 0.72rem !important;
+  color: var(--text-muted) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  margin-top: 2px !important;
+}
