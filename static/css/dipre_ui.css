@@ -1847,3 +1847,505 @@ code {
   background: white !important;
   box-shadow: 0 2px 12px rgba(0,0,0,0.06) !important;
 }
+
+
+/* ==========================================================================
+   CYBER DECK 2.0 — LUXURY REDESIGN FOR SIDEBAR & TOPBAR
+   ========================================================================== */
+
+/* ── SIDEBAR OVERHAUL ── */
+.sidebar, .dipre-sidebar {
+  width: 240px !important;
+  min-width: 240px !important;
+  background: #060911 !important;
+  border-right: 1px solid rgba(56, 189, 248, 0.12) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-shadow: 4px 0 25px rgba(0, 0, 0, 0.5) !important;
+}
+
+.sidebar-brand {
+  padding: 16px 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.dipre-sidebar-logo-wrap {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 10px !important;
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.25) 0%, rgba(56, 189, 248, 0.05) 100%) !important;
+  border: 1px solid rgba(56, 189, 248, 0.3) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 0 15px rgba(2, 132, 199, 0.25) !important;
+}
+
+.brand-name {
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 0.95rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.05em !important;
+  color: #FFFFFF !important;
+}
+
+.brand-ver {
+  font-size: 0.65rem !important;
+  font-weight: 700 !important;
+  color: var(--accent-bright) !important;
+  background: rgba(56, 189, 248, 0.1) !important;
+  display: inline-block !important;
+  padding: 1px 6px !important;
+  border-radius: 4px !important;
+  margin-top: 2px !important;
+  border: 1px solid rgba(56, 189, 248, 0.2) !important;
+}
+
+.sidebar-nav {
+  padding: 14px 10px !important;
+  flex: 1 !important;
+  overflow-y: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+}
+
+.sidebar-group-title {
+  font-size: 0.62rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.12em !important;
+  color: #475569 !important;
+  padding: 0 8px 6px !important;
+  text-transform: uppercase !important;
+}
+
+.sidebar-group-items {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+
+.sidebar-nav-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 8px 12px !important;
+  border-radius: 8px !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  color: #94A3B8 !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  cursor: pointer !important;
+}
+
+.sidebar-nav-item:hover {
+  color: #F8FAFC !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  transform: translateX(2px) !important;
+}
+
+.sidebar-nav-item.active {
+  color: #38BDF8 !important;
+  background: linear-gradient(90deg, rgba(2, 132, 199, 0.16) 0%, rgba(2, 132, 199, 0.02) 100%) !important;
+  border-left: 2.5px solid #38BDF8 !important;
+  border-radius: 0 8px 8px 0 !important;
+  box-shadow: inset 0 0 12px rgba(2, 132, 199, 0.1) !important;
+}
+
+.sidebar-nav-item .sni-svg {
+  width: 16px !important;
+  height: 16px !important;
+  stroke-width: 2 !important;
+  stroke: currentColor !important;
+  fill: none !important;
+  opacity: 0.85 !important;
+}
+
+/* ── SIDEBAR FOOTER ── */
+.sidebar-bottom {
+  padding: 12px 14px 16px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+  background: rgba(6, 9, 17, 0.6) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+
+.sidebar-account-badge {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 8px 10px !important;
+  border-radius: 10px !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.sidebar-account-badge:hover {
+  background: rgba(56, 189, 248, 0.08) !important;
+  border-color: rgba(56, 189, 248, 0.25) !important;
+}
+
+.sab-avatar {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  background: #0E1525 !important;
+  flex-shrink: 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.sab-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.sab-avatar-empty {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  color: #64748B;
+}
+
+.sab-info {
+  flex: 1 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  line-height: 1.2 !important;
+}
+
+.sab-name {
+  font-size: 0.76rem !important;
+  font-weight: 700 !important;
+  color: #E2E8F0 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.sab-sub {
+  font-size: 0.65rem !important;
+  color: #64748B !important;
+  margin-top: 1px !important;
+}
+
+.sab-status-indicator {
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 50% !important;
+  background: #64748B !important;
+}
+
+.sab-status-indicator.active {
+  background: #22C55E !important;
+  box-shadow: 0 0 8px #22C55E !important;
+}
+
+.sidebar-user-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 4px 6px 0 !important;
+}
+
+.sur-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  overflow: hidden !important;
+}
+
+.sur-meta {
+  display: flex !important;
+  flex-direction: column !important;
+  line-height: 1.2 !important;
+}
+
+.sur-name {
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  color: #F8FAFC !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.sur-role {
+  font-size: 0.65rem !important;
+  font-weight: 600 !important;
+  color: #38BDF8 !important;
+}
+
+.sur-logout-btn {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #64748B !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  transition: all 0.2s ease !important;
+  text-decoration: none !important;
+}
+
+.sur-logout-btn:hover {
+  color: #EF4444 !important;
+  background: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+/* ══════════════════════════════════════════
+   TOPBAR REDESIGN — CYBER CONTROL DECK
+   ══════════════════════════════════════════ */
+.app-topbar {
+  height: 56px !important;
+  padding: 0 24px !important;
+  background: rgba(6, 9, 17, 0.85) !important;
+  backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.12) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  position: relative !important;
+  z-index: 20 !important;
+}
+
+.topbar-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+}
+
+.topbar-breadcrumb {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+}
+
+.tbc-root { color: #64748B !important; }
+.tbc-sep { color: #334155 !important; font-size: 0.85rem !important; }
+.tbc-current { color: #38BDF8 !important; text-shadow: 0 0 12px rgba(56, 189, 248, 0.3) !important; }
+
+/* Unlinked pill in topbar */
+.topbar-unlinked-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: rgba(245, 158, 11, 0.1) !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+  padding: 3px 10px !important;
+  border-radius: 999px !important;
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+  color: #FBBF24 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.topbar-unlinked-pill:hover {
+  background: rgba(245, 158, 11, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+
+.tup-dot {
+  width: 5px !important;
+  height: 5px !important;
+  border-radius: 50% !important;
+  background: #F59E0B !important;
+  box-shadow: 0 0 6px #F59E0B !important;
+}
+
+.topbar-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+/* System Telemetry Deck */
+.topbar-telemetry {
+  display: flex !important;
+  align-items: center !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 999px !important;
+  padding: 4px 12px !important;
+  gap: 10px !important;
+}
+
+.telemetry-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  color: #94A3B8 !important;
+}
+
+.telemetry-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: #22C55E !important;
+  box-shadow: 0 0 8px #22C55E !important;
+}
+
+.telemetry-val {
+  color: #38BDF8 !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+}
+
+.telemetry-divider {
+  width: 1px !important;
+  height: 12px !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.time-item {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.72rem !important;
+  color: #CBD5E1 !important;
+}
+
+/* Action Controls */
+.topbar-actions-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+/* Lang Toggle Capsule */
+.lang-toggle-capsule {
+  display: flex !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 999px !important;
+  padding: 2px !important;
+}
+
+.ltc-btn {
+  background: transparent !important;
+  border: none !important;
+  color: #64748B !important;
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+  padding: 4px 9px !important;
+  border-radius: 999px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.ltc-btn.active {
+  background: rgba(2, 132, 199, 0.3) !important;
+  color: #38BDF8 !important;
+  box-shadow: 0 0 10px rgba(2, 132, 199, 0.25) !important;
+}
+
+/* Theme Icon button */
+.btn-icon-deck {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #94A3B8 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-icon-deck:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #F8FAFC !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Primary Capsule: Nạp/Quản lý Discord Accounts */
+.btn-primary-capsule {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%) !important;
+  border: 1px solid rgba(56, 189, 248, 0.5) !important;
+  padding: 6px 14px !important;
+  border-radius: 999px !important;
+  color: #FFFFFF !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 18px rgba(2, 132, 199, 0.35) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.btn-primary-capsule:hover {
+  box-shadow: 0 6px 24px rgba(56, 189, 248, 0.5) !important;
+  transform: translateY(-1px) !important;
+  border-color: #38BDF8 !important;
+}
+
+.capsule-sub-badge {
+  background: rgba(0, 0, 0, 0.25) !important;
+  font-size: 0.65rem !important;
+  font-weight: 700 !important;
+  padding: 2px 7px !important;
+  border-radius: 999px !important;
+  color: #E0F2FE !important;
+}
+
+/* ── SUBTLE TOKEN ALERT ── */
+.token-alert-subtle {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 8px 24px !important;
+  background: linear-gradient(90deg, rgba(2, 132, 199, 0.12) 0%, rgba(6, 9, 17, 0.6) 100%) !important;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.15) !important;
+}
+
+.tas-content {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.tas-icon {
+  font-size: 0.85rem !important;
+  filter: drop-shadow(0 0 6px #F59E0B) !important;
+}
+
+.tas-text {
+  font-size: 0.76rem !important;
+  color: #BAE6FD !important;
+  font-weight: 500 !important;
+}
+
+.tas-action {
+  background: rgba(56, 189, 248, 0.15) !important;
+  border: 1px solid rgba(56, 189, 248, 0.3) !important;
+  color: #38BDF8 !important;
+  padding: 3px 12px !important;
+  border-radius: 999px !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.tas-action:hover {
+  background: #38BDF8 !important;
+  color: #060911 !important;
+}

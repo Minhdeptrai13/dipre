@@ -35,33 +35,34 @@
         </div>
         <div class="brand-text-col">
           <div class="brand-name">DIPRE <span class="brand-name-hl">STUDIO</span></div>
-          <div class="brand-ver">PREMIUM v4.5</div>
+          <div class="brand-ver">v4.5 PRO</div>
         </div>
       </div>
 
-      <div class="sidebar-status-pill">
-        <span class="status-led" id="led-indicator"></span>
-        <span class="status-label" id="status-text">Sẵn sàng</span>
-      </div>
-
       <nav class="sidebar-nav">
-        
+        <!-- GROUP 1: TRUNG TÂM ĐIỀU KHIỂN -->
         <div class="sidebar-group">
           <div class="sidebar-group-title">COMMAND CENTER</div>
           <div class="sidebar-group-items">
             <button type="button" class="sidebar-nav-item active" data-tab="tab-home" onclick="switchTab('tab-home')">
-              <svg class="sni-svg" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"></rect><rect x="14" y="3" width="7" height="5" rx="1.5"></rect><rect x="14" y="12" width="7" height="9" rx="1.5"></rect><rect x="3" y="16" width="7" height="5" rx="1.5"></rect></svg>
-              <span>Dashboard</span>
+              <svg class="sni-svg" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="2"></rect><rect x="14" y="3" width="7" height="5" rx="2"></rect><rect x="14" y="12" width="7" height="9" rx="2"></rect><rect x="3" y="16" width="7" height="5" rx="2"></rect></svg>
+              <span>Tổng Quan</span>
+            </button>
+            <button type="button" class="sidebar-nav-item" data-tab="tab-userbot" onclick="switchTab('tab-userbot')">
+              <svg class="sni-svg" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8" y2="16"></line><line x1="16" y1="16" x2="16" y2="16"></line></svg>
+              <span>UserBot Engine</span>
+              <span id="sidebar-userbot-badge" class="badge-status-dot d-none" title="Đang chạy"></span>
             </button>
           </div>
         </div>
 
+        <!-- GROUP 2: RICH PRESENCE & TRẠNG THÁI -->
         <div class="sidebar-group">
-          <div class="sidebar-group-title">RPC PRESENCE</div>
+          <div class="sidebar-group-title">PRESENCE & STATUS</div>
           <div class="sidebar-group-items">
             <button type="button" class="sidebar-nav-item" data-tab="tab-rpc" onclick="switchTab('tab-rpc')">
               <svg class="sni-svg" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-              <span>Theme RPC</span>
+              <span>Theme RPC Studio</span>
             </button>
             <button type="button" class="sidebar-nav-item" data-tab="tab-rpc-youtube" onclick="switchTab('tab-rpc-youtube')">
               <svg class="sni-svg" viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>
@@ -75,150 +76,155 @@
               <svg class="sni-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M8 11.5c2.5-1 5.5-1 8 0"></path><path d="M9 14.5c2-.7 4-.7 6 0"></path></svg>
               <span>Spotify RPC</span>
             </button>
-          </div>
-        </div>
-
-        <div class="sidebar-group">
-          <div class="sidebar-group-title">STATUS &amp; LYRIC</div>
-          <div class="sidebar-group-items">
             <button type="button" class="sidebar-nav-item" data-tab="tab-status-custom" onclick="switchTab('tab-status-custom')">
               <svg class="sni-svg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
               <span>Custom Status</span>
             </button>
             <button type="button" class="sidebar-nav-item" data-tab="tab-lyric" onclick="switchTab('tab-lyric')">
               <svg class="sni-svg" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-              <span>Lyric Status (Karaoke)</span>
+              <span>Lyric Karaoke</span>
             </button>
           </div>
         </div>
 
+        <!-- GROUP 3: VOICE & AUTOMATION -->
         <div class="sidebar-group">
-          <div class="sidebar-group-title">VOICE &amp; AUDIO</div>
+          <div class="sidebar-group-title">VOICE & AUTOMATION</div>
           <div class="sidebar-group-items">
             <button type="button" class="sidebar-nav-item" data-tab="tab-voice-afk" onclick="switchTab('tab-voice-afk')">
               <svg class="sni-svg" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-              <span>Treo Voice 24/7 (AFK)</span>
+              <span>Treo Voice 24/7</span>
             </button>
             <button type="button" class="sidebar-nav-item" data-tab="tab-voice-coming" onclick="switchTab('tab-voice-coming')">
               <svg class="sni-svg" viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>
-              <span>Voice Soundboard</span>
+              <span>Soundboard</span>
             </button>
-          </div>
-        </div>
-
-        <div class="sidebar-group">
-          <div class="sidebar-group-title">TỰ ĐỘNG HÓA</div>
-          <div class="sidebar-group-items">
             <button type="button" class="sidebar-nav-item" data-tab="tab-quest" onclick="switchTab('tab-quest')">
               <svg class="sni-svg" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
               <span>Auto Quest</span>
             </button>
             <button type="button" class="sidebar-nav-item" data-tab="tab-script-coming" onclick="switchTab('tab-script-coming')">
-              <svg class="sni-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
-              <span>Nitro Sniper &amp; Giveaway</span>
+              <svg class="sni-svg" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+              <span>Nitro Sniper</span>
             </button>
           </div>
         </div>
 
+        <!-- GROUP 4: TÀI KHOẢN & HỘP THƯ -->
         <div class="sidebar-group">
-          <div class="sidebar-group-title">TÀI KHOẢN &amp; TOKEN</div>
+          <div class="sidebar-group-title">VAULT & INBOX</div>
           <div class="sidebar-group-items">
-            <button type="button" class="sidebar-nav-item" data-tab="tab-userbot" onclick="switchTab('tab-userbot')">
-              <svg class="sni-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8" y2="16"></line><line x1="16" y1="16" x2="16" y2="16"></line></svg>
-              <span id="sidebar-userbot-label">{{ username }}'s Bot</span>
-              <span id="sidebar-userbot-badge" class="badge-status-dot d-none" style="margin-left:auto; width:8px; height:8px; border-radius:50%; background:var(--success); border:1px solid var(--border);" title="Đang chạy"></span>
-            </button>
             <button type="button" class="sidebar-nav-item" data-tab="tab-accounts" onclick="switchTab('tab-accounts')">
               <svg class="sni-svg" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-              <span>Quản Lý Đa Token</span>
+              <span>Kho Đa Token</span>
             </button>
             <button type="button" class="sidebar-nav-item" data-tab="tab-inbox" onclick="switchTab('tab-inbox')">
               <svg class="sni-svg" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-              <span>Inbox Discord</span>
+              <span>Discord Inbox</span>
             </button>
           </div>
         </div>
       </nav>
 
+      <!-- SIDEBAR FOOTER CARD: USER INFO + LOGOUT -->
       <div class="sidebar-bottom">
-        
-        <div class="sidebar-active-discord-pill" id="sidebar-active-discord" onclick="switchTab('tab-accounts')" title="Chuyển đổi hoặc xem tài khoản Discord đang chạy">
-          <div class="sad-left">
+        <div class="sidebar-account-badge" onclick="switchTab('tab-accounts')" title="Xem danh sách tài khoản Discord">
+          <div class="sab-avatar">
             {% if has_token and discord_avatar %}
-            <img src="{{ discord_avatar }}" class="sad-avatar" id="sad-avatar-img" alt="">
+            <img src="{{ discord_avatar }}" alt="Discord Avatar">
             {% else %}
-            <div class="sad-avatar-locked" id="sad-avatar-locked">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            <div class="sab-avatar-empty">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
             </div>
             {% endif %}
-            <span class="sad-name" id="sad-name">{% if has_token and discord_username %}{{ discord_username }}{% else %}Chưa nạp Token{% endif %}</span>
           </div>
-          <span class="sad-tag {% if has_token %}linked{% else %}unlinked{% endif %}" id="sad-tag">
-            {% if has_token %}Active{% else %}Trống{% endif %}
-          </span>
+          <div class="sab-info">
+            <span class="sab-name">{% if has_token and discord_username %}{{ discord_username }}{% else %}Chưa nạp Token{% endif %}</span>
+            <span class="sab-sub">{% if has_token %}Discord Active{% else %}Click để nạp token{% endif %}</span>
+          </div>
+          <span class="sab-status-indicator {% if has_token %}active{% endif %}"></span>
         </div>
 
-        <div class="sidebar-user-card" id="sidebar-user-profile" title="Tài khoản hệ thống: {{ username }}">
-          <div class="user-avatar-wrap">
-            <div class="user-avatar-initials" id="user-sys-avatar-initials">
-              {{ avatar_info.initials if (avatar_info and avatar_info.initials) else 'MI' }}
+        <div class="sidebar-user-row">
+          <div class="sur-left">
+            <div class="user-avatar-initials">
+              {{ avatar_info.initials if (avatar_info and avatar_info.initials) else 'US' }}
+            </div>
+            <div class="sur-meta">
+              <span class="sur-name">{{ username }}</span>
+              <span class="sur-role">DIPRE Master</span>
             </div>
           </div>
-          <div class="suc-meta">
-            <span class="suc-name" id="user-sys-name">{{ username }}</span>
-            <span class="suc-badge">DIPRE Member</span>
-          </div>
+          <a href="{{ url_for('logout') }}" class="sur-logout-btn" title="Đăng xuất">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          </a>
         </div>
-
-        <a href="{{ url_for('logout') }}" class="sidebar-logout-btn" title="Đăng xuất khỏi hệ thống">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-          <span>Đăng Xuất</span>
-        </a>
       </div>
     </aside>
 
     <main class="app-main">
 
+      <!-- TOPBAR HIỆN ĐẠI, GỌN GÀNG, ĐẲNG CẤP CYBER -->
       <header class="app-topbar">
         <div class="topbar-left">
           <div class="topbar-breadcrumb">
-            <span class="tbc-root">DIPRE STUDIO</span>
+            <span class="tbc-root">DIPRE</span>
             <span class="tbc-sep">/</span>
-            <span class="tbc-current" id="topbar-tab-title">DASHBOARD</span>
+            <span class="tbc-current" id="topbar-tab-title">COMMAND CENTER</span>
           </div>
+          {% if not has_token %}
+          <div class="topbar-unlinked-pill" onclick="toggleAddTokenModal(true)">
+            <span class="tup-dot"></span>
+            <span>Chưa liên kết Token</span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </div>
+          {% endif %}
         </div>
+
         <div class="topbar-right">
-          <div class="topbar-pill system-clock-pill">
-            <svg class="clock-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            <span id="system-clock">--:--:--</span>
+          <!-- SYSTEM TELEMETRY -->
+          <div class="topbar-telemetry">
+            <div class="telemetry-item" title="Độ trễ Discord Gateway">
+              <span class="telemetry-dot"></span>
+              <span id="ping-status">Online</span>
+              <span class="telemetry-val" id="topbar-ping-ms">18ms</span>
+            </div>
+            <div class="telemetry-divider"></div>
+            <div class="telemetry-item time-item" title="Giờ hệ thống">
+              <span id="system-clock">--:--:--</span>
+            </div>
           </div>
-          <div class="topbar-pill network-ping-pill">
-            <span class="ping-dot"></span>
-            <span class="ping-text">Gateway: <strong id="ping-status">Online</strong></span>
+
+          <!-- CONTROLS: LANG & THEME -->
+          <div class="topbar-actions-group">
+            <div class="lang-toggle-capsule">
+              <button type="button" class="ltc-btn" id="dash-lang-en" onclick="setAppLanguage('en')">EN</button>
+              <button type="button" class="ltc-btn active" id="dash-lang-vi" onclick="setAppLanguage('vi')">VI</button>
+            </div>
+
+            <button type="button" class="btn-icon-deck" id="btn-theme-toggle" onclick="toggleTheme()" title="Chuyển đổi Sáng / Tối">
+              <span id="theme-icon-container">
+                <svg id="theme-icon-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+              </span>
+            </button>
+
+            <!-- NẠP/QUẢN LÝ DISCORD TOKENS CAPSULE -->
+            <button type="button" class="btn-primary-capsule" onclick="toggleAddTokenModal(true)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+              <span>Discord Accounts</span>
+              <span class="capsule-sub-badge">{% if has_token %}1 Active{% else %}Nạp Token{% endif %}</span>
+            </button>
           </div>
-          <div class="beyond-lang-pill topbar-lang-pill" id="dashboard-lang-pill">
-            <span class="lang-opt" id="dash-lang-en" onclick="setAppLanguage('en')">EN</span>
-            <span class="lang-opt active" id="dash-lang-vi" onclick="setAppLanguage('vi')">VI</span>
-          </div>
-          <button type="button" class="theme-switch-btn" id="btn-theme-toggle" onclick="toggleTheme()" title="Chuyển đổi giao diện Sáng / Tối">
-            <span id="theme-icon-container">
-              <svg id="theme-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-            </span>
-          </button>
-          <button type="button" class="btn-token-quick" onclick="toggleAddTokenModal(true)" title="Quản lý & Thêm Token Discord">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
-            <span id="txt-topbar-accounts">Discord Accounts</span>
-          </button>
         </div>
       </header>
 
       {% if not has_token %}
-      <div class="token-alert-bar dipre-alert-bar" id="token-alert-bar">
-        <div class="tab-left">
-          <span class="token-alert-badge">CHƯA LIÊN KẾT TOKEN</span>
-          <span class="token-alert-text">Liên kết Discord User Token để kích hoạt Rich Presence, Lyric Sync và Auto Quest.</span>
+      <div class="token-alert-subtle" id="token-alert-bar">
+        <div class="tas-content">
+          <span class="tas-icon">⚡</span>
+          <span class="tas-text">Chưa gắn Discord User Token. Nạp token để kích hoạt toàn bộ tính năng RPC &amp; Voice.</span>
         </div>
-        <button type="button" class="token-alert-btn" onclick="toggleAddTokenModal(true)">Nạp Token</button>
+        <button type="button" class="tas-action" onclick="toggleAddTokenModal(true)">Nạp Ngay</button>
       </div>
       {% endif %}
 
