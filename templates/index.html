@@ -437,7 +437,7 @@
                 {% endif %}
 
                 <div class="dc1-banner nitro-animated-banner" id="hero-profile-banner" 
-                     style="{% if banner and banner.startswith('http') %}background-image: url('{{ banner }}');{% elif banner and banner.startswith('#') %}background: {{ banner }};{% else %}background: #00e5ff;{% endif %}">
+                     style="{% if banner and banner.startswith('http') %}background-image: url('{{ banner }}');{% elif banner and banner.startswith('#') %}background: {{ banner }};{% else %}background: linear-gradient(135deg, #1f1f24 0%, #2a2a32 50%, rgba(245, 158, 11, 0.2) 100%);{% endif %}">
                 </div>
 
                 <div class="dc1-avatar-row">
@@ -885,7 +885,7 @@
               <button type="button" class="rpc-btn rpc-btn-start" id="btn-rpc-start" onclick="handleStartRPC()">Bắt Đầu Presence</button>
               <button type="button" class="rpc-btn rpc-btn-stop" id="btn-rpc-stop" onclick="handleStopRPC()" disabled>Dừng</button>
               <button type="button" class="rpc-btn rpc-btn-save" onclick="handleSaveConfig()">Lưu Cấu Hình</button>
-              <button type="button" class="rpc-btn" style="background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); color:#06090e; font-weight:700;" onclick="handlePublishToForum()">Đăng Lên Diễn Đàn</button>
+              <button type="button" class="rpc-btn" style="background: var(--primary); color:#141416; font-weight:700;" onclick="handlePublishToForum()">Đăng Lên Diễn Đàn</button>
             </div>
 
           </div>
@@ -1689,7 +1689,7 @@
                 <h4 style="margin: 0; font-size: 1rem; color: #fff;">Kho Tính Năng &amp; Lệnh Hoạt Động (Full UserDiscord Modules)</h4>
                 <div style="font-size: 0.8rem; color: #94a3b8;">Gõ trực tiếp các lệnh này trên Discord bằng tài khoản đã kích hoạt bot (hoặc tin nhắn DM).</div>
               </div>
-              <span class="ssh-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">Full 30+ Cogs</span>
+              <span class="ssh-badge" style="background: rgba(245, 158, 11, 0.12); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3);">Full 30+ Cogs</span>
             </div>
             <div id="userbot-commands-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
               <!-- Được render động từ API /api/userbot/commands -->
@@ -1705,7 +1705,7 @@
               </div>
               <button type="button" class="rpc-btn" style="padding: 4px 10px; font-size: 0.75rem; background: rgba(255,255,255,0.06);" onclick="clearUserBotLogs()">Xóa Màn Hình</button>
             </div>
-            <div id="userbot-console-box" style="background: #0f172a; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 1rem; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.82rem; height: 220px; overflow-y: auto; color: #e2e8f0; line-height: 1.5;">
+            <div id="userbot-console-box" style="background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; height: 220px; overflow-y: auto; color: var(--text); line-height: 1.5;">
               <div style="color: #64748b;">Đang kết nối luồng log UserBot...</div>
             </div>
           </div>

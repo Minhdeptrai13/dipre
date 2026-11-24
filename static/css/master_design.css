@@ -741,3 +741,341 @@ body.app-body, body.beyond-landing-body {
     min-width: 0 !important;
   }
 }
+
+
+/* ==========================================================================
+   STYLE 3: NORDIC SLATE & AMBER DASHBOARD OVERHAUL (PERFECT MOCKUP MATCH)
+   Strictly overrides legacy style.css and theme_hub.css
+   ========================================================================== */
+
+/* 1. HERO BANNER */
+.dashboard-hero-banner {
+  background: #18181B !important;
+  border: 1px solid #2E2E36 !important;
+  border-radius: 12px !important;
+  padding: 24px 28px !important;
+  margin-bottom: 24px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
+}
+
+.dhb-badge {
+  background: rgba(245, 158, 11, 0.1) !important;
+  border: 1px solid rgba(245, 158, 11, 0.25) !important;
+  color: #F59E0B !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  padding: 4px 10px !important;
+  border-radius: 999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.dhb-main-title {
+  color: #FFFFFF !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 1.85rem !important;
+  font-weight: 800 !important;
+  margin: 10px 0 6px 0 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.dhb-sub {
+  color: #9A968C !important;
+  font-size: 0.88rem !important;
+  line-height: 1.5 !important;
+}
+
+/* 2. STAT METRICS CARDS WITH SPARKLINE MOCKUP EFFECT */
+.metrics-stats-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 16px !important;
+  margin-bottom: 24px !important;
+}
+
+@media (max-width: 1200px) {
+  .metrics-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .metrics-stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.metric-stat-card {
+  background: #18181B !important;
+  border: 1px solid #2E2E36 !important;
+  border-radius: 12px !important;
+  padding: 20px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  min-height: 140px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+  transition: border-color 0.2s ease, transform 0.2s ease !important;
+}
+
+.metric-stat-card:hover {
+  border-color: #F59E0B !important;
+  transform: translateY(-2px) !important;
+}
+
+.metric-stat-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 38px;
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  background-size: 100% 100%;
+  opacity: 0.35;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M0,35 Q25,10 50,28 T100,15 T150,30 T200,8 L200,40 L0,40 Z' fill='%23F59E0B' fill-opacity='0.15' stroke='%23F59E0B' stroke-width='2'/%3E%3C/svg%3E");
+}
+
+.msc-head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 12px !important;
+}
+
+.msc-icon {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: #141416 !important;
+  border: 1px solid #2E2E36 !important;
+  color: #F59E0B !important;
+}
+
+.msc-icon.cyan, .msc-icon.violet, .msc-icon.emerald, .msc-icon.amber {
+  background: #141416 !important;
+  border-color: #2E2E36 !important;
+  color: #F59E0B !important;
+}
+
+.msc-tag {
+  background: #141416 !important;
+  border: 1px solid #2E2E36 !important;
+  color: #9A968C !important;
+  font-size: 0.7rem !important;
+  font-weight: 600 !important;
+  padding: 3px 8px !important;
+  border-radius: 6px !important;
+}
+
+.msc-tag.active {
+  background: rgba(245, 158, 11, 0.1) !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+  color: #F59E0B !important;
+}
+
+.msc-val {
+  font-size: 1.65rem !important;
+  font-weight: 800 !important;
+  color: #FFFFFF !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.2 !important;
+  margin-bottom: 4px !important;
+}
+
+.msc-val-sub {
+  font-size: 0.8rem !important;
+  color: #9A968C !important;
+  font-weight: 500 !important;
+}
+
+.msc-label {
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  color: #9A968C !important;
+}
+
+/* 3. COMMAND CENTER 2 COLUMNS: ACTIVITY BARS & DISCORD 1:1 PROFILE */
+.command-center-2col {
+  display: grid !important;
+  grid-template-columns: 1.25fr 0.75fr !important;
+  gap: 20px !important;
+  align-items: start !important;
+}
+
+@media (max-width: 1050px) {
+  .command-center-2col {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.activity-breakdown-card {
+  background: #18181B !important;
+  border: 1px solid #2E2E36 !important;
+  border-radius: 12px !important;
+  padding: 24px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+}
+
+.abc-header {
+  margin-bottom: 20px !important;
+}
+
+.abc-title {
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  color: #FFFFFF !important;
+}
+
+.fbl-item {
+  margin-bottom: 14px !important;
+}
+
+.fbl-meta {
+  display: flex !important;
+  justify-content: space-between !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 6px !important;
+}
+
+.fbl-name {
+  color: #ECE9E2 !important;
+}
+
+.fbl-count {
+  color: #F59E0B !important;
+  font-weight: 700 !important;
+}
+
+.fbl-rail {
+  height: 6px !important;
+  background: #141416 !important;
+  border: 1px solid #24242A !important;
+  border-radius: 999px !important;
+  overflow: hidden !important;
+}
+
+.fbl-fill {
+  height: 100% !important;
+  background: #F59E0B !important;
+  border-radius: 999px !important;
+}
+
+/* 4. DISCORD PROFILE CARD (NO CYAN BANNER, NO CYAN GLOW, NORDIC MATTE AMBER) */
+.discord-card-1to1-wrap {
+  width: 100% !important;
+  max-width: 360px !important;
+  margin: 0 auto !important;
+  border-radius: 14px !important;
+  background: #18181B !important;
+  border: 1px solid #2E2E36 !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4) !important;
+  overflow: hidden !important;
+}
+
+.discord-card-1to1-wrap:hover {
+  border-color: #F59E0B !important;
+  transform: none !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dc1-banner {
+  height: 105px !important;
+  width: 100% !important;
+  background: #24242A !important;
+  background-image: radial-gradient(circle at 80% 20%, rgba(245, 158, 11, 0.25) 0%, transparent 70%) !important;
+  position: relative !important;
+}
+
+.dc1-avatar-wrap {
+  background: #18181B !important;
+  border: 2px solid #2E2E36 !important;
+}
+
+.dc1-status-dot {
+  border-color: #18181B !important;
+}
+
+.dc1-global-name {
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+  font-size: 1.15rem !important;
+}
+
+.dc1-username {
+  color: #9A968C !important;
+  font-size: 0.8rem !important;
+}
+
+/* 5. TOPBAR TOKEN BAR */
+.token-alert-bar.dipre-alert-bar {
+  background: #1B1B1F !important;
+  border-bottom: 1px solid #2E2E36 !important;
+  padding: 10px 24px !important;
+}
+
+.token-alert-badge {
+  background: rgba(245, 158, 11, 0.12) !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+  color: #F59E0B !important;
+  font-size: 0.7rem !important;
+  font-weight: 700 !important;
+  border-radius: 4px !important;
+  padding: 2px 8px !important;
+}
+
+.token-alert-text {
+  color: #9A968C !important;
+  font-size: 0.82rem !important;
+}
+
+.token-alert-btn {
+  background: #141416 !important;
+  border: 1px solid #F59E0B !important;
+  color: #F59E0B !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  border-radius: 6px !important;
+  padding: 5px 12px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.token-alert-btn:hover {
+  background: #F59E0B !important;
+  color: #141416 !important;
+}
+
+/* 6. SIDEBAR FIX: ACTIVE DISCORD PILL & BORDER */
+.sidebar-active-discord-pill {
+  background: #141416 !important;
+  border: 1px solid #2E2E36 !important;
+  border-radius: 8px !important;
+}
+
+.sad-name {
+  color: #ECE9E2 !important;
+}
+
+.sad-tag.unlinked {
+  background: #24242A !important;
+  border: 1px solid #2E2E36 !important;
+  color: #9A968C !important;
+}
+
+.sad-tag.linked {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+  color: #10B981 !important;
+}
