@@ -1786,6 +1786,11 @@ beyond the veil, control returns</textarea>
 
     /* ---------- BOOTSTRAP ---------- */
     window.addEventListener('DOMContentLoaded', () => {
+
+      // Fetch real accounts and real inbox from backend
+      syncAccountsFromBackend();
+      syncRealInbox();
+
       initSoundboardVisualizer();
       renderSoundboardPads();
       appendQuestLog('[READY] Discord Quest Auto-Completer Engine v5.8');
@@ -2549,7 +2554,7 @@ beyond the veil, control returns</textarea>
 
     function loadDemoTokenPack() {
       openTokenDrawer();
-      showToast('Vui lòng nhập Discord User Token vào Drawer để kết nối.');
+      showToast('Vui lòng kết nối Discord User Token để sử dụng tính năng.');
     },
         
         
