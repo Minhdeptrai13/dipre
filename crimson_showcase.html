@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DIPRE STUDIO — Crimson Red & Deep Charcoal UI Architecture Showcase</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0F0F12;
+      --surface: #16161B;
+      --surface-2: #1E1E26;
+      --border: #2A2A36;
+      --primary: #E11D48;
+      --primary-hover: #BE123C;
+      --text: #F1F5F9;
+      --text-muted: #94A3B8;
+      --success: #10B981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      padding: 2rem;
+      line-height: 1.5;
+    }
+    .header {
+      max-width: 1300px;
+      margin: 0 auto 2.5rem auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+    }
+    .brand-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--primary);
+      background: rgba(225, 29, 72, 0.12);
+      border: 1px solid rgba(225, 29, 72, 0.3);
+      padding: 4px 10px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .grid {
+      max-width: 1300px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 2rem;
+    }
+    .preview-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .preview-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(225, 29, 72, 0.15);
+    }
+    .preview-img-wrap {
+      width: 100%;
+      height: 240px;
+      background: #09090C;
+      overflow: hidden;
+      position: relative;
+    }
+    .preview-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
+      transition: transform 0.3s ease;
+    }
+    .preview-card:hover .preview-img-wrap img {
+      transform: scale(1.03);
+    }
+    .preview-body {
+      padding: 1.5rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .tag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      display: inline-block;
+    }
+    .title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 8px;
+    }
+    .desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+    .specs-list {
+      list-style: none;
+      font-size: 0.76rem;
+      color: #CBD5E1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background: var(--surface-2);
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin-bottom: 1.25rem;
+    }
+    .specs-list li::before {
+      content: "✦ ";
+      color: var(--primary);
+    }
+    .action-row {
+      display: flex;
+      gap: 10px;
+    }
+    .btn {
+      flex: 1;
+      height: 38px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #FFFFFF;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+    .btn-secondary {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      background: var(--surface);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div>
+      <div class="brand-title">
+        DIPRE STUDIO
+        <span class="brand-badge">Crimson Red &amp; Deep Charcoal 2026 Architecture</span>
+      </div>
+      <p style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">
+        Toàn bộ hệ thống giao diện được thiết kế lại độc quyền: Nền Than Chì #0F0F12, Viền Hairline #2A2A36, Màu nhấn Đỏ Ruby #E11D48.
+      </p>
+    </div>
+  </header>
+
+  <main class="grid">
+
+    <!-- 1. DASHBOARD COMMAND CENTER -->
+    <div class="preview-card">
+      <div class="preview-img-wrap">
+        <img src="static/img/mockups/crimson_dashboard_preview.jpg" alt="Dashboard Command Center">
+      </div>
+      <div class="preview-body">
+        <div>
+          <span class="tag">Mục 01 • Command Center</span>
+          <h3 class="title">Dashboard Realtime &amp; Quick Actions Bento</h3>
+          <p class="desc">Trung tâm điều khiển tối thượng với 4 thẻ chỉ số tích hợp sóng Sparkline Crimson vector, thanh phân bổ tài nguyên và 6 phím tắt Quick Action dạng tile bento sang trọng.</p>
+          <ul class="specs-list">
+            <li>Nền #0F0F12, Card #16161B, Viền #2A2A36</li>
+            <li>Sparkline SVG vector đỏ Ruby chạy chân card</li>
+            <li>6 Bento Tiles: RPC, UserBot, Lyric, Quest, Sniper, Tokens</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. LOGIN & REGISTER SPLIT SCREEN -->
+    <div class="preview-card">
+      <div class="preview-img-wrap">
+        <img src="static/img/mockups/crimson_login_preview.jpg" alt="Login & Register Split">
+      </div>
+      <div class="preview-body">
+        <div>
+          <span class="tag">Mục 02 • Auth Gateway</span>
+          <h3 class="title">Đăng Nhập &amp; Đăng Ký Split Minimalist</h3>
+          <p class="desc">Giao diện đăng nhập trực diện 2 cột phong cách Scandinavia kết hợp Cyberpunk tối giản. Không pop-up che khuất, chuyển tab Đăng nhập / Đăng ký mượt mà và bảo mật Cloudflare Turnstile.</p>
+          <ul class="specs-list">
+            <li>Nút hành động chính Crimson #E11D48 cực chiến</li>
+            <li>Input viền hairline focus phát sáng đỏ ruby</li>
+            <li>Tích hợp đăng nhập nhanh qua Discord và Google</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. THEME RPC & APP SELECTOR -->
+    <div class="preview-card">
+      <div class="preview-img-wrap">
+        <img src="static/img/mockups/concept3_tab_theme_rpc_1795516180333.jpg" alt="Theme RPC & App Selector" style="filter: hue-rotate(330deg) saturate(1.2);">
+      </div>
+      <div class="preview-body">
+        <div>
+          <span class="tag">Mục 03 • Rich Presence</span>
+          <h3 class="title">Theme RPC Hub &amp; Forum Presets</h3>
+          <p class="desc">Kho ứng dụng Discord App ID trực quan dạng thẻ cuộn ngang. Tab Diễn đàn mẫu (Forum), Kho Presets cá nhân và bộ tạo Rich Presence chuyên nghiệp với Live Discord Preview 1:1.</p>
+          <ul class="specs-list">
+            <li>Thẻ App ID (VS Code, Spotify, Custom Bot) chuyển tone Crimson</li>
+            <li>Diễn đàn presets cộng đồng với bộ lọc thông minh</li>
+            <li>Editor tùy biến Large/Small Image, Timestamp, Nút bấm</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. LYRIC STATUS (KARAOKE) -->
+    <div class="preview-card">
+      <div class="preview-img-wrap">
+        <img src="static/img/mockups/concept3_tab_lyric_karaoke_1795516273052.jpg" alt="Lyric Status Karaoke" style="filter: hue-rotate(330deg) saturate(1.2);">
+      </div>
+      <div class="preview-body">
+        <div>
+          <span class="tag">Mục 04 • Audio & Lyric</span>
+          <h3 class="title">Karaoke Lyric Sync (Spotify &amp; LRCLIB)</h3>
+          <p class="desc">Trình phát nhạc kèm lời bài hát chạy chữ thời gian thực (Time-synced lyrics). Câu hát đang phát sáng rực màu Crimson Red, đồng bộ trạng thái Discord Custom Status tự động.</p>
+          <ul class="specs-list">
+            <li>Cuộn lời mượt mà theo mili-giây giống Apple Music</li>
+            <li>Hỗ trợ tìm kiếm bài hát qua Spotify, YouTube, NhacCuaTui</li>
+            <li>Mô phỏng bong bóng trạng thái Discord ngay trên màn hình</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. NITRO SNIPER & AUTO QUEST -->
+    <div class="preview-card">
+      <div class="preview-img-wrap">
+        <img src="static/img/mockups/crimson_nitro_sniper_preview.jpg" alt="Nitro Sniper & Auto Quest">
+      </div>
+      <div class="preview-body">
+        <div>
+          <span class="tag">Mục 05 • Automation & Weapon</span>
+          <h3 class="title">Nitro Sniper &amp; Discord Auto Quest</h3>
+          <p class="desc">Hệ thống vũ khí tự động hóa thay thế Account Cleaner cũ: Turbo Nitro Sniping phản hồi 15ms, Auto Giveaway clicker, Vanity sniper và bộ cày Discord Quest không cần game.</p>
+          <ul class="specs-list">
+            <li>Bắt gift code discord.gift/ siêu tốc 24/7</li>
+            <li>Màn hình Terminal Live Stream font JetBrains Mono</li>
+            <li>Cảnh báo tức thì qua Discord Webhook riêng</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. MULTI-TOKENS & USERBOT ENGINE -->
+    <div class="preview-card">
+      <div class="preview-img-wrap">
+        <img src="static/img/mockups/concept3_userbot_and_features_preview_1795516144215.jpg" alt="Multi-Tokens & Userbot" style="filter: hue-rotate(330deg) saturate(1.2);">
+      </div>
+      <div class="preview-body">
+        <div>
+          <span class="tag">Mục 06 • Multi-Account Core</span>
+          <h3 class="title">Quản Lý Đa Token &amp; 30+ Cogs UserBot</h3>
+          <p class="desc">Quản lý không giới hạn tài khoản Discord token với thẻ định danh riêng biệt, hỗ trợ prefix rỗng (chạy lệnh trực tiếp không cần dấu), xem Inbox Discord và luồng nhật ký log máy chủ.</p>
+          <ul class="specs-list">
+            <li>Quản lý danh sách token có avatar, tag Active/Standby</li>
+            <li>Bật/tắt nhanh UserBot engine với 30+ module cogs</li>
+            <li>Hộp thoại thêm Token bảo mật, mã hóa cục bộ</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+</body>
+</html>
