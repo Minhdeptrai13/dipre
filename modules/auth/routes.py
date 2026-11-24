@@ -109,7 +109,35 @@ def index():
         except Exception:
             badges_list = []
 
-    d_id = u['discord_id'] if u else None
+    d_id = (acc['discord_id'] if (acc and acc['discord_id']) else (u['discord_id'] if (u and u['discord_id']) else ''))
+    
+    # Nếu có token mà thông tin avatar/username chưa nạp đủ, tự động fetch đồng bộ
+    u_token = (u['discord_token'] if u else '') or (acc['token'] if acc else '')
+    if u_token and len(u_token) > 20 and (not d_avatar or not d_name):
+        try:
+            live_p = fetch_discord_profile(u_token)
+            if live_p:
+                d_id = live_p['id']
+                d_name = live_p['username']
+                d_avatar = live_p['avatar']
+                avatar_decoration = avatar_decoration or live_p['decoration']
+                banner = banner or live_p['banner']
+                profile_effect = profile_effect or live_p.get('profile_effect', '')
+                bio = bio or live_p.get('bio', '')
+                if live_p.get('badges'):
+                    badges_list = live_p['badges']
+                with get_db() as conn:
+                    c = conn.cursor()
+                    c.execute('''
+                        UPDATE users 
+                        SET discord_id = ?, discord_username = ?, discord_avatar = ?, 
+                            avatar_decoration = ?, banner = ?, profile_effect = ?, bio = ?, badges = ?
+                        WHERE id = ?
+                    ''', (d_id, d_name, d_avatar, avatar_decoration or '', banner or '', profile_effect or '', bio or '', json.dumps(badges_list, ensure_ascii=False), user_id))
+                    conn.commit()
+        except Exception:
+            pass
+
     showcase_token = os.environ.get('DISCORD_SHOWCASE_TOKEN', '')
     if d_id and showcase_token and (not profile_effect or not avatar_decoration):
         try:
@@ -138,6 +166,7 @@ def index():
     return render_template('index.html',
                            username=username,
                            has_token=has_token,
+                           discord_id=d_id,
                            discord_username=d_name,
                            discord_avatar=d_avatar,
                            auth_provider=auth_prov,

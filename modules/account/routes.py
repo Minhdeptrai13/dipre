@@ -140,15 +140,33 @@ def api_account_bind_token():
                 cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
                 u = cursor.fetchone()
 
-            main_discord_id = (u['discord_id'] if u else '') or ''
+            # Luôn cập nhật đầy đủ profile Discord chính chủ vào users để avatar và hiệu ứng hiển thị ngay lập tức
+            cursor.execute('''
+                UPDATE users 
+                SET discord_token = ?,
+                    discord_id = ?,
+                    discord_username = ?,
+                    discord_avatar = ?,
+                    avatar_decoration = ?,
+                    banner = ?,
+                    profile_effect = ?,
+                    bio = ?,
+                    badges = ?
+                WHERE id = ?
+            ''', (
+                token,
+                profile['id'],
+                profile['username'],
+                profile['avatar'],
+                profile['decoration'],
+                profile['banner'],
+                profile.get('profile_effect', ''),
+                profile.get('bio', ''),
+                json.dumps(profile.get('badges', []), ensure_ascii=False),
+                user_id
+            ))
 
-            if main_discord_id and str(profile.get('id')) == str(main_discord_id):
-                return jsonify({
-                    'success': False,
-                    'message': 'Đây là tài khoản Discord chính của bạn! Danh sách này chỉ dành cho các tài khoản Discord phụ (Alt Tokens).'
-                }), 400
-
-            cursor.execute('UPDATE users SET discord_token = ? WHERE id = ?', (token, user_id))
+            # Quản lý tài khoản trong bảng discord_accounts
             cursor.execute('UPDATE discord_accounts SET is_active = 0 WHERE user_id = ?', (user_id,))
             cursor.execute('SELECT id FROM discord_accounts WHERE user_id = ? AND (token = ? OR discord_id = ?)', (user_id, token, profile['id']))
             existing = cursor.fetchone()
@@ -166,10 +184,10 @@ def api_account_bind_token():
             conn.commit()
 
         session['discord_token'] = token
-        log_event(f'Tài khoản {session.get("username")} đã kết nối Discord phụ: {profile["username"]} ({profile["id"]})', 'success')
+        log_event(f'Tài khoản {session.get("username")} đã kết nối Discord thành công: {profile["username"]} ({profile["id"]})', 'success')
         return jsonify({
             'success': True,
-            'message': f'Đã liên kết tài khoản phụ thành công: {profile["username"]}!',
+            'message': f'Đã liên kết tài khoản Discord thành công: {profile["username"]}!',
             'username': profile['username'],
             'avatar': profile['avatar'],
             'discord_id': profile['id'],
@@ -187,31 +205,67 @@ def api_account_bind_token():
 @account_bp.route('/api/accounts/list', methods=['GET'])
 @login_required
 def api_accounts_list():
+    """Trả về toàn bộ danh sách tài khoản Discord đã nạp trong Vault (cả chính và phụ)"""
     user_id = session['user_id']
     with get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute('SELECT discord_id FROM users WHERE id = ?', (user_id,))
+        cursor.execute('''
+            SELECT id, discord_token, discord_id, discord_username, discord_avatar, avatar_decoration, banner, profile_effect, bio 
+            FROM users WHERE id = ?
+        ''', (user_id,))
         u_row = cursor.fetchone()
-        main_discord_id = (u_row['discord_id'] if u_row else '') or ''
 
-        if main_discord_id:
-            cursor.execute('DELETE FROM discord_accounts WHERE user_id = ? AND discord_id = ?', (user_id, str(main_discord_id)))
-            conn.commit()
-            cursor.execute('''
-                SELECT id, discord_id, discord_username, discord_avatar, avatar_decoration, banner, profile_effect, is_active, created_at 
-                FROM discord_accounts 
-                WHERE user_id = ? AND discord_id != ?
-                ORDER BY is_active DESC, id DESC
-            ''', (user_id, str(main_discord_id)))
-        else:
-            cursor.execute('''
-                SELECT id, discord_id, discord_username, discord_avatar, avatar_decoration, banner, profile_effect, is_active, created_at 
-                FROM discord_accounts 
-                WHERE user_id = ?
-                ORDER BY is_active DESC, id DESC
-            ''', (user_id,))
-        accounts = [dict(r) for r in cursor.fetchall()]
-    return jsonify({'success': True, 'accounts': accounts})
+        cursor.execute('''
+            SELECT id, token, discord_id, discord_username, discord_avatar, avatar_decoration, banner, profile_effect, is_active, created_at 
+            FROM discord_accounts 
+            WHERE user_id = ?
+            ORDER BY is_active DESC, id DESC
+        ''', (user_id,))
+        sub_rows = [dict(r) for r in cursor.fetchall()]
+
+    all_accounts = []
+    seen_discord_ids = set()
+
+    for r in sub_rows:
+        d_id = str(r['discord_id']) if r['discord_id'] else str(r['id'])
+        if d_id not in seen_discord_ids:
+            seen_discord_ids.add(d_id)
+            all_accounts.append({
+                'id': str(r['id']),
+                'db_id': r['id'],
+                'discord_id': r['discord_id'] or '',
+                'discord_username': r['discord_username'] or 'Discord User',
+                'discord_avatar': r['discord_avatar'] or '',
+                'avatar_decoration': r['avatar_decoration'] or '',
+                'banner': r['banner'] or '',
+                'profile_effect': r['profile_effect'] or '',
+                'is_active': 1 if r.get('is_active') == 1 else 0,
+                'main': r.get('is_active') == 1 or len(all_accounts) == 0,
+                'has_token': bool(r.get('token') and len(r['token']) > 20)
+            })
+
+    if u_row and (u_row['discord_token'] or u_row['discord_username']):
+        u_did = str(u_row['discord_id']) if u_row['discord_id'] else 'main'
+        if u_did not in seen_discord_ids:
+            seen_discord_ids.add(u_did)
+            all_accounts.insert(0, {
+                'id': 'main',
+                'db_id': 'main',
+                'discord_id': u_row['discord_id'] or '',
+                'discord_username': u_row['discord_username'] or 'Discord User',
+                'discord_avatar': u_row['discord_avatar'] or '',
+                'avatar_decoration': u_row['avatar_decoration'] or '',
+                'banner': u_row['banner'] or '',
+                'profile_effect': u_row['profile_effect'] or '',
+                'is_active': 1 if not any(a.get('is_active') == 1 for a in all_accounts) else 0,
+                'main': True,
+                'has_token': bool(u_row['discord_token'] and len(u_row['discord_token']) > 20)
+            })
+
+    if all_accounts and not any(a.get('main') for a in all_accounts):
+        all_accounts[0]['main'] = True
+
+    return jsonify({'success': True, 'accounts': all_accounts})
 
 @account_bp.route('/api/accounts/switch', methods=['POST'])
 @login_required

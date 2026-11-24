@@ -179,7 +179,11 @@ def api_userbot_start():
     user_id = session['user_id']
     data = request.get_json() or {}
     account_id = data.get('account_id', 'main')
-    prefix = str(data.get('prefix', '')).strip() or 'm'
+    raw_prefix = str(data.get('prefix', '')).strip()
+    if raw_prefix.lower() in ('none', 'off', 'no', 'empty', 'null', '0', ''):
+        prefix = ''
+    else:
+        prefix = raw_prefix
 
     with get_db() as conn:
         cursor = conn.cursor()
@@ -237,14 +241,14 @@ def api_userbot_toggle():
     user_id = session['user_id']
     data = request.get_json() or {}
     account_id = data.get('account_id', 'main')
-    prefix = str(data.get('prefix', '')).strip()
+    raw_prefix = str(data.get('prefix', '')).strip()
 
     with get_db() as conn:
         cursor = conn.cursor()
         token = ''
         name = ''
         bot_enabled = 0
-        saved_prefix = 'm'
+        saved_prefix = ''
         if str(account_id) == 'main':
             cursor.execute('SELECT username, discord_token, discord_username, bot_enabled, bot_prefix FROM users WHERE id = ?', (user_id,))
             u = cursor.fetchone()
@@ -252,7 +256,7 @@ def api_userbot_toggle():
                 token = u['discord_token']
                 name = u['discord_username'] or u['username']
                 bot_enabled = int(u['bot_enabled'] or 0)
-                saved_prefix = u['bot_prefix'] or 'm'
+                saved_prefix = '' if u['bot_prefix'] is None else str(u['bot_prefix'])
         else:
             cursor.execute('SELECT token, discord_username, bot_enabled, bot_prefix FROM discord_accounts WHERE id = ? AND user_id = ?', (account_id, user_id))
             s = cursor.fetchone()
@@ -260,12 +264,16 @@ def api_userbot_toggle():
                 token = s['token']
                 name = s['discord_username'] or f"Sub-{account_id}"
                 bot_enabled = int(s['bot_enabled'] or 0)
-                saved_prefix = s['bot_prefix'] or 'm'
+                saved_prefix = '' if s['bot_prefix'] is None else str(s['bot_prefix'])
 
     if not token or len(token) < 20:
         return jsonify({'success': False, 'message': 'Chưa nạp Discord Token cho tài khoản này!'}), 400
 
-    use_prefix = prefix if prefix else saved_prefix
+    if raw_prefix.lower() in ('none', 'off', 'no', 'empty', 'null', '0', ''):
+        use_prefix = '' if raw_prefix else saved_prefix
+    else:
+        use_prefix = raw_prefix
+
     is_live = userbot_worker.is_running(token)
 
     # Nếu đang chạy -> tắt
@@ -284,21 +292,52 @@ def api_userbot_toggle():
 @userbot_bp.route('/api/userbot/set_prefix', methods=['POST'])
 @login_required
 def api_userbot_set_prefix():
-    """Cập nhật tiền tố (prefix) cho bot"""
+    """Cập nhật tiền tố (prefix) cho bot (hỗ trợ chế độ none - không cần tiền tố)"""
     user_id = session['user_id']
     data = request.get_json() or {}
     account_id = data.get('account_id', 'main')
-    prefix = str(data.get('prefix', 'm')).strip() or 'm'
+    raw_prefix = str(data.get('prefix', '')).strip()
+
+    if raw_prefix.lower() in ('none', 'off', 'no', 'empty', 'null', '0', ''):
+        prefix = ''
+    else:
+        prefix = raw_prefix
 
     with get_db() as conn:
         cursor = conn.cursor()
+        token = ''
         if str(account_id) == 'main':
             cursor.execute('UPDATE users SET bot_prefix = ? WHERE id = ?', (prefix, user_id))
+            cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
+            u = cursor.fetchone()
+            if u:
+                token = u['discord_token']
         else:
             cursor.execute('UPDATE discord_accounts SET bot_prefix = ? WHERE id = ? AND user_id = ?', (prefix, account_id, user_id))
+            cursor.execute('SELECT token FROM discord_accounts WHERE id = ? AND user_id = ?', (account_id, user_id))
+            s = cursor.fetchone()
+            if s:
+                token = s['token']
         conn.commit()
 
-    return jsonify({'success': True, 'message': f'Đã đổi prefix thành: {prefix}', 'prefix': prefix})
+    # Cập nhật bot đang chạy nếu có
+    if token:
+        try:
+            from apps.user_discord.core import runtime
+            from apps.user_discord.utils import prefix as pfx_util
+            bot = runtime.get_live(token)
+            if bot:
+                pfx_util.set_prefix(bot, prefix)
+        except Exception:
+            pass
+
+    display_name = 'none (không dùng tiền tố)' if prefix == '' else prefix
+    return jsonify({
+        'success': True,
+        'message': f'Đã đổi prefix thành: {display_name}',
+        'prefix': prefix,
+        'is_none': prefix == ''
+    })
 
 @userbot_bp.route('/api/userbot/logs', methods=['GET'])
 @login_required

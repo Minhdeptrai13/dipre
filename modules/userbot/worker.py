@@ -212,9 +212,9 @@ class UserBotWorker:
                 main_users = cursor.fetchall()
                 for u in main_users:
                     token = u['discord_token']
-                    prefix = u['bot_prefix'] or 'm'
+                    prefix = '' if u['bot_prefix'] is None else str(u['bot_prefix'])
                     name = u['username'] or f"MainUser-{u['id']}"
-                    userbot_log(f"Tự động chạy lại UserBot chính cho {name}...", "info")
+                    userbot_log(f"Tự động chạy lại UserBot chính cho {name} (Prefix: '{prefix or 'None'}')...", "info")
                     threading.Thread(
                         target=self.start_bot,
                         args=(u['id'], 'main', token, prefix, name),
@@ -226,9 +226,9 @@ class UserBotWorker:
                 sub_accs = cursor.fetchall()
                 for a in sub_accs:
                     token = a['token']
-                    prefix = a['bot_prefix'] or 'm'
+                    prefix = '' if a['bot_prefix'] is None else str(a['bot_prefix'])
                     name = a['discord_username'] or f"SubAcc-{a['id']}"
-                    userbot_log(f"Tự động chạy lại UserBot phụ cho {name}...", "info")
+                    userbot_log(f"Tự động chạy lại UserBot phụ cho {name} (Prefix: '{prefix or 'None'}')...", "info")
                     threading.Thread(
                         target=self.start_bot,
                         args=(a['user_id'], a['id'], token, prefix, name),

@@ -870,9 +870,9 @@ beyond the veil, control returns</textarea>
           <select id="ub-account-select" onchange="selectUserbotAccount(this.value)" class="studio-input h-9 px-3 rounded-md text-[12.5px]">
             <!-- Options rendered by JS -->
           </select>
-          <div class="flex items-center h-9 rounded-md bg-obsidian border border-hairline px-2.5 gap-2">
+          <div class="flex items-center h-9 rounded-md bg-obsidian border border-hairline px-2.5 gap-2" title="Tiền tố lệnh UserBot. Nhập 'none' để chạy lệnh không cần prefix">
             <span class="text-[11px] font-mono text-muted">PREFIX</span>
-            <input id="ub-prefix-input" type="text" value="m" maxlength="4" oninput="updateGlobalPrefix(this.value)" class="w-10 bg-transparent text-center font-mono text-[13px] font-semibold text-ink focus:outline-none" />
+            <input id="ub-prefix-input" type="text" value="none" maxlength="8" placeholder="none" oninput="updateGlobalPrefix(this.value)" class="w-16 bg-transparent text-center font-mono text-[13px] font-semibold text-ink focus:outline-none" />
           </div>
           <button id="ub-master-btn" onclick="toggleMasterBot()" class="btn-primary h-9 px-4 rounded-md text-[12.5px] font-semibold flex items-center gap-2">
             <i data-lucide="power" class="w-3.5 h-3.5"></i>
@@ -1856,27 +1856,30 @@ beyond the veil, control returns</textarea>
         const res = await fetch('/api/accounts/list');
         const data = await res.json();
         if (data && data.success && Array.isArray(data.accounts)) {
-          const mapped = data.accounts.map(acc => ({
-            id: String(acc.id || acc.discord_id),
-            db_id: acc.id,
-            discord_id: acc.discord_id,
-            name: acc.discord_username || 'Discord User',
-            initials: (acc.discord_username || 'DU').slice(0, 2).toUpperCase(),
-            main: Boolean(acc.is_active || acc.account_type === 'main'),
-            avatar: acc.discord_avatar,
-            avatar_decoration: acc.avatar_decoration,
-            banner: acc.banner,
-            profile_effect: acc.profile_effect,
-            nitro: true,
-            ping: state.ping || 18,
-            botOn: false,
-            prefix: '!',
-            servers: 0,
-            presenceTarget: true
-          }));
+          const mapped = data.accounts.map(acc => {
+            const cur = state.accounts.find(a => (a.id === String(acc.id) || (acc.discord_id && a.discord_id === acc.discord_id)));
+            return {
+              id: String(acc.id || acc.discord_id),
+              db_id: acc.id,
+              discord_id: acc.discord_id,
+              name: acc.discord_username || 'Discord User',
+              initials: (acc.discord_username || 'DU').slice(0, 2).toUpperCase(),
+              main: Boolean(acc.is_active || acc.account_type === 'main' || acc.main),
+              avatar: acc.discord_avatar || acc.avatar || '',
+              avatar_decoration: acc.avatar_decoration || '',
+              banner: acc.banner || '',
+              profile_effect: acc.profile_effect || '',
+              nitro: true,
+              ping: state.ping || 18,
+              botOn: cur ? cur.botOn : Boolean(acc.is_running || acc.bot_enabled),
+              prefix: cur ? cur.prefix : ((acc.bot_prefix !== undefined && acc.bot_prefix !== null) ? acc.bot_prefix : ''),
+              servers: cur ? cur.servers : 0,
+              presenceTarget: true
+            };
+          });
 
           if (SERVER_CONTEXT.hasToken && SERVER_CONTEXT.discordUsername) {
-            const exists = mapped.some(m => m.name === SERVER_CONTEXT.discordUsername);
+            const exists = mapped.some(m => m.name === SERVER_CONTEXT.discordUsername || (SERVER_CONTEXT.discordId && m.discord_id === SERVER_CONTEXT.discordId));
             if (!exists) {
               mapped.unshift({
                 id: SERVER_CONTEXT.discordId || 'main',
@@ -1885,14 +1888,14 @@ beyond the veil, control returns</textarea>
                 name: SERVER_CONTEXT.discordUsername,
                 initials: SERVER_CONTEXT.initials || 'DU',
                 main: true,
-                avatar: SERVER_CONTEXT.discordAvatar,
-                avatar_decoration: SERVER_CONTEXT.avatarDecoration,
-                banner: SERVER_CONTEXT.banner,
+                avatar: SERVER_CONTEXT.discordAvatar || '',
+                avatar_decoration: SERVER_CONTEXT.avatarDecoration || '',
+                banner: SERVER_CONTEXT.banner || '',
                 profile_effect_data: SERVER_CONTEXT.profileEffectData,
                 nitro: true,
                 ping: 18,
                 botOn: false,
-                prefix: '!',
+                prefix: '',
                 servers: 0,
                 presenceTarget: true
               });
@@ -2308,7 +2311,9 @@ beyond the veil, control returns</textarea>
             );
             if (match) {
               match.botOn = Boolean(backendAcc.is_running || backendAcc.bot_enabled == 1);
-              if (backendAcc.bot_prefix) match.prefix = backendAcc.bot_prefix;
+              if (backendAcc.bot_prefix !== undefined && backendAcc.bot_prefix !== null) {
+                match.prefix = backendAcc.bot_prefix;
+              }
               if (backendAcc.details && backendAcc.details.guilds_count) {
                 match.servers = backendAcc.details.guilds_count;
               }
@@ -2339,7 +2344,7 @@ beyond the veil, control returns</textarea>
         const res = await fetch('/api/userbot/toggle', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ account_id: 'main', prefix: main.prefix || 'm' })
+          body: JSON.stringify({ account_id: 'main', prefix: main.prefix !== undefined ? main.prefix : '' })
         });
         const data = await res.json();
         if (data && data.success) {
@@ -2365,7 +2370,7 @@ beyond the veil, control returns</textarea>
         const res = await fetch('/api/userbot/toggle', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ account_id: targetId, prefix: acc.prefix || 'm' })
+          body: JSON.stringify({ account_id: targetId, prefix: acc.prefix !== undefined ? acc.prefix : '' })
         });
         const data = await res.json();
         if (data && data.success) {
@@ -2386,17 +2391,23 @@ beyond the veil, control returns</textarea>
       const selId = document.getElementById('ub-account-select')?.value;
       const acc = state.accounts.find((a) => a.id === selId) || getMainAccount();
       if (!acc) return;
-      const newPrefix = val.trim() || 'm';
+      const raw = (val || '').trim();
+      const isNone = ['none', 'no', 'off', 'null', 'empty', '', '0'].includes(raw.toLowerCase());
+      const newPrefix = isNone ? '' : raw;
       acc.prefix = newPrefix;
       renderCogsGrid();
       renderOverview();
       const targetId = acc.main ? 'main' : (acc.db_id || acc.id);
       try {
-        await fetch('/api/userbot/set_prefix', {
+        const res = await fetch('/api/userbot/set_prefix', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ account_id: targetId, prefix: newPrefix })
         });
+        const data = await res.json();
+        if (data && data.success) {
+          showToast(isNone ? 'Đã chuyển sang chế độ KHÔNG DÙNG TIỀN TỐ (None)' : `Đã đổi prefix thành "${newPrefix}"`);
+        }
       } catch (e) {
         console.warn('Set prefix error:', e);
       }
@@ -2405,18 +2416,21 @@ beyond the veil, control returns</textarea>
     async function updateAccountPrefix(accId, val) {
       const acc = state.accounts.find((a) => a.id === accId);
       if (!acc) return;
-      const newPrefix = val.trim() || 'm';
+      const raw = (val || '').trim();
+      const isNone = ['none', 'no', 'off', 'null', 'empty', '', '0'].includes(raw.toLowerCase());
+      const newPrefix = isNone ? '' : raw;
       acc.prefix = newPrefix;
       renderCogsGrid();
       renderOverview();
       const targetId = acc.main ? 'main' : (acc.db_id || accId);
       try {
-        await fetch('/api/userbot/set_prefix', {
+        const res = await fetch('/api/userbot/set_prefix', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ account_id: targetId, prefix: newPrefix })
         });
-        showToast(`Đã lưu tiền tố "${newPrefix}" cho ${acc.name}`);
+        const data = await res.json();
+        showToast(isNone ? `Đã tắt tiền tố (None) cho ${acc.name}` : `Đã lưu tiền tố "${newPrefix}" cho ${acc.name}`);
       } catch (e) {
         console.warn('Set prefix error:', e);
       }
@@ -2426,7 +2440,10 @@ beyond the veil, control returns</textarea>
       const acc = state.accounts.find((a) => a.id === accId);
       if (acc) {
         const inp = document.getElementById('ub-prefix-input');
-        if (inp) inp.value = acc.prefix || 'm';
+        if (inp) {
+          const isNone = !acc.prefix || ['none', 'no', 'off', 'null', 'empty'].includes(String(acc.prefix).toLowerCase());
+          inp.value = isNone ? 'none' : acc.prefix;
+        }
       }
     }
 
@@ -3103,7 +3120,10 @@ beyond the veil, control returns</textarea>
       const botSt = document.getElementById('ov-bot-status');
       botSt.textContent = botOn ? 'Đang Chạy' : 'Đã Tắt';
       botSt.className = botOn ? 'font-display text-2xl font-semibold leading-none text-teal' : 'font-display text-2xl font-semibold leading-none text-zinc-400';
-      document.getElementById('ov-bot-meta').textContent = `Prefix: ${main?.prefix || 'm'} • ${state.cogs.filter((c) => c.on).length} Cogs • SQLite`;
+      const mainPfx = main?.prefix;
+      const isNoneMain = mainPfx === '' || (mainPfx && ['none', 'no', 'off', 'null', 'empty'].includes(String(mainPfx).toLowerCase()));
+      const displayMainPfx = isNoneMain ? 'none' : (mainPfx || 'none');
+      document.getElementById('ov-bot-meta').textContent = `Prefix: ${displayMainPfx} • ${state.cogs.filter((c) => c.on).length} Cogs • SQLite`;
 
       // Cell 4: Background Daemons
       const activeDaemons =
@@ -3336,10 +3356,21 @@ beyond the veil, control returns</textarea>
       } else {
         tbl.innerHTML = state.accounts
           .map(
-            (a) => `
+            (a) => {
+              const hasAvt = a.avatar && a.avatar.startsWith('http');
+              const isNonePfx = a.prefix === '' || (a.prefix && ['none', 'no', 'off', 'null', 'empty'].includes(String(a.prefix).toLowerCase()));
+              const pfxVal = isNonePfx ? 'none' : a.prefix;
+              return `
               <div class="px-5 py-3 flex flex-wrap items-center justify-between gap-3">
                 <div class="flex items-center gap-3 min-w-[180px]">
-                  <div class="w-8 h-8 rounded-md bg-panel border border-hairline flex items-center justify-center font-display text-[12px] font-semibold">${a.initials}</div>
+                  <div class="relative w-8 h-8 shrink-0 flex items-center justify-center">
+                    ${hasAvt ? `
+                      <img src="${a.avatar}" alt="${a.name}" class="w-8 h-8 rounded-full object-cover border border-hairline" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-8 h-8 rounded-md bg-panel border border-hairline flex items-center justify-center font-display text-[12px] font-semibold\\'>${a.initials}</div>';" />
+                      ${a.avatar_decoration && a.avatar_decoration.startsWith('http') ? `<img src="${a.avatar_decoration}" alt="Decor" class="absolute -inset-1 w-10 h-10 object-contain pointer-events-none select-none z-10" />` : ''}
+                    ` : `
+                      <div class="w-8 h-8 rounded-md bg-panel border border-hairline flex items-center justify-center font-display text-[12px] font-semibold">${a.initials}</div>
+                    `}
+                  </div>
                   <div>
                     <div class="text-[13px] font-medium text-ink flex items-center gap-2">
                       <span>${a.name}</span>
@@ -3350,14 +3381,15 @@ beyond the veil, control returns</textarea>
                 </div>
 
                 <div class="flex items-center gap-4">
-                  <div class="flex items-center gap-1.5 text-[11.5px] font-mono text-muted">
+                  <div class="flex items-center gap-1.5 text-[11.5px] font-mono text-muted" title="Nhập 'none' để không dùng tiền tố">
                     <span>Prefix:</span>
                     <input
                       type="text"
-                      value="${a.prefix}"
-                      maxlength="3"
+                      value="${pfxVal}"
+                      maxlength="8"
+                      placeholder="none"
                       oninput="updateAccountPrefix('${a.id}', this.value)"
-                      class="studio-input w-11 h-7 text-center rounded text-[12px] text-ink"
+                      class="studio-input w-16 h-7 text-center rounded text-[12px] text-ink font-semibold"
                     />
                   </div>
                   <span class="font-mono text-[11px] w-16 text-right ${a.botOn ? 'text-teal' : 'text-muted'}">
@@ -3366,7 +3398,8 @@ beyond the veil, control returns</textarea>
                   <button onclick="toggleAccountBot('${a.id}')" class="hw-switch ${a.botOn ? 'on' : ''}" aria-label="Toggle Bot"></button>
                 </div>
               </div>
-            `
+            `;
+            }
           )
           .join('');
       }
@@ -3387,7 +3420,9 @@ beyond the veil, control returns</textarea>
 
     function renderCogsGrid() {
       const q = (document.getElementById('cog-search')?.value || '').trim().toLowerCase();
-      const prefix = getMainAccount()?.prefix || 'm';
+      const pfxRaw = getMainAccount()?.prefix;
+      const isNone = pfxRaw === '' || (pfxRaw && ['none', 'no', 'off', 'null', 'empty'].includes(String(pfxRaw).toLowerCase()));
+      const prefix = isNone ? '' : (pfxRaw || '');
       const grid = document.getElementById('cogs-grid');
       if (!grid) return;
 
@@ -3408,10 +3443,11 @@ beyond the veil, control returns</textarea>
                   <div class="text-[13px] font-medium text-ink flex items-center gap-1.5">
                     <span>${c.name}</span>
                     <span class="font-mono text-[9.5px] px-1 py-0.2 rounded bg-white/[0.06] text-muted">${c.cat}</span>
+                    ${isNone ? '<span class="font-mono text-[9px] px-1.5 py-0.2 rounded bg-teal/15 text-teal border border-teal/20">NO-PFX</span>' : ''}
                   </div>
                   <div class="font-mono text-[11px] text-teal mt-0.5 flex items-center gap-1">
                     <span class="px-1.5 py-0.5 rounded bg-teal/10 border border-teal/25 font-bold">${prefix}${c.cmd}</span>
-                    <span class="text-[10px] text-muted truncate">hoặc ${prefix}help ${c.cmd}</span>
+                    <span class="text-[10px] text-muted truncate">${isNone ? `gõ trực tiếp: ${c.cmd}` : `hoặc ${prefix}help ${c.cmd}`}</span>
                   </div>
                 </div>
                 <button onclick="toggleCog(${c.idx})" class="hw-switch ${c.on ? 'on' : ''}" aria-label="Toggle Cog"></button>
