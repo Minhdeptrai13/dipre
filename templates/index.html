@@ -15,10 +15,10 @@
       } catch (e) {}
     })();
   </script>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/dipre_ui.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme_hub.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/master_design.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dipre_ui.css') }}">
   <link rel="icon" href="{{ url_for('static', filename='img/dipre_logo.png') }}" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -183,16 +183,6 @@
           </button>
         </div>
       </header>
-
-      {% if not has_token %}
-      <div class="token-alert-subtle" id="token-alert-bar">
-        <div class="tas-content">
-          <span class="tas-icon">⚡</span>
-          <span class="tas-text">Chưa gắn Discord User Token. Nạp token để kích hoạt toàn bộ tính năng RPC &amp; Voice.</span>
-        </div>
-        <button type="button" class="tas-action" onclick="toggleAddTokenModal(true)">Nạp Ngay</button>
-      </div>
-      {% endif %}
 
       <section class="tab-panel active" id="tab-home">
         <div class="dashboard-center-wrapper">
