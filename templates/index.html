@@ -922,6 +922,36 @@ beyond the veil, control returns</textarea>
           <!-- Rendered by JS -->
         </div>
       </div>
+
+      <!-- Real-Time UserBot Telemetry Terminal & Live Log Inspector -->
+      <div class="surface-carbon rounded-lg overflow-hidden border border-hairline">
+        <div class="px-5 py-3.5 border-b border-hairline flex flex-wrap items-center justify-between gap-3 bg-panel/40">
+          <div class="flex items-center gap-2.5">
+            <span class="w-2 h-2 rounded-full bg-teal pulse-live"></span>
+            <h2 class="font-display text-[14.5px] font-semibold text-ink">UserBot Live Telemetry & Event Stream</h2>
+            <span id="ub-active-tag" class="font-mono text-[10.5px] px-2 py-0.5 rounded bg-teal/10 text-teal border border-teal/20">0 BOTS ACTIVE</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="refreshUserbotLogs()" class="btn-secondary h-8 px-3 rounded-md text-[11.5px] font-medium flex items-center gap-1.5 hover:text-ink">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+              <span>Làm Mới Log</span>
+            </button>
+            <button onclick="clearUserbotTerminal()" class="btn-secondary h-8 px-3 rounded-md text-[11.5px] font-medium text-muted hover:text-rose hover:border-rose/30">
+              Xóa Màn Hình
+            </button>
+          </div>
+        </div>
+
+        <!-- Terminal Output Screen -->
+        <div class="p-4 bg-[#08080A]">
+          <div id="ub-terminal-screen" class="font-mono text-[11.5px] text-zinc-300 space-y-1 max-h-[260px] overflow-y-auto pr-2 select-text">
+            <div class="text-muted flex items-center gap-2">
+              <span class="text-teal font-semibold">● [SYSTEM]</span>
+              <span>Đang kết nối luồng giám sát UserBot Engine qua SQLite WAL...</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- ====================================================================== -->
@@ -1678,38 +1708,40 @@ beyond the veil, control returns</textarea>
       // UserBot 32 Cogs
       cogCategory: 'Tất cả',
       cogs: [
-        { name: 'AI Chat GPT-4o', cmd: 'ai', cat: 'AI & LLM', desc: 'Hỏi đáp AI trực tiếp trong kênh chat', on: true },
-        { name: 'AI Image Gen', cmd: 'img', cat: 'AI & LLM', desc: 'Tạo ảnh nhanh bằng prompt văn bản', on: true },
-        { name: 'AI Summarize', cmd: 'tldr', cat: 'AI & LLM', desc: 'Tóm tắt 50 tin nhắn gần nhất', on: true },
-        { name: 'AI Translator', cmd: 'tr', cat: 'AI & LLM', desc: 'Dịch tự động đa ngôn ngữ chuẩn ngữ cảnh', on: true },
-        { name: 'Code Reviewer', cmd: 'code', cat: 'AI & LLM', desc: 'Phân tích & sửa lỗi đoạn code', on: true },
-        { name: 'TikTok No-WM', cmd: 'tiktok', cat: 'Media Downloader', desc: 'Tải video TikTok không dính logo', on: true },
-        { name: 'YouTube MP4/MP3', cmd: 'ytdl', cat: 'Media Downloader', desc: 'Tải nhanh video hoặc nhạc YouTube', on: true },
-        { name: 'Facebook Reels', cmd: 'fb', cat: 'Media Downloader', desc: 'Tải video Facebook / Reels HD', on: true },
-        { name: 'Instagram Saver', cmd: 'ig', cat: 'Media Downloader', desc: 'Lưu Story và Reels Instagram', on: true },
-        { name: 'SoundCloud Rip', cmd: 'scdl', cat: 'Media Downloader', desc: 'Xuất file MP3 từ link SoundCloud', on: true },
-        { name: 'Sticker Stealer', cmd: 'steal', cat: 'Media Downloader', desc: 'Sao chép Emoji/Sticker sang server khác', on: true },
-        { name: 'Voice 24/7 Join', cmd: 'vjoin', cat: 'Voice & Lavalink', desc: 'Đưa userbot vào treo phòng thoại', on: true },
-        { name: 'Lavalink Music', cmd: 'play', cat: 'Voice & Lavalink', desc: 'Phát nhạc chất lượng cao qua Lavalink', on: true },
-        { name: 'Voice TTS Engine', cmd: 'tts', cat: 'Voice & Lavalink', desc: 'Đọc văn bản tiếng Việt trong phòng Voice', on: true },
-        { name: 'Audio BassBoost', cmd: 'bass', cat: 'Voice & Lavalink', desc: 'Bộ lọc âm thanh Bass / Nightcore', on: false },
-        { name: 'Voice Recorder', cmd: 'vrec', cat: 'Voice & Lavalink', desc: 'Ghi âm luồng thoại phòng hiện tại', on: false },
-        { name: 'Auto Quest CLI', cmd: 'quest', cat: 'Automation', desc: 'Kích hoạt luồng hoàn thành Quest', on: true },
-        { name: 'Auto Bump Disboard', cmd: 'bump', cat: 'Automation', desc: 'Tự động /bump server mỗi 2 giờ', on: true },
-        { name: 'Scheduled Message', cmd: 'sched', cat: 'Automation', desc: 'Hẹn giờ gửi tin nhắn định kỳ', on: true },
-        { name: 'Auto React Filter', cmd: 'autoreact', cat: 'Automation', desc: 'Tự thả biểu cảm theo từ khóa hoặc ID', on: false },
-        { name: 'Nitro Radar Hook', cmd: 'sniper', cat: 'Automation', desc: 'Bật nhanh radar bắt gift qua lệnh chat', on: true },
-        { name: 'Message Purger', cmd: 'purge', cat: 'Automation', desc: 'Dọn tin nhắn của chính mình trong kênh', on: true },
-        { name: 'Smart AFK Reply', cmd: 'afk', cat: 'AFK & Tiện Ích', desc: 'Tự trả lời khi có người @mention lúc vắng', on: true },
-        { name: 'Snipe Deleted Msg', cmd: 'snipe', cat: 'AFK & Tiện Ích', desc: 'Xem lại tin nhắn vừa bị xóa gần nhất', on: true },
-        { name: 'Crypto Price Feed', cmd: 'crypto', cat: 'AFK & Tiện Ích', desc: 'Tra cứu giá BTC, ETH, SOL realtime', on: true },
-        { name: 'Server Info Audit', cmd: 'sinfo', cat: 'AFK & Tiện Ích', desc: 'Xem thông số chi tiết và boost server', on: true },
-        { name: 'User Banner Grab', cmd: 'avatar', cat: 'AFK & Tiện Ích', desc: 'Lấy ảnh đại diện & banner độ phân giải gốc', on: true },
-        { name: 'Ping & Shard Info', cmd: 'ping', cat: 'AFK & Tiện Ích', desc: 'Kiểm tra độ trễ Gateway & REST API', on: true },
-        { name: 'SQLite Backup', cmd: 'backup', cat: 'AFK & Tiện Ích', desc: 'Sao lưu toàn bộ cấu hình UserBot cục bộ', on: true },
-        { name: 'Typing Spoofer', cmd: 'typing', cat: 'AFK & Tiện Ích', desc: 'Giữ trạng thái đang nhập tin nhắn', on: false },
-        { name: 'Reminder Alarm', cmd: 'remind', cat: 'AFK & Tiện Ích', desc: 'Đặt lời nhắc công việc trực tiếp trong DM', on: true },
-        { name: 'Quick Calculator', cmd: 'calc', cat: 'AFK & Tiện Ích', desc: 'Tính toán biểu thức & chuyển đổi tiền tệ', on: true },
+        { name: 'Alias', cmd: 'alias', cat: 'HỆ THỐNG', desc: 'Quản lý bí danh chính và phụ cho các nhóm lệnh', on: true },
+        { name: 'BOT', cmd: 'bot', cat: 'SYSTEM & SECURITY', desc: 'Bật/tắt bảo vệ & quản trị hệ thống', on: true },
+        { name: 'Gene', cmd: 'gene', cat: 'SYSTEM & SECURITY', desc: 'Quản lý bot chính / phụ (Genesis)', on: true },
+        { name: 'RPC', cmd: 'rpc', cat: 'PROFILE & PRESENCE', desc: 'Tùy biến trạng thái Online / Stream / Game (RPC)', on: true },
+        { name: 'AFK', cmd: 'afk', cat: 'AUTOMATION & QUEST', desc: 'Tự trả lời khi AFK & thống kê tag/ib', on: true },
+        { name: 'AI', cmd: 'ai', cat: 'AUTOMATION & QUEST', desc: 'Tro ly AI hoi dap thong minh & nhi nhanh', on: true },
+        { name: 'Quest', cmd: 'quest', cat: 'AUTOMATION & QUEST', desc: 'Menu ảnh Dashboard & auto cày Quest', on: true },
+        { name: 'Crypto', cmd: 'crypto', cat: 'AI & TIỆN ÍCH', desc: 'Tra cuu thi truong Tien Dien Tu Realtime', on: true },
+        { name: 'DEL', cmd: 'del', cat: 'UTILITY & CLEANER', desc: 'Xoá tin nhắn (reply / số lượng / all)', on: true },
+        { name: 'Dich', cmd: 'dich', cat: 'AI & TIỆN ÍCH', desc: 'Dich thuat da ngon ngu thong minh Realtime', on: true },
+        { name: 'DL', cmd: 'dl', cat: 'MEDIA & ENTERTAINMENT', desc: 'Tai video FB, IG, X, Threads, TikTok, Shorts', on: true },
+        { name: 'Tachnhac', cmd: 'tachnhac', cat: 'MEDIA & ENTERTAINMENT', desc: 'Tach am thanh MP3 tu video (reply, file, link)', on: true },
+        { name: 'FB', cmd: 'fb', cat: 'MEDIA & ENTERTAINMENT', desc: 'Tai video & anh Facebook Reels, Watch, Photo', on: true },
+        { name: 'Github', cmd: 'github', cat: 'AI & TIỆN ÍCH', desc: 'Tra cuu Profile, Repo va Release GitHub', on: true },
+        { name: 'IG', cmd: 'ig', cat: 'MEDIA & ENTERTAINMENT', desc: 'Tai video Instagram Reels / Post', on: true },
+        { name: 'IMG', cmd: 'img', cat: 'AI & TIỆN ÍCH', desc: 'Bo cong cu xu ly anh, tao QR va Avatar HD', on: true },
+        { name: 'Info', cmd: 'info', cat: 'MEDIA & ENTERTAINMENT', desc: 'Xem thông tin chi tiết tài khoản & server', on: true },
+        { name: 'Join', cmd: 'join', cat: 'SYSTEM & SECURITY', desc: 'Gia nhập & tự động tham gia máy chủ Discord', on: true },
+        { name: 'Mail', cmd: 'mail', cat: 'AI & TIỆN ÍCH', desc: 'Hop thu ao 10 phut nhan ma OTP', on: true },
+        { name: 'Menu', cmd: 'menu', cat: 'SYSTEM & SECURITY', desc: 'Bảng điều khiển & danh sách lệnh', on: true },
+        { name: 'Help', cmd: 'help', cat: 'SYSTEM & SECURITY', desc: 'Xem thẻ hướng dẫn chi tiết từng lệnh', on: true },
+        { name: 'Read', cmd: 'read', cat: 'AUTOMATION & QUEST', desc: 'Đánh dấu đã đọc & dọn sạch chấm đỏ thông báo', on: true },
+        { name: 'Server', cmd: 'server', cat: 'SYSTEM & SECURITY', desc: 'Quản lý & điều khiển server toàn diện (Role/Kênh/Tên)', on: true },
+        { name: 'Short', cmd: 'short', cat: 'AI & TIỆN ÍCH', desc: 'Rut gon link dai thanh link ngan sieu toc', on: true },
+        { name: 'Unshort', cmd: 'unshort', cat: 'AI & TIỆN ÍCH', desc: 'Soi link an, giai ma link rut gon & canh bao IP logger', on: true },
+        { name: 'SCL', cmd: 'scl', cat: 'MEDIA & ENTERTAINMENT', desc: 'Nghe nhạc SoundCloud lossless & tải MP3', on: true },
+        { name: 'Threads', cmd: 'threads', cat: 'MEDIA & ENTERTAINMENT', desc: 'Tai video Threads', on: true },
+        { name: 'TT', cmd: 'tt', cat: 'MEDIA & ENTERTAINMENT', desc: 'Tải video TikTok không logo (hoặc Voice)', on: true },
+        { name: 'Voice', cmd: 'voice', cat: 'AUTOMATION & QUEST', desc: 'Treo Voice 24/7 nhẹ mượt & tự động giữ phòng', on: true },
+        { name: 'VPS', cmd: 'vps', cat: 'SYSTEM & SECURITY', desc: 'Khởi tạo Cloud Linux VPS miễn phí', on: true },
+        { name: 'WAR', cmd: 'war', cat: 'AUTOMATION & QUEST', desc: 'Auto spam sớ chửi & poll trừng phạt', on: true },
+        { name: 'Thoitiet', cmd: 'thoitiet', cat: 'AI & TIỆN ÍCH', desc: 'Tra cuu thoi tiet toan cau Realtime', on: true },
+        { name: 'X', cmd: 'x', cat: 'MEDIA & ENTERTAINMENT', desc: 'Tai video X / Twitter', on: true },
+        { name: 'YT', cmd: 'yt', cat: 'MEDIA & ENTERTAINMENT', desc: 'Phát Voice YouTube (yt-dlp Info + Lavalink Voice)', on: true },
       ],
 
       // Inbox Messages
@@ -1888,9 +1920,13 @@ beyond the veil, control returns</textarea>
 
     window.addEventListener('DOMContentLoaded', () => {
 
-      // Fetch real accounts and real inbox from backend
+      // Fetch real accounts, real inbox and live userbot status from backend
       syncAccountsFromBackend();
       syncRealInbox();
+      syncUserbotStatus();
+      refreshUserbotLogs();
+      setInterval(syncUserbotStatus, 5000);
+      setInterval(refreshUserbotLogs, 4000);
 
       initSoundboardVisualizer();
       renderSoundboardPads();
@@ -1973,6 +2009,10 @@ beyond the veil, control returns</textarea>
       // Mount shared 1:1 Discord Simulator into Overview or Presence Studio
       if (ws === 'overview') mountSimulator('slot-preview-overview');
       if (ws === 'presence') mountSimulator('slot-preview-presence');
+      if (ws === 'userbot') {
+        syncUserbotStatus();
+        refreshUserbotLogs();
+      }
 
       renderAll();
     }
@@ -2236,60 +2276,202 @@ beyond the veil, control returns</textarea>
       renderPresenceAccountChips();
     }
 
-    /* ---------- USERBOT CORE LOGIC ---------- */
-    function toggleMasterBot() {
+    /* ---------- USERBOT CORE LOGIC (FULL BACKEND SYNC & REALTIME TELEMETRY) ---------- */
+    async function syncUserbotStatus() {
+      try {
+        if (!location.protocol.startsWith('http')) return;
+        const res = await fetch('/api/userbot/status');
+        const data = await res.json();
+        if (data && data.success && Array.isArray(data.accounts)) {
+          // Merge live status from backend into state.accounts
+          data.accounts.forEach(backendAcc => {
+            const match = state.accounts.find(a => 
+              (backendAcc.account_type === 'main' && a.main) ||
+              (backendAcc.account_id && a.db_id == backendAcc.account_id) ||
+              (backendAcc.discord_id && a.discord_id == backendAcc.discord_id)
+            );
+            if (match) {
+              match.botOn = Boolean(backendAcc.is_running || backendAcc.bot_enabled == 1);
+              if (backendAcc.bot_prefix) match.prefix = backendAcc.bot_prefix;
+              if (backendAcc.details && backendAcc.details.guilds_count) {
+                match.servers = backendAcc.details.guilds_count;
+              }
+            }
+          });
+
+          const activeCount = data.accounts.filter(a => a.is_running || a.bot_enabled == 1).length;
+          const tag = document.getElementById('ub-active-tag');
+          if (tag) tag.textContent = `${activeCount} BOT${activeCount !== 1 ? 'S' : ''} ACTIVE`;
+
+          renderUserbotView();
+          renderOverview();
+        }
+      } catch (err) {
+        console.warn('Error fetching live userbot status:', err);
+      }
+    }
+
+    async function toggleMasterBot() {
       const main = getMainAccount();
       if (!main) {
         showToast('Cần ít nhất 1 Token trong Vault để chạy UserBot');
         openTokenDrawer();
         return;
       }
-      main.botOn = !main.botOn;
-      renderAll();
-      showToast(`UserBot (${main.name}): ${main.botOn ? 'ĐÃ KÍCH HOẠT' : 'ĐÃ DỪNG'}`);
+      showToast('Đang gửi lệnh thay đổi trạng thái Bot Chính...');
+      try {
+        const res = await fetch('/api/userbot/toggle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ account_id: 'main', prefix: main.prefix || 'm' })
+        });
+        const data = await res.json();
+        if (data && data.success) {
+          main.botOn = Boolean(data.is_running);
+          showToast(`Bot Chính (${main.name}): ${main.botOn ? 'ĐÃ KÍCH HOẠT (Online)' : 'ĐÃ DỪNG (Offline)'}`);
+          await syncUserbotStatus();
+          await refreshUserbotLogs();
+        } else {
+          showToast(data.message || 'Lỗi điều khiển Bot');
+        }
+      } catch (err) {
+        console.error('Error toggling master bot:', err);
+        showToast('Lỗi kết nối tới máy chủ UserBot');
+      }
+    }
+
+    async function toggleAccountBot(accId) {
+      const acc = state.accounts.find((a) => a.id === accId);
+      if (!acc) return;
+      const targetId = acc.main ? 'main' : (acc.db_id || accId);
+      showToast(`Đang gửi lệnh bật/tắt Bot: ${acc.name}...`);
+      try {
+        const res = await fetch('/api/userbot/toggle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ account_id: targetId, prefix: acc.prefix || 'm' })
+        });
+        const data = await res.json();
+        if (data && data.success) {
+          acc.botOn = Boolean(data.is_running);
+          showToast(`Bot [${acc.name}]: ${acc.botOn ? 'ĐÃ BẬT (Online)' : 'ĐÃ TẮT (Offline)'}`);
+          await syncUserbotStatus();
+          await refreshUserbotLogs();
+        } else {
+          showToast(data.message || 'Lỗi bật/tắt bot tài khoản');
+        }
+      } catch (err) {
+        console.error('Error toggling account bot:', err);
+        showToast('Lỗi khi gửi lệnh bật/tắt');
+      }
+    }
+
+    async function updateGlobalPrefix(val) {
+      const selId = document.getElementById('ub-account-select')?.value;
+      const acc = state.accounts.find((a) => a.id === selId) || getMainAccount();
+      if (!acc) return;
+      const newPrefix = val.trim() || 'm';
+      acc.prefix = newPrefix;
+      renderCogsGrid();
+      renderOverview();
+      const targetId = acc.main ? 'main' : (acc.db_id || acc.id);
+      try {
+        await fetch('/api/userbot/set_prefix', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ account_id: targetId, prefix: newPrefix })
+        });
+      } catch (e) {
+        console.warn('Set prefix error:', e);
+      }
+    }
+
+    async function updateAccountPrefix(accId, val) {
+      const acc = state.accounts.find((a) => a.id === accId);
+      if (!acc) return;
+      const newPrefix = val.trim() || 'm';
+      acc.prefix = newPrefix;
+      renderCogsGrid();
+      renderOverview();
+      const targetId = acc.main ? 'main' : (acc.db_id || accId);
+      try {
+        await fetch('/api/userbot/set_prefix', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ account_id: targetId, prefix: newPrefix })
+        });
+        showToast(`Đã lưu tiền tố "${newPrefix}" cho ${acc.name}`);
+      } catch (e) {
+        console.warn('Set prefix error:', e);
+      }
     }
 
     function selectUserbotAccount(accId) {
       const acc = state.accounts.find((a) => a.id === accId);
       if (acc) {
-        document.getElementById('ub-prefix-input').value = acc.prefix;
+        const inp = document.getElementById('ub-prefix-input');
+        if (inp) inp.value = acc.prefix || 'm';
       }
-    }
-
-    function updateGlobalPrefix(val) {
-      const selId = document.getElementById('ub-account-select').value;
-      const acc = state.accounts.find((a) => a.id === selId) || getMainAccount();
-      if (acc) {
-        acc.prefix = val || 'm';
-        renderUserbotView();
-        renderOverview();
-      }
-    }
-
-    function toggleAccountBot(accId) {
-      const acc = state.accounts.find((a) => a.id === accId);
-      if (!acc) return;
-      acc.botOn = !acc.botOn;
-      renderAll();
-      showToast(`Bot [${acc.name}]: ${acc.botOn ? 'Online' : 'Offline'}`);
-    }
-
-    function updateAccountPrefix(accId, val) {
-      const acc = state.accounts.find((a) => a.id === accId);
-      if (!acc) return;
-      acc.prefix = val || 'm';
-      renderCogsGrid();
-      renderOverview();
     }
 
     function toggleCog(idx) {
-      state.cogs[idx].on = !state.cogs[idx].on;
-      renderUserbotView();
+      if (state.cogs[idx]) {
+        state.cogs[idx].on = !state.cogs[idx].on;
+        renderUserbotView();
+        showToast(`Đã ${state.cogs[idx].on ? 'bật' : 'tắt'} module ${state.cogs[idx].name}`);
+      }
     }
 
     function setCogCategory(cat) {
       state.cogCategory = cat;
       renderUserbotView();
+    }
+
+    async function refreshUserbotLogs() {
+      try {
+        const res = await fetch('/api/userbot/logs');
+        const data = await res.json();
+        const screen = document.getElementById('ub-terminal-screen');
+        if (screen && data && data.success && Array.isArray(data.logs)) {
+          if (data.logs.length === 0) {
+            screen.innerHTML = `
+              <div class="text-muted flex items-center gap-2">
+                <span class="text-teal font-semibold">● [IDLE]</span>
+                <span>Chưa có log mới. Kích hoạt UserBot để xem luồng Gateway & Dispatcher events.</span>
+              </div>
+            `;
+          } else {
+            screen.innerHTML = data.logs.slice(-50).map(l => {
+              const timeStr = l.time || new Date().toTimeString().slice(0, 8);
+              let badgeColor = 'text-teal';
+              if (l.level === 'error') badgeColor = 'text-rose font-bold';
+              else if (l.level === 'warning') badgeColor = 'text-amber';
+              return `
+                <div class="flex items-start gap-2 py-0.5 border-b border-white/[0.03]">
+                  <span class="text-zinc-500 shrink-0 font-mono text-[11px]">${timeStr}</span>
+                  <span class="${badgeColor} shrink-0 text-[11px] font-semibold">[${(l.level || 'INFO').toUpperCase()}]</span>
+                  <span class="text-zinc-200 break-all">${l.message || ''}</span>
+                </div>
+              `;
+            }).join('');
+            screen.scrollTop = screen.scrollHeight;
+          }
+        }
+      } catch (err) {
+        console.warn('Error refreshing logs:', err);
+      }
+    }
+
+    function clearUserbotTerminal() {
+      const screen = document.getElementById('ub-terminal-screen');
+      if (screen) {
+        screen.innerHTML = `
+          <div class="text-muted flex items-center gap-2">
+            <span class="text-teal font-semibold">● [CLEARED]</span>
+            <span>Màn hình console đã được làm sạch.</span>
+          </div>
+        `;
+      }
     }
 
     /* ---------- VOICE & AUDIO + WEB AUDIO SOUNDBOARD ---------- */
@@ -3174,7 +3356,7 @@ beyond the veil, control returns</textarea>
       }
 
       // Categories
-      const cats = ['Tất cả', 'AI & LLM', 'Media Downloader', 'Voice & Lavalink', 'Automation', 'AFK & Tiện Ích'];
+      const cats = ['Tất cả', 'AI & TIỆN ÍCH', 'MEDIA & ENTERTAINMENT', 'AUTOMATION & QUEST', 'SYSTEM & SECURITY', 'PROFILE & PRESENCE', 'UTILITY & CLEANER', 'HỆ THỐNG'];
       document.getElementById('cog-categories').innerHTML = cats
         .map((c) => {
           const active = state.cogCategory === c;
@@ -3207,8 +3389,14 @@ beyond the veil, control returns</textarea>
             <div class="p-3.5 rounded-md bg-panel border border-hairline flex flex-col justify-between gap-2.5 ${c.on ? '' : 'opacity-55'}">
               <div class="flex items-start justify-between gap-2">
                 <div>
-                  <div class="text-[13px] font-medium text-ink">${c.name}</div>
-                  <div class="font-mono text-[11px] text-teal mt-0.5">${prefix}.${c.cmd}</div>
+                  <div class="text-[13px] font-medium text-ink flex items-center gap-1.5">
+                    <span>${c.name}</span>
+                    <span class="font-mono text-[9.5px] px-1 py-0.2 rounded bg-white/[0.06] text-muted">${c.cat}</span>
+                  </div>
+                  <div class="font-mono text-[11px] text-teal mt-0.5 flex items-center gap-1">
+                    <span class="px-1.5 py-0.5 rounded bg-teal/10 border border-teal/25 font-bold">${prefix}${c.cmd}</span>
+                    <span class="text-[10px] text-muted truncate">hoặc ${prefix}help ${c.cmd}</span>
+                  </div>
                 </div>
                 <button onclick="toggleCog(${c.idx})" class="hw-switch ${c.on ? 'on' : ''}" aria-label="Toggle Cog"></button>
               </div>
