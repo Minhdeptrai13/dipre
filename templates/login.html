@@ -211,7 +211,7 @@
     ::-webkit-scrollbar-thumb { background: #232329; border-radius: 999px; }
     ::-webkit-scrollbar-thumb:hover { background: #34343D; }
   </style>
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 
 <body class="bg-obsidian text-ink min-h-[100dvh] flex flex-col selection:bg-white/15 selection:text-white">
@@ -592,7 +592,7 @@
 
             <!-- Real Cloudflare Turnstile Widget (Explicit Render) -->
             <div class="rounded-md bg-carbon border border-hairline p-2 flex flex-col items-center justify-center min-h-[66px] overflow-hidden">
-              <div id="cf-turnstile-container"></div>
+              <div class="cf-turnstile" id="auth-turnstile" data-sitekey="{{ turnstile_site_key|default('1x00000000000000000000AA', true) }}" data-theme="dark"></div>
             </div>
 
             <!-- Primary Submit CTA: Pure White #FAFAFA / Dark #09090B Text -->
@@ -737,15 +737,12 @@
 
   <!-- ==================== INTERACTIVE AUTH ENGINE SCRIPT ==================== -->
   <script>
-    /* ---------- STATE ---------- */
+    /* ---------- AUTH STATE ---------- */
     const authState = {
       mode: 'login', // 'login' | 'register'
-      turnstile: 'idle', // 'idle' | 'verifying' | 'verified'
       submitting: false,
       latency: 18,
     };
-
-    let turnstileTimer = null;
 
     /* ---------- INITIALIZATION ---------- */
     window.addEventListener('DOMContentLoaded', () => {
@@ -753,9 +750,6 @@
       updateClock();
       setInterval(updateClock, 1000);
       setInterval(updateLiveLatency, 2600);
-
-      // Auto-run Turnstile verification once on load for realistic feel
-      triggerTurnstileVerify(false);
 
       // Keyboard shortcuts: Alt+1 (Login), Alt+2 (Register)
       window.addEventListener('keydown', (e) => {
@@ -776,6 +770,7 @@
 
     function initHandshakeConsole() {
       const box = document.getElementById('handshake-console');
+      if (!box) return;
       const now = getTimeStr();
       box.innerHTML = '';
       appendConsoleLine(`[${now}]`, '[TLS 1.3]', 'Cloudflare Edge verified · HAN-01', 'text-teal');
@@ -794,7 +789,6 @@
         <span class="text-muted truncate">${message}</span>
       `;
       box.appendChild(line);
-      // Keep console compact (max 3 visible lines)
       while (box.children.length > 3) {
         box.removeChild(box.firstChild);
       }
@@ -806,61 +800,69 @@
       authState.mode = mode;
       const isLogin = mode === 'login';
 
+      // Switch form action
       const formEl = document.getElementById('auth-form');
       if (formEl) {
         formEl.action = isLogin ? "{{ url_for('login') }}" : "{{ url_for('register') }}";
-      }
-
-      if (window.turnstile && turnstileWidgetId !== null) {
-        try { turnstile.reset(turnstileWidgetId); } catch(e) {}
-      }
-
-      // Switch form action dynamically
-      const formEl = document.getElementById('auth-form');
-      if (formEl) {
-        formEl.action = isLogin ? "{{ url_for('login') }}" : "{{ url_for('register') }}";
-      }
-
-      if (window.turnstile && turnstileWidgetId !== null) {
-        try { turnstile.reset(turnstileWidgetId); } catch(e) {}
       }
 
       // Slide segmented pill
       const pill = document.getElementById('seg-pill');
-      pill.style.transform = isLogin ? 'translateX(0%)' : 'translateX(100%)';
+      if (pill) pill.style.transform = isLogin ? 'translateX(0%)' : 'translateX(100%)';
 
       // Tab visual states
       const tabLogin = document.getElementById('tab-login');
       const tabReg = document.getElementById('tab-register');
-      tabLogin.setAttribute('aria-selected', String(isLogin));
-      tabReg.setAttribute('aria-selected', String(!isLogin));
-      tabLogin.classList.toggle('text-ink', isLogin);
-      tabLogin.classList.toggle('text-muted', !isLogin);
-      tabReg.classList.toggle('text-ink', !isLogin);
-      tabReg.classList.toggle('text-muted', isLogin);
+      if (tabLogin && tabReg) {
+        tabLogin.setAttribute('aria-selected', String(isLogin));
+        tabReg.setAttribute('aria-selected', String(!isLogin));
+        tabLogin.classList.toggle('text-ink', isLogin);
+        tabLogin.classList.toggle('text-muted', !isLogin);
+        tabReg.classList.toggle('text-ink', !isLogin);
+        tabReg.classList.toggle('text-muted', isLogin);
+      }
 
       // Update headings & copy
-      document.getElementById('auth-heading').textContent = isLogin ? 'Đăng nhập' : 'Tạo tài khoản';
-      document.getElementById('auth-subtitle').textContent = isLogin
+      const heading = document.getElementById('auth-heading');
+      const subtitle = document.getElementById('auth-subtitle');
+      if (heading) heading.textContent = isLogin ? 'Đăng nhập' : 'Tạo tài khoản';
+      if (subtitle) subtitle.textContent = isLogin
         ? 'Truy cập bảng điều khiển DIPRE Studio v5.0'
         : 'Khởi tạo không gian làm việc trong 10 giây';
 
-      document.getElementById('label-username').textContent = isLogin ? 'Tên tài khoản' : 'Tên tài khoản mong muốn';
-      document.getElementById('input-username').placeholder = isLogin ? 'minhnvb' : 'Tối thiểu 3 ký tự...';
-      document.getElementById('input-password').placeholder = isLogin ? 'Nhập mật khẩu...' : 'Tối thiểu 6 ký tự...';
-      document.getElementById('input-password').autocomplete = isLogin ? 'current-password' : 'new-password';
-      document.getElementById('submit-text').textContent = isLogin ? 'Đăng nhập ngay' : 'Tạo tài khoản mới';
+      const labelUser = document.getElementById('label-username');
+      const inputUser = document.getElementById('input-username');
+      const inputPw = document.getElementById('input-password');
+      const submitText = document.getElementById('submit-text');
+
+      if (labelUser) labelUser.textContent = isLogin ? 'Tên tài khoản' : 'Tên tài khoản mong muốn';
+      if (inputUser) inputUser.placeholder = isLogin ? 'minhnvb' : 'Tối thiểu 3 ký tự...';
+      if (inputPw) {
+        inputPw.placeholder = isLogin ? 'Nhập mật khẩu...' : 'Tối thiểu 6 ký tự...';
+        inputPw.autocomplete = isLogin ? 'current-password' : 'new-password';
+      }
+      if (submitText) submitText.textContent = isLogin ? 'Đăng nhập ngay' : 'Tạo tài khoản mới';
 
       // Toggle mode-specific controls
-      
-      document.getElementById('reg-user-badge').classList.toggle('hidden', isLogin);
-      document.getElementById('btn-forgot-pw').classList.toggle('hidden', !isLogin);
-      document.getElementById('forgot-hint').classList.add('hidden');
-      document.getElementById('login-remember-row').classList.toggle('hidden', !isLogin);
-      document.getElementById('pw-strength-wrap').classList.toggle('hidden', isLogin);
-      document.getElementById('register-confirm-wrap').classList.toggle('hidden', isLogin);
+      const regUserBadge = document.getElementById('reg-user-badge');
+      const btnForgot = document.getElementById('btn-forgot-pw');
+      const forgotHint = document.getElementById('forgot-hint');
+      const rememberRow = document.getElementById('login-remember-row');
+      const pwStrength = document.getElementById('pw-strength-wrap');
+      const confirmWrap = document.getElementById('register-confirm-wrap');
 
-      // Clear validation borders & reset banner
+      if (regUserBadge) regUserBadge.classList.toggle('hidden', isLogin);
+      if (btnForgot) btnForgot.classList.toggle('hidden', !isLogin);
+      if (forgotHint) forgotHint.classList.add('hidden');
+      if (rememberRow) rememberRow.classList.toggle('hidden', !isLogin);
+      if (pwStrength) pwStrength.classList.toggle('hidden', isLogin);
+      if (confirmWrap) confirmWrap.classList.toggle('hidden', isLogin);
+
+      // Reset Turnstile widget if present
+      if (window.turnstile) {
+        try { turnstile.reset('#auth-turnstile'); } catch(e) {}
+      }
+
       clearInputErrors();
       setStatusBanner(
         'info',
@@ -870,7 +872,7 @@
       );
 
       handleFieldInput();
-      document.getElementById('input-username').focus();
+      if (inputUser) inputUser.focus();
     }
 
     /* ---------- STATUS ALERT BANNER ---------- */
@@ -878,21 +880,28 @@
       const banner = document.getElementById('status-banner');
       const iconWrap = document.getElementById('status-banner-icon');
       const textEl = document.getElementById('status-banner-text');
+      if (!banner || !textEl) return;
 
       textEl.textContent = message;
 
       if (type === 'error') {
         banner.className = 'px-3 py-2.5 rounded-md bg-rose/[0.08] border border-rose/30 flex items-center gap-2.5 text-[12px] text-[#FDA4AF] transition-colors';
-        iconWrap.className = 'shrink-0 text-rose';
-        iconWrap.innerHTML = `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+        if (iconWrap) {
+          iconWrap.className = 'shrink-0 text-rose';
+          iconWrap.innerHTML = `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+        }
       } else if (type === 'success') {
         banner.className = 'px-3 py-2.5 rounded-md bg-teal/[0.08] border border-teal/30 flex items-center gap-2.5 text-[12px] text-teal transition-colors';
-        iconWrap.className = 'shrink-0 text-teal';
-        iconWrap.innerHTML = `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>`;
+        if (iconWrap) {
+          iconWrap.className = 'shrink-0 text-teal';
+          iconWrap.innerHTML = `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>`;
+        }
       } else {
         banner.className = 'px-3 py-2.5 rounded-md bg-carbon border border-hairline flex items-center gap-2.5 text-[12px] text-muted transition-colors';
-        iconWrap.className = 'shrink-0 text-faint';
-        iconWrap.innerHTML = `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
+        if (iconWrap) {
+          iconWrap.className = 'shrink-0 text-faint';
+          iconWrap.innerHTML = `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
+        }
       }
     }
 
@@ -905,44 +914,45 @@
     /* ---------- LIVE FIELD VALIDATION & PASSWORD STRENGTH ---------- */
     function handleFieldInput() {
       clearInputErrors();
-      const userVal = document.getElementById('input-username').value.trim();
-      const pwVal = document.getElementById('input-password').value;
-      const cfVal = document.getElementById('input-confirm').value;
+      const userVal = document.getElementById('input-username')?.value.trim() || '';
+      const pwVal = document.getElementById('input-password')?.value || '';
+      const cfVal = document.getElementById('input-confirm')?.value || '';
 
-      // Username inline valid tick in Register mode
       const validUser = userVal.length >= 3 && /^[a-zA-Z0-9._-]+$/.test(userVal);
       const userCheckIcon = document.getElementById('username-valid-icon');
       const regBadge = document.getElementById('reg-user-badge');
 
       if (authState.mode === 'register') {
-        userCheckIcon.classList.toggle('hidden', !validUser);
-        if (!userVal) {
-          regBadge.textContent = 'Tối thiểu 3 ký tự';
-          regBadge.className = 'font-mono text-[10.5px] text-faint';
-        } else if (!validUser) {
-          regBadge.textContent = userVal.length < 3 ? `Thiếu ${3 - userVal.length} ký tự` : 'Không dùng khoảng trắng';
-          regBadge.className = 'font-mono text-[10.5px] text-amber';
-        } else {
-          regBadge.textContent = 'Hợp lệ';
-          regBadge.className = 'font-mono text-[10.5px] text-teal';
+        if (userCheckIcon) userCheckIcon.classList.toggle('hidden', !validUser);
+        if (regBadge) {
+          if (!userVal) {
+            regBadge.textContent = 'Tối thiểu 3 ký tự';
+            regBadge.className = 'font-mono text-[10.5px] text-faint';
+          } else if (!validUser) {
+            regBadge.textContent = userVal.length < 3 ? `Thiếu ${3 - userVal.length} ký tự` : 'Không dùng khoảng trắng';
+            regBadge.className = 'font-mono text-[10.5px] text-amber';
+          } else {
+            regBadge.textContent = 'Hợp lệ';
+            regBadge.className = 'font-mono text-[10.5px] text-teal';
+          }
         }
 
-        // Password strength 4-segment calculation
         updatePasswordStrength(pwVal);
 
-        // Confirm password live match indicator
         const matchLbl = document.getElementById('confirm-match-label');
-        if (!cfVal) {
-          matchLbl.textContent = '';
-        } else if (cfVal === pwVal && pwVal.length >= 6) {
-          matchLbl.textContent = 'Khớp mật khẩu';
-          matchLbl.className = 'font-mono text-[10.5px] text-teal';
-        } else {
-          matchLbl.textContent = 'Chưa khớp';
-          matchLbl.className = 'font-mono text-[10.5px] text-rose';
+        if (matchLbl) {
+          if (!cfVal) {
+            matchLbl.textContent = '';
+          } else if (cfVal === pwVal && pwVal.length >= 6) {
+            matchLbl.textContent = 'Khớp mật khẩu';
+            matchLbl.className = 'font-mono text-[10.5px] text-teal';
+          } else {
+            matchLbl.textContent = 'Chưa khớp';
+            matchLbl.className = 'font-mono text-[10.5px] text-rose';
+          }
         }
       } else {
-        userCheckIcon.classList.add('hidden');
+        if (userCheckIcon) userCheckIcon.classList.add('hidden');
       }
     }
 
@@ -960,17 +970,20 @@
 
       for (let i = 1; i <= 4; i++) {
         const seg = document.getElementById(`pw-seg-${i}`);
-        seg.className = `h-1 rounded-full transition-colors ${i <= score ? barColors[score] : 'bg-hairline'}`;
+        if (seg) seg.className = `h-1 rounded-full transition-colors ${i <= score ? barColors[score] : 'bg-hairline'}`;
       }
       const lbl = document.getElementById('pw-strength-label');
-      lbl.textContent = labels[score];
-      lbl.className = `font-mono ${textColors[score]}`;
+      if (lbl) {
+        lbl.textContent = labels[score];
+        lbl.className = `font-mono ${textColors[score]}`;
+      }
     }
 
     /* ---------- PASSWORD VISIBILITY TOGGLE ---------- */
     function togglePasswordVisibility(inputId, svgId) {
       const inp = document.getElementById(inputId);
       const svg = document.getElementById(svgId);
+      if (!inp || !svg) return;
       const showing = inp.type === 'text';
       inp.type = showing ? 'password' : 'text';
       svg.innerHTML = showing
@@ -980,129 +993,9 @@
 
     function toggleForgotHint() {
       const el = document.getElementById('forgot-hint');
-      const nowVisible = el.classList.toggle('hidden') === false;
-      if (nowVisible) {
-        showToast('Hướng dẫn khôi phục mật khẩu đã được hiển thị.');
-      }
-    }
-
-    /* ---------- 1-CLICK DEMO FILL ---------- */
-    
-
-    
-    /* ---------- REAL CLOUDFLARE TURNSTILE INTEGRATION ---------- */
-    let turnstileWidgetId = null;
-
-    function initRealTurnstile() {
-      const container = document.getElementById('cf-turnstile-container');
-      if (!container) return;
-      
-      const siteKey = "{{ turnstile_site_key|default('1x00000000000000000000AA', true) }}";
-      
-      if (window.turnstile) {
-        try {
-          if (turnstileWidgetId !== null) {
-            turnstile.reset(turnstileWidgetId);
-          } else {
-            turnstileWidgetId = turnstile.render('#cf-turnstile-container', {
-              sitekey: siteKey,
-              theme: 'dark',
-              size: 'normal',
-              callback: function(token) {
-                authState.turnstile = 'verified';
-                
-                const railTs = document.getElementById('rail-turnstile-status');
-                if (railTs) {
-                  railTs.textContent = 'TURNSTILE ACTIVE';
-                  railTs.className = 'text-teal';
-                }
-                appendConsoleLine(`[${getTimeStr()}]`, '[TURNSTILE]', 'Real token verified by Cloudflare', 'text-teal');
-              },
-              'error-callback': function() {
-                authState.turnstile = 'error';
-                const railTs = document.getElementById('rail-turnstile-status');
-                if (railTs) {
-                  railTs.textContent = 'TURNSTILE ERROR';
-                  railTs.className = 'text-rose';
-                }
-              },
-              'expired-callback': function() {
-                authState.turnstile = 'expired';
-                const railTs = document.getElementById('rail-turnstile-status');
-                if (railTs) {
-                  railTs.textContent = 'TURNSTILE EXPIRED';
-                  railTs.className = 'text-amber';
-                }
-              }
-            });
-          }
-        } catch (e) {
-          console.warn('Turnstile render warning:', e);
-        }
-      } else {
-        // Fallback retry if api.js still downloading
-        setTimeout(initRealTurnstile, 300);
-      }
-    }
-
-    // Call initRealTurnstile when document is loaded
-    window.addEventListener('load', () => {
-      initRealTurnstile();
-    });
-
-    /* ---------- INTERACTIVE CLOUDFLARE TURNSTILE WIDGET ---------- */
-    function triggerTurnstileVerify(manualClick = false) {
-      if (turnstileTimer) clearTimeout(turnstileTimer);
-      authState.turnstile = 'verifying';
-      renderTurnstileUI();
-
-      if (manualClick) {
-        appendConsoleLine(`[${getTimeStr()}]`, '[TURNSTILE]', 'Re-validating challenge token...', 'text-muted');
-      }
-
-      turnstileTimer = setTimeout(() => {
-        authState.turnstile = 'verified';
-        renderTurnstileUI();
-        if (manualClick) {
-          appendConsoleLine(`[${getTimeStr()}]`, '[TURNSTILE]', 'Challenge passed · token issued', 'text-teal');
-          showToast('Cloudflare Turnstile đã xác minh thành công.');
-        }
-      }, 620);
-    }
-
-    function renderTurnstileUI() {
-      const box = document.getElementById('ts-state-box');
-      const lbl = document.getElementById('ts-label');
-      const sub = document.getElementById('ts-sub');
-      const railTs = document.getElementById('rail-turnstile-status');
-
-      if (authState.turnstile === 'verifying') {
-        box.innerHTML = `<span class="w-4 h-4 rounded-full border-2 border-hairline border-t-teal animate-spin-fast"></span>`;
-        lbl.textContent = 'Đang xác minh...';
-        lbl.className = 'text-[12.5px] font-medium text-muted truncate';
-        sub.textContent = 'Kiểm tra trình duyệt Cloudflare';
-        railTs.textContent = 'TURNSTILE VERIFYING';
-        railTs.className = 'text-muted';
-      } else if (authState.turnstile === 'verified') {
-        box.innerHTML = `
-          <span class="w-5 h-5 rounded-full bg-teal/15 border border-teal/40 flex items-center justify-center text-teal">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-          </span>
-        `;
-        lbl.textContent = 'Thành công!';
-        lbl.className = 'text-[12.5px] font-medium text-ink truncate';
-        sub.textContent = 'Đã xác thực không phải robot';
-        railTs.textContent = 'TURNSTILE ACTIVE';
-        railTs.className = 'text-teal';
-      } else {
-        box.innerHTML = `<span class="w-5 h-5 rounded-[4px] border border-hairlineHover bg-obsidian"></span>`;
-        lbl.textContent = 'Xác minh bạn là con người';
-        lbl.className = 'text-[12.5px] font-medium text-ink truncate';
-        sub.textContent = 'Nhấn để bắt đầu xác thực';
-        railTs.textContent = 'TURNSTILE IDLE';
-        railTs.className = 'text-amber';
+      if (el) {
+        const nowVisible = el.classList.toggle('hidden') === false;
+        if (nowVisible) showToast('Hướng dẫn khôi phục mật khẩu đã được hiển thị.');
       }
     }
 
@@ -1115,99 +1008,62 @@
       const pwEl = document.getElementById('input-password');
       const cfEl = document.getElementById('input-confirm');
 
-      const username = userEl.value.trim();
-      const password = pwEl.value;
-      const confirmPw = cfEl.value;
+      const username = userEl ? userEl.value.trim() : '';
+      const password = pwEl ? pwEl.value : '';
+      const confirmPw = cfEl ? cfEl.value : '';
 
       clearInputErrors();
 
       // 1. Username validation
       if (username.length < 3) {
-        userEl.classList.add('input-error');
-        userEl.focus();
+        if (userEl) { userEl.classList.add('input-error'); userEl.focus(); }
         setStatusBanner('error', 'Tên tài khoản phải có tối thiểu 3 ký tự.');
         return;
       }
 
       if (!/^[a-zA-Z0-9._-]+$/.test(username)) {
-        userEl.classList.add('input-error');
-        userEl.focus();
+        if (userEl) { userEl.classList.add('input-error'); userEl.focus(); }
         setStatusBanner('error', 'Tên tài khoản không được chứa khoảng trắng hoặc ký tự đặc biệt.');
         return;
       }
 
       // 2. Password validation
       if (password.length < 6) {
-        pwEl.classList.add('input-error');
-        pwEl.focus();
+        if (pwEl) { pwEl.classList.add('input-error'); pwEl.focus(); }
         setStatusBanner('error', 'Mật khẩu phải có tối thiểu 6 ký tự.');
         return;
       }
 
       // 3. Confirm password validation (Register mode)
       if (authState.mode === 'register' && password !== confirmPw) {
-        cfEl.classList.add('input-error');
-        cfEl.focus();
+        if (cfEl) { cfEl.classList.add('input-error'); cfEl.focus(); }
         setStatusBanner('error', 'Mật khẩu xác nhận không trùng khớp.');
         return;
       }
 
-      // 4. Turnstile verification check
+      // 4. Cloudflare Turnstile verification check
       const cfInput = document.querySelector('[name="cf-turnstile-response"]');
       const cfToken = cfInput ? cfInput.value : '';
-      if (!cfToken && authState.turnstile !== 'verified') {
-        setStatusBanner('error', 'Vui lòng chờ hoàn tất xác minh Cloudflare Turnstile.');
+      if (!cfToken) {
+        setStatusBanner('error', 'Vui lòng hoàn thành xác minh Cloudflare Turnstile bên dưới.');
         return;
       }
 
-      
-      // Client validation passed -> Proceed to actual backend submission
+      // All validations passed -> submit directly to Flask route
       authState.submitting = true;
       const btn = document.getElementById('btn-submit');
-      btn.disabled = true;
-      document.getElementById('submit-spinner').classList.remove('hidden');
-      document.getElementById('submit-arrow').classList.add('hidden');
-      document.getElementById('submit-text').textContent =
-        authState.mode === 'login' ? 'Đang xác thực phiên...' : 'Đang khởi tạo tài khoản...';
+      if (btn) btn.disabled = true;
+      document.getElementById('submit-spinner')?.classList.remove('hidden');
+      document.getElementById('submit-arrow')?.classList.add('hidden');
+      const subTxt = document.getElementById('submit-text');
+      if (subTxt) {
+        subTxt.textContent = authState.mode === 'login' ? 'Đang xác thực...' : 'Đang tạo tài khoản & đăng nhập...';
+      }
 
-      // Submit form directly to Flask endpoint
+      // Submit form
       setTimeout(() => {
-        document.getElementById('auth-form').submit();
-      }, 350);
-
-    }
-
-    function showAuthenticatedView(username, sessionId) {
-      document.getElementById('auth-form-container').classList.add('hidden');
-      const successEl = document.getElementById('auth-success-view');
-      successEl.classList.remove('hidden');
-
-      document.getElementById('success-title').textContent =
-        authState.mode === 'login'
-          ? 'Đã xác thực • Đang mở DIPRE Studio...'
-          : 'Tạo tài khoản thành công • Đang vào Studio...';
-      document.getElementById('success-username').textContent = username;
-      document.getElementById('success-session-id').textContent = sessionId;
-
-      showToast(`Chào mừng ${username} quay trở lại DIPRE Studio v5.0`);
-    }
-
-    function resetToAuthForm() {
-      document.getElementById('auth-success-view').classList.add('hidden');
-      document.getElementById('auth-form-container').classList.remove('hidden');
-      setStatusBanner(
-        'info',
-        authState.mode === 'login'
-          ? 'Xác thực phiên làm việc để tiếp tục.'
-          : 'Điền thông tin bên dưới để khởi tạo tài khoản DIPRE.'
-      );
-      triggerTurnstileVerify(false);
-    }
-
-    /* ---------- OAUTH HANDSHAKE SIMULATION ---------- */
-    function handleOAuth(provider) {
-      appendConsoleLine(`[${getTimeStr()}]`, '[OAUTH]', `Khởi tạo phiên ủy quyền ${provider} OAuth2...`, 'text-teal');
-      showToast(`Đang mở cổng xác thực ${provider} OAuth2...`);
+        document.getElementById('auth-form')?.submit();
+      }, 300);
     }
 
     /* ---------- LIVE CLOCK & LATENCY TELEMETRY ---------- */
@@ -1223,7 +1079,7 @@
       if (el) el.textContent = `${authState.latency}ms`;
     }
 
-    /* ---------- CRISP DARK ZINC TOAST NOTIFICATIONS ---------- */
+    /* ---------- TOAST NOTIFICATIONS ---------- */
     function showToast(message) {
       const stack = document.getElementById('toast-stack');
       if (!stack) return;
