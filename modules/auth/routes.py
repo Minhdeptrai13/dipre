@@ -334,13 +334,20 @@ def register():
         with get_db() as conn:
             cursor = conn.cursor()
             cursor.execute('INSERT INTO users (username, password_hash, auth_provider, avatar_url) VALUES (?, ?, ?, ?)', (username, password_hash, 'local', ''))
+            user_id = cursor.lastrowid
             conn.commit()
             clear_failed_attempts(get_client_ip())
-        flash('Tạo tài khoản thành công! Hãy đăng nhập ngay bây giờ.', 'success')
+
+        # TỰ ĐỘNG ĐĂNG NHẬP NGAY LẬP TỨC KHÔNG CẦN NHẬP LẠI MẬT KHẨU
+        session['user_id'] = user_id
+        session['username'] = username
+        session['auth_provider'] = 'local'
+        flash(f'Chào mừng {username}! Tạo tài khoản thành công và đã tự động đăng nhập.', 'success')
+        return redirect(url_for('index'))
     except sqlite3.IntegrityError:
         record_failed_attempt(get_client_ip())
         flash('Tên đăng nhập này đã được sử dụng. Vui lòng chọn tên khác.', 'error')
-    return redirect(url_for('login'))
+        return redirect(url_for('login'))
 
 @auth_bp.route('/logout')
 def logout():

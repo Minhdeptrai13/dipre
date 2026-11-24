@@ -438,7 +438,7 @@
 
           <!-- Main Auth Form -->
           <form id="auth-form" method="POST" action="{{ url_for('login') }}" onsubmit="handleAuthSubmit(event)" class="space-y-4">
-            <input type="hidden" name="cf-turnstile-response" id="cf-turnstile-response-hidden" value="1x00000000000000000000AA" />
+            
 
             <!-- Field 1: Username -->
             <div class="space-y-1.5">
@@ -802,11 +802,18 @@
 
     /* ---------- MODE SWITCHING (LOGIN <-> REGISTER) ---------- */
     function switchMode(mode) {
+      if (authState.submitting) return;
+      authState.mode = mode;
+      const isLogin = mode === 'login';
+
+      const formEl = document.getElementById('auth-form');
+      if (formEl) {
+        formEl.action = isLogin ? "{{ url_for('login') }}" : "{{ url_for('register') }}";
+      }
 
       if (window.turnstile && turnstileWidgetId !== null) {
         try { turnstile.reset(turnstileWidgetId); } catch(e) {}
       }
-
 
       // Switch form action dynamically
       const formEl = document.getElementById('auth-form');
@@ -814,9 +821,9 @@
         formEl.action = isLogin ? "{{ url_for('login') }}" : "{{ url_for('register') }}";
       }
 
-      if (authState.submitting) return;
-      authState.mode = mode;
-      const isLogin = mode === 'login';
+      if (window.turnstile && turnstileWidgetId !== null) {
+        try { turnstile.reset(turnstileWidgetId); } catch(e) {}
+      }
 
       // Slide segmented pill
       const pill = document.getElementById('seg-pill');
@@ -1003,8 +1010,6 @@
               size: 'normal',
               callback: function(token) {
                 authState.turnstile = 'verified';
-                const hiddenInput = document.getElementById('cf-turnstile-response-hidden');
-                if (hiddenInput) hiddenInput.value = token;
                 
                 const railTs = document.getElementById('rail-turnstile-status');
                 if (railTs) {
@@ -1148,10 +1153,10 @@
       }
 
       // 4. Turnstile verification check
-      const cfToken = document.getElementById('cf-turnstile-response-hidden')?.value;
-      if (authState.turnstile !== 'verified' && (!cfToken || cfToken.length < 5)) {
+      const cfInput = document.querySelector('[name="cf-turnstile-response"]');
+      const cfToken = cfInput ? cfInput.value : '';
+      if (!cfToken && authState.turnstile !== 'verified') {
         setStatusBanner('error', 'Vui lòng chờ hoàn tất xác minh Cloudflare Turnstile.');
-        triggerTurnstileVerify(true);
         return;
       }
 
