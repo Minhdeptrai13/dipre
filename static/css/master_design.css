@@ -1,13 +1,14 @@
 /* ==========================================================================
    DIPRE STUDIO — STYLE 3: NORDIC SLATE & AMBER MASTER DESIGN SYSTEM
-   Bespoke Non-AI Design Architecture
-   - Canvas: Warm Zinc Obsidian (#141416 / #18181B)
-   - Surface: Elevated Charcoal (#1F1F24) & Subtle Surface (#26262B)
-   - Border: Hairline 1px (#2E2E35 / #383842)
-   - Typography: Plus Jakarta Sans / Be Vietnam Pro + JetBrains Mono
-   - Single Accent: Warm Amber Hổ Phách (#F59E0B / #D97706)
-   - Status: Success (#10B981), Danger (#EF4444)
-   - Universal 200ms smooth transition, zero tacky neon or purple gradients
+   Full Component Skinning Architecture across all views:
+   - Dashboard Command Center
+   - Theme RPC & Application Selectors
+   - YouTube / SoundCloud / Spotify Presence
+   - Lyric Status Karaoke & LRCLIB Player
+   - Auto Quest & Cleaner Terminal
+   - Multi-Token Manager & Modals
+   - UserBot Engine (prefix none supported)
+   - Landing & Login/Register Modals
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -15,7 +16,7 @@
 :root {
   color-scheme: dark;
 
-  /* NORDIC SLATE & AMBER DESIGN TOKENS */
+  /* BASE PALETTE - NORDIC SLATE & AMBER */
   --bg: #141416;
   --bg-canvas: #141416;
   --surface: #1B1B1F;
@@ -25,38 +26,39 @@
   --border-muted: #383842;
   --border-active: #F59E0B;
 
-  /* Typography Colors */
+  /* TYPOGRAPHY */
   --text: #F4F4F6;
   --text-prominent: #FFFFFF;
   --text-muted: #9D9DA8;
   --text-dim: #6B6B76;
   --text-on-accent: #141416;
 
-  /* Single Accent: Warm Amber (Hổ Phách) */
+  /* ACCENT: WARM AMBER (HỔ PHÁCH) */
   --primary: #F59E0B;
   --primary-hover: #D97706;
   --primary-active: #B45309;
   --primary-subtle: rgba(245, 158, 11, 0.12);
   --on-primary: #141416;
 
-  /* Status Tokens */
+  /* STATUS */
   --success: #10B981;
   --success-bg: rgba(16, 185, 129, 0.12);
   --danger: #EF4444;
   --danger-bg: rgba(239, 68, 68, 0.12);
   --warning: #F59E0B;
 
-  /* Mappings for legacy styles */
+  /* BACKWARD COMPATIBILITY MAPPINGS */
   --accent-cta: var(--primary);
   --accent-cta-hover: var(--primary-hover);
   --state-success-text: var(--success);
   --state-danger-text: var(--danger);
+  --brand-pine: #F59E0B;
+  --accent-warm: #F59E0B;
 }
 
 :root[data-theme="light"] {
   color-scheme: light;
 
-  /* Nordic Light Warm Mode */
   --bg: #F6F5F2;
   --bg-canvas: #F6F5F2;
   --surface: #FFFFFF;
@@ -88,9 +90,13 @@
   --accent-cta-hover: var(--primary-hover);
   --state-success-text: var(--success);
   --state-danger-text: var(--danger);
+  --brand-pine: #D97706;
+  --accent-warm: #D97706;
 }
 
-/* UNIVERSAL BASE RESETS */
+/* ==========================================================================
+   GLOBAL RESETS & TRANSITIONS
+   ========================================================================== */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -100,12 +106,11 @@
 }
 
 body.app-body, body.beyond-landing-body {
-  font-family: 'Plus Jakarta Sans', 'Be Vietnam Pro', system-ui, sans-serif !important;
+  font-family: 'Plus Jakarta Sans', 'Be Vietnam Pro', system-ui, -apple-system, sans-serif !important;
   background-color: var(--bg) !important;
   color: var(--text) !important;
   line-height: 1.5 !important;
   font-size: 14px !important;
-  -webkit-font-smoothing: antialiased;
   min-height: 100vh;
 }
 
@@ -126,14 +131,8 @@ body.app-body, body.beyond-landing-body {
 }
 
 /* ==========================================================================
-   APP SHELL & SIDEBAR
+   SIDEBAR
    ========================================================================== */
-.app-shell {
-  display: flex;
-  min-height: 100vh;
-  background: var(--bg);
-}
-
 .sidebar.dipre-sidebar {
   width: 260px !important;
   min-width: 260px !important;
@@ -487,21 +486,72 @@ body.app-body, body.beyond-landing-body {
 }
 
 /* ==========================================================================
-   CARDS, SECTIONS & NORDIC AMBER UI
+   CARDS & DASHBOARD METRICS
    ========================================================================== */
-.settings-section, .multi-token-target-card, .metric-stat-card, .hgs-step-card {
+.settings-section, .multi-token-target-card, .metric-stat-card, .hgs-step-card,
+.dashboard-hero-banner, .google-account-dialog, .discord-card-1to1-wrap {
   background: var(--surface) !important;
   border: 1px solid var(--border) !important;
   border-radius: 10px !important;
-  padding: 20px !important;
   box-shadow: none !important;
 }
 
-.settings-section:hover, .multi-token-target-card:hover {
-  border-color: var(--border-muted) !important;
+.dashboard-hero-banner {
+  padding: 24px !important;
 }
 
-/* Nút bấm chuẩn 40px, bo góc 8px */
+.dhb-main-title {
+  color: var(--text-prominent) !important;
+  font-weight: 800 !important;
+}
+
+.dhb-sub {
+  color: var(--text-muted) !important;
+}
+
+.dhb-badge {
+  background: var(--surface-2) !important;
+  color: var(--primary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 6px !important;
+}
+
+.metrics-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.metric-stat-card {
+  padding: 16px 20px !important;
+}
+
+.msc-val {
+  color: var(--text-prominent) !important;
+  font-weight: 800 !important;
+}
+
+.msc-label {
+  color: var(--text-muted) !important;
+}
+
+.msc-tag {
+  background: var(--surface-2) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-muted) !important;
+  border-radius: 6px !important;
+}
+
+.msc-tag.active {
+  background: var(--primary-subtle) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+}
+
+/* ==========================================================================
+   NORDIC AMBER BUTTONS & INPUTS
+   ========================================================================== */
 .rpc-btn {
   height: 40px !important;
   border-radius: 8px !important;
@@ -516,33 +566,38 @@ body.app-body, body.beyond-landing-body {
   border: none !important;
 }
 
-.rpc-btn-start, .mtt-btn-sync, .beyond-btn-white {
+.rpc-btn-start, .mtt-btn-sync, .beyond-btn-white, .auth-submit-btn, .lps-search-action-btn,
+.latd-btn-play, .btn-action-primary, .hgs-action-btn {
   background: var(--primary) !important;
   color: var(--on-primary) !important;
 }
 
-.rpc-btn-start:hover, .mtt-btn-sync:hover, .beyond-btn-white:hover {
+.rpc-btn-start:hover, .mtt-btn-sync:hover, .beyond-btn-white:hover, .auth-submit-btn:hover,
+.lps-search-action-btn:hover, .latd-btn-play:hover, .btn-action-primary:hover, .hgs-action-btn:hover {
   background: var(--primary-hover) !important;
 }
 
-.rpc-btn-stop, .rpc-btn-save, .beyond-btn-glass {
+.rpc-btn-stop, .rpc-btn-save, .beyond-btn-glass, .ssh-action, .hgs-copy-btn, .sf-addon-btn {
   background: var(--surface-2) !important;
   border: 1px solid var(--border) !important;
   color: var(--text) !important;
+  border-radius: 8px !important;
 }
 
-.rpc-btn-stop:hover, .rpc-btn-save:hover, .beyond-btn-glass:hover {
+.rpc-btn-stop:hover, .rpc-btn-save:hover, .beyond-btn-glass:hover, .ssh-action:hover,
+.hgs-copy-btn:hover, .sf-addon-btn:hover {
   background: var(--surface) !important;
   border-color: var(--border-muted) !important;
+  color: var(--text-prominent) !important;
 }
 
-.rpc-btn:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 1px;
+.rpc-btn:disabled, .rpc-btn[disabled] {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  color: var(--text) !important;
 }
 
-/* INPUTS & SELECTS */
-.sf-input, .sf-select, .lps-search-input {
+.sf-input, .sf-select, .lps-search-input, .modern-input-field {
   height: 40px !important;
   background: var(--surface-2) !important;
   border: 1px solid var(--border) !important;
@@ -553,20 +608,72 @@ body.app-body, body.beyond-landing-body {
   outline: none !important;
 }
 
-.sf-input:focus, .sf-select:focus, .lps-input-wrap:focus-within {
+.sf-input:focus, .sf-select:focus, .lps-input-wrap:focus-within, .modern-input-field:focus {
   border-color: var(--primary) !important;
 }
 
-/* TABS */
-.lyric-subtab-btn.active, .theme-tab-btn.active {
-  color: var(--primary) !important;
-  font-weight: 700 !important;
-  background: transparent !important;
-  border-bottom: 2px solid var(--primary) !important;
+/* ==========================================================================
+   BOT SELECTOR & RPC EDITOR
+   ========================================================================== */
+.bot-selector-card {
+  background: var(--surface-2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
 }
 
-/* TERMINAL & CONSOLE */
-.preview-terminal, .quest-console-panel, #userbot-console-box {
+.bot-selector-card:hover {
+  border-color: var(--border-muted) !important;
+}
+
+.bot-selector-card.active {
+  border-color: var(--primary) !important;
+  background: var(--surface) !important;
+}
+
+.bot-card-name {
+  color: var(--text-prominent) !important;
+}
+
+.bot-card-id {
+  color: var(--text-muted) !important;
+}
+
+/* ==========================================================================
+   USERBOT ENGINE TAB (STYLE 3 AMBER)
+   ========================================================================== */
+.userbot-hero-banner {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+}
+
+.acc-card-item {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+}
+
+.acc-card-item.active {
+  border-color: var(--primary) !important;
+}
+
+.acc-status-pill.linked {
+  background: var(--success-bg) !important;
+  color: var(--success) !important;
+  border: 1px solid var(--success) !important;
+}
+
+.acc-status-pill.unlinked {
+  background: var(--surface-2) !important;
+  color: var(--text-muted) !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* ==========================================================================
+   TERMINAL & CONSOLE LOGS
+   ========================================================================== */
+.preview-terminal, .quest-console-panel, #userbot-console-box, .hgs-script-code,
+.pt-screen, .quest-console-screen {
   background: var(--surface-2) !important;
   border: 1px solid var(--border) !important;
   border-radius: 8px !important;
@@ -575,95 +682,62 @@ body.app-body, body.beyond-landing-body {
   color: var(--text) !important;
 }
 
+.log-line .log-time {
+  color: var(--text-muted) !important;
+}
+
+.log-line [MULTI-SYNC], .log-tag, .text-cyan, .pt-title {
+  color: var(--primary) !important;
+  font-weight: 600;
+}
+
 /* ==========================================================================
-   LANDING / LOGIN / REGISTER AUTH MODAL (STYLE 3: NORDIC SLATE & AMBER)
+   MODAL DIALOGS (LOGIN, MULTI-TOKEN, QUICK ADD)
    ========================================================================== */
-.beyond-header {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 32px;
-}
-
-.beyond-brand-name {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--text-prominent);
-}
-
-.beyond-login-btn {
-  height: 38px;
-  padding: 0 18px;
-  border-radius: 8px;
-  background: var(--primary);
-  color: var(--on-primary);
-  font-weight: 700;
-  font-size: 13.5px;
-  border: none;
-  cursor: pointer;
-}
-
-.beyond-login-btn:hover {
-  background: var(--primary-hover);
-}
-
-.beyond-hero-wrapper {
-  background: var(--bg);
-  min-height: calc(100vh - 60px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
-}
-
-.beyond-main-title {
-  font-size: 44px;
-  font-weight: 800;
-  line-height: 1.15;
-  color: var(--text-prominent);
-  letter-spacing: -1px;
-}
-
-.beyond-sub-title {
-  font-size: 16px;
-  color: var(--text-muted);
-  margin-top: 16px;
-  max-width: 500px;
-  line-height: 1.6;
-}
-
-/* Auth Modal Dialog */
-.auth-modal-dialog, .account-modal-dialog {
+.auth-modal-dialog, .account-modal-dialog, .auth-modal-card, .devtools-shield-card {
   background: var(--surface) !important;
   border: 1px solid var(--border) !important;
   border-radius: 12px !important;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.4) !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5) !important;
   color: var(--text) !important;
 }
 
-.auth-modal-header {
+.auth-modal-header, .modal-header-clean {
   border-bottom: 1px solid var(--border) !important;
   padding: 16px 20px !important;
 }
 
-.auth-modal-title {
+.auth-modal-title, .modal-title-text {
   color: var(--text-prominent) !important;
   font-weight: 800 !important;
 }
 
-.auth-submit-btn {
-  height: 42px !important;
-  background: var(--primary) !important;
-  color: var(--on-primary) !important;
-  border-radius: 8px !important;
-  font-weight: 700 !important;
-  border: none !important;
-  cursor: pointer !important;
+.auth-tab-btn.active {
+  background: var(--surface) !important;
+  color: var(--primary) !important;
+  border: 1px solid var(--border) !important;
 }
 
-.auth-submit-btn:hover {
-  background: var(--primary-hover) !important;
+/* ==========================================================================
+   RESPONSIVE DESIGN (< 900px)
+   ========================================================================== */
+@media (max-width: 900px) {
+  .app-shell {
+    flex-direction: column;
+  }
+  .sidebar.dipre-sidebar {
+    width: 100% !important;
+    min-width: 100% !important;
+    height: auto !important;
+    position: relative !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border) !important;
+  }
+  .panel-2col-layout {
+    grid-template-columns: 1fr !important;
+  }
+  .panel-preview-col {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
 }
