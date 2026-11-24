@@ -95,6 +95,7 @@ const TAB_TITLES = {
   'tab-voice-coming': 'VOICE SOUNDBOARD (COMING SOON)',
   'tab-quest': 'DISCORD AUTO QUEST',
   'tab-script-coming': 'ACCOUNT CLEANER (COMING SOON)',
+  'tab-userbot': 'USERBOT ASSISTANT',
   'tab-accounts': 'QUẢN LÝ ĐA TOKEN',
   'tab-inbox': 'INBOX DISCORD'
 };
@@ -124,6 +125,7 @@ function switchTab(tabId) {
   else if (tabId === 'tab-quest') { loadAvailableQuests(); startLogPolling('quest'); checkQuestOvernightNotification(); }
   else if (tabId === 'tab-inbox') { loadDiscordInbox(); }
   else if (tabId === 'tab-accounts') { loadMultiAccounts(); }
+  else if (tabId === 'tab-userbot') { loadUserBotStatus(); loadUserBotLogs(); }
   else if (tabId === 'tab-voice-afk') { checkVoiceStatus(); }
 
   if (typeof syncMultiTokensRealtime === 'function') {
@@ -346,6 +348,12 @@ function updateAccountUI(data) {
     if (sadImg) sadImg.style.display = 'none';
     if (sadLocked) sadLocked.style.display = 'flex';
   }
+
+  // Cập nhật tên động cho tab UserBot: (Tên acc dipre / gmail / discord)'s Bot
+  const userbotSideLabel = document.getElementById('sidebar-userbot-label');
+  if (userbotSideLabel) userbotSideLabel.textContent = `${displayName}'s Bot`;
+  const userbotHeader = document.getElementById('userbot-header-name');
+  if (userbotHeader) userbotHeader.textContent = displayName;
 
   const accName = document.getElementById('account-view-name');
   const accStatus = document.getElementById('account-view-status');
@@ -2715,13 +2723,24 @@ async function loadMultiAccounts() {
   const grid = document.getElementById('multi-accounts-grid');
   if (!grid) return;
   try {
-    const res = await fetch('/api/accounts/list');
-    const data = await res.json();
+    const [accRes, botRes] = await Promise.all([
+      fetch('/api/accounts/list'),
+      fetch('/api/userbot/status')
+    ]);
+    const data = await accRes.json();
+    const botData = await botRes.json();
+    const botAccounts = (botData && botData.accounts) || [];
+
     if (data.success && data.accounts && data.accounts.length > 0) {
       grid.innerHTML = data.accounts.map(acc => {
         const isActive = acc.is_active === 1;
         const av = acc.discord_avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
         const decor = acc.avatar_decoration ? `<img src="${acc.avatar_decoration}" style="position:absolute; inset:-4px; width:54px; height:54px; pointer-events:none;">` : '';
+
+        const botMatch = botAccounts.find(b => String(b.account_id) === String(acc.id));
+        const isBotRunning = botMatch ? botMatch.is_running : false;
+        const botPrefix = (botMatch && botMatch.bot_prefix) ? botMatch.bot_prefix : 'm';
+
         return `
           <div class="acc-card-item ${isActive ? 'active' : ''}">
             <div class="aci-header">
@@ -2737,7 +2756,24 @@ async function loadMultiAccounts() {
                 ${isActive ? '● Đang Dùng' : 'Dự Phòng'}
               </span>
             </div>
-            <div class="aci-actions">
+
+            <!-- Hàng Điều Khiển UserBot Độc Lập -->
+            <div style="margin-top: 10px; padding: 8px 10px; background: rgba(0,0,0,0.25); border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span class="acc-status-pill ${isBotRunning ? 'linked' : 'unlinked'}" style="font-size:0.68rem; padding:2px 6px;">
+                  ${isBotRunning ? '● Bot Chạy' : 'Bot Tắt'}
+                </span>
+                <input type="text" id="acc-bot-prefix-${acc.id}" value="${botPrefix}" placeholder="m" title="Prefix bot" style="width:36px; text-align:center; padding:2px 4px; font-size:0.75rem; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.15); border-radius:4px; color:#38bdf8; font-weight:700;">
+              </div>
+              <div>
+                ${isBotRunning
+                  ? `<button type="button" class="rpc-btn rpc-btn-stop" style="padding:4px 10px; font-size:0.72rem;" onclick="toggleUserBot('${acc.id}', 'stop')">🛑 Tắt Bot</button>`
+                  : `<button type="button" class="rpc-btn rpc-btn-start" style="padding:4px 10px; font-size:0.72rem;" onclick="toggleUserBot('${acc.id}', 'start', document.getElementById('acc-bot-prefix-${acc.id}') ? document.getElementById('acc-bot-prefix-${acc.id}').value : 'm')">🚀 Kích Hoạt</button>`
+                }
+              </div>
+            </div>
+
+            <div class="aci-actions" style="margin-top: 10px;">
               ${!isActive ? `<button type="button" class="rpc-btn rpc-btn-start" style="padding:6px 12px; font-size:0.78rem;" onclick="switchAccount(${acc.id})">Kích Hoạt Dùng</button>` : `<button type="button" class="rpc-btn rpc-btn-save" style="padding:6px 12px; font-size:0.78rem;" disabled>Đang Kích Hoạt</button>`}
               <button type="button" class="rpc-btn rpc-btn-stop" style="padding:6px 12px; font-size:0.78rem;" onclick="deleteAccount(${acc.id})">Xóa</button>
             </div>
@@ -3704,6 +3740,9 @@ function clearQuestLog() {
 
 function syncAllStatusNow() {
   checkVoiceStatus();
+  if (document.getElementById('tab-userbot')?.classList.contains('active')) {
+    loadUserBotLogs();
+  }
 }
 
 
@@ -3836,6 +3875,308 @@ function setAppLanguage(lang) {
   if (pvTitle) pvTitle.textContent = dict.preview_title;
 }
 
+// ==========================================
+// USERBOT ASSISTANT MANAGEMENT & REALTIME SYNC
+// ==========================================
+window.userbotState = {
+  accounts: [],
+  selectedAccountId: 'main',
+  catalog: []
+};
+
+async function loadUserBotStatus(showToastMsg = false) {
+  try {
+    const res = await fetch('/api/userbot/status');
+    const data = await res.json();
+    if (!data.success) return;
+
+    window.userbotState.accounts = data.accounts || [];
+    window.userbotState.catalog = data.commands_catalog || [];
+
+    const sysUsername = data.username || 'User';
+    const sideLabel = document.getElementById('sidebar-userbot-label');
+    if (sideLabel) sideLabel.textContent = data.bot_display_name || `${sysUsername}'s Bot`;
+    const headerName = document.getElementById('userbot-header-name');
+    if (headerName) headerName.textContent = sysUsername;
+
+    // Badge indicator trên sidebar
+    const badge = document.getElementById('sidebar-userbot-badge');
+    if (badge) {
+      if (data.total_running > 0) {
+        badge.classList.remove('d-none');
+        badge.style.display = 'inline-block';
+      } else {
+        badge.classList.add('d-none');
+        badge.style.display = 'none';
+      }
+    }
+
+    renderUserBotAccountSelect(data.accounts);
+    updateUserBotHero();
+    renderUserBotCards(data.accounts);
+    renderUserBotCommands(data.commands_catalog);
+
+    if (showToastMsg) {
+      showToast(`Đã đồng bộ trạng thái: ${data.total_running} bot đang hoạt động`, 'info');
+    }
+  } catch (e) {
+    console.error('Lỗi khi tải trạng thái UserBot:', e);
+  }
+}
+
+function renderUserBotAccountSelect(accounts) {
+  const sel = document.getElementById('userbot-account-select');
+  if (!sel) return;
+  if (!accounts || accounts.length === 0) {
+    sel.innerHTML = '<option value="">Chưa có tài khoản nào được kết nối</option>';
+    return;
+  }
+
+  const currentVal = sel.value || window.userbotState.selectedAccountId || 'main';
+  sel.innerHTML = accounts.map(a => {
+    const runText = a.is_running ? '🟢 Đang chạy' : '⚪ Đã tắt';
+    return `<option value="${a.account_id}" ${String(a.account_id) === String(currentVal) ? 'selected' : ''}>
+      ${a.username || a.label} [${runText}]
+    </option>`;
+  }).join('');
+  
+  if (sel.value) {
+    window.userbotState.selectedAccountId = sel.value;
+  }
+}
+
+function onUserBotAccountSelectChange() {
+  const sel = document.getElementById('userbot-account-select');
+  if (!sel) return;
+  window.userbotState.selectedAccountId = sel.value;
+  updateUserBotHero();
+}
+
+function updateUserBotHero() {
+  const accounts = window.userbotState.accounts || [];
+  const selectedId = window.userbotState.selectedAccountId || 'main';
+  const acc = accounts.find(a => String(a.account_id) === String(selectedId)) || accounts[0];
+  if (!acc) return;
+
+  const avImg = document.getElementById('userbot-hero-avatar');
+  const pulse = document.getElementById('userbot-hero-pulse');
+  const nameEl = document.getElementById('userbot-hero-botname');
+  const pillEl = document.getElementById('userbot-hero-status-pill');
+  const labelEl = document.getElementById('userbot-hero-account-label');
+  const pfxTag = document.getElementById('userbot-hero-prefix-tag');
+  const pfxInput = document.getElementById('userbot-prefix-input');
+  const btnToggle = document.getElementById('userbot-btn-toggle');
+
+  const statStatus = document.getElementById('userbot-stat-status');
+  const statGuilds = document.getElementById('userbot-stat-guilds');
+  const statCogs = document.getElementById('userbot-stat-cogs');
+
+  const isRunning = acc.is_running === true;
+  const botPrefix = acc.bot_prefix || 'm';
+
+  if (avImg) {
+    avImg.src = acc.discord_avatar || (acc.details && acc.details.avatar_url) || 'https://cdn.discordapp.com/embed/avatars/0.png';
+  }
+  if (pulse) {
+    pulse.style.background = isRunning ? '#22c55e' : '#64748b';
+    pulse.style.boxShadow = isRunning ? '0 0 10px #22c55e' : 'none';
+  }
+  if (nameEl) {
+    nameEl.textContent = (acc.details && acc.details.username) || acc.username || acc.label;
+  }
+  if (pillEl) {
+    pillEl.className = `acc-status-pill ${isRunning ? 'linked' : 'unlinked'}`;
+    pillEl.textContent = isRunning ? '● Đang Chạy (Running)' : 'Đã Tắt (Stopped)';
+  }
+  if (labelEl) {
+    labelEl.textContent = acc.label || acc.username;
+  }
+  if (pfxTag) {
+    pfxTag.textContent = botPrefix;
+  }
+  if (pfxInput) {
+    pfxInput.value = botPrefix;
+  }
+
+  if (btnToggle) {
+    if (isRunning) {
+      btnToggle.className = 'rpc-btn rpc-btn-stop';
+      btnToggle.innerHTML = '🛑 Tắt Bot Này';
+    } else {
+      btnToggle.className = 'rpc-btn rpc-btn-start';
+      btnToggle.innerHTML = '🚀 Kích Hoạt Chạy Bot';
+    }
+  }
+
+  if (statStatus) {
+    statStatus.textContent = isRunning ? 'Đang Hoạt Động (Online)' : 'Đã Tắt (Stopped)';
+    statStatus.style.color = isRunning ? '#22c55e' : '#94a3b8';
+  }
+  if (statGuilds) {
+    statGuilds.textContent = isRunning ? `${acc.details?.guilds_count || 0} Servers` : '0 Servers (Offline)';
+  }
+  if (statCogs) {
+    statCogs.textContent = isRunning ? `${acc.details?.cogs_count || 30}+ Cogs Sẵn Sàng` : '30+ Modules Cogs';
+  }
+}
+
+function renderUserBotCards(accounts) {
+  const grid = document.getElementById('userbot-accounts-cards-grid');
+  if (!grid) return;
+  if (!accounts || accounts.length === 0) {
+    grid.innerHTML = `
+      <div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #94a3b8;">
+        Chưa có tài khoản Discord nào được lưu. Hãy vào mục <a href="javascript:switchTab('tab-accounts')" style="color:#a855f7;">Quản Lý Đa Token</a> để nạp Token.
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = accounts.map(acc => {
+    const isRunning = acc.is_running === true;
+    const av = acc.discord_avatar || (acc.details && acc.details.avatar_url) || 'https://cdn.discordapp.com/embed/avatars/0.png';
+    const decor = acc.avatar_decoration ? `<img src="${acc.avatar_decoration}" style="position:absolute; inset:-4px; width:54px; height:54px; pointer-events:none;">` : '';
+    const pfx = acc.bot_prefix || 'm';
+
+    return `
+      <div class="acc-card-item ${isRunning ? 'active' : ''}">
+        <div class="aci-header">
+          <div style="position:relative; width:46px; height:46px;">
+            <img src="${av}" alt="" class="aci-avatar">
+            ${decor}
+          </div>
+          <div class="aci-info">
+            <div class="aci-name">${acc.username || 'Discord User'}</div>
+            <div class="aci-id">ID: ${acc.discord_id || '---'} • <span style="color:#a855f7;">${acc.account_type === 'main' ? 'Chính' : 'Phụ'}</span></div>
+          </div>
+          <span class="acc-status-pill ${isRunning ? 'linked' : 'unlinked'}" style="font-size:0.7rem; padding:2px 8px;">
+            ${isRunning ? '● Đang Chạy' : 'Đã Tắt'}
+          </span>
+        </div>
+
+        <div style="padding: 10px 0; display:flex; align-items:center; justify-content:space-between; font-size:0.8rem; color:#94a3b8;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span>Prefix:</span>
+            <input type="text" id="card-prefix-${acc.account_id}" value="${pfx}" style="width:40px; text-align:center; padding:3px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.15); border-radius:4px; color:#38bdf8; font-weight:700;">
+          </div>
+          <div>${isRunning ? (acc.details?.guilds_count || 0) + ' Servers' : 'Offline'}</div>
+        </div>
+
+        <div class="aci-actions">
+          ${isRunning
+            ? `<button type="button" class="rpc-btn rpc-btn-stop" style="padding:6px 12px; font-size:0.78rem;" onclick="toggleUserBot('${acc.account_id}', 'stop')">🛑 Tắt Bot</button>`
+            : `<button type="button" class="rpc-btn rpc-btn-start" style="padding:6px 12px; font-size:0.78rem;" onclick="toggleUserBot('${acc.account_id}', 'start', document.getElementById('card-prefix-${acc.account_id}') ? document.getElementById('card-prefix-${acc.account_id}').value : 'm')">🚀 Kích Hoạt Bot</button>`
+          }
+          <button type="button" class="rpc-btn" style="padding:6px 10px; font-size:0.78rem; background:rgba(255,255,255,0.06);" onclick="selectAndFocusBot('${acc.account_id}')">Chọn Xem</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function selectAndFocusBot(accountId) {
+  window.userbotState.selectedAccountId = accountId;
+  const sel = document.getElementById('userbot-account-select');
+  if (sel) sel.value = accountId;
+  updateUserBotHero();
+  showToast('Đã chọn tài khoản bot để điều khiển', 'info', 1500);
+}
+
+async function toggleSelectedUserBot() {
+  const selectedId = window.userbotState.selectedAccountId || 'main';
+  const pfxInput = document.getElementById('userbot-prefix-input');
+  const prefix = (pfxInput ? pfxInput.value : 'm').trim() || 'm';
+
+  const accounts = window.userbotState.accounts || [];
+  const acc = accounts.find(a => String(a.account_id) === String(selectedId));
+  const isRunning = acc ? acc.is_running : false;
+  const action = isRunning ? 'stop' : 'start';
+
+  await toggleUserBot(selectedId, action, prefix);
+}
+
+async function toggleUserBot(accountId, action, customPrefix) {
+  const pfxEl = document.getElementById(`card-prefix-${accountId}`) || document.getElementById(`acc-bot-prefix-${accountId}`) || document.getElementById('userbot-prefix-input');
+  const prefix = customPrefix || (pfxEl ? pfxEl.value : 'm').trim() || 'm';
+
+  showToast(action === 'start' ? 'Đang kích hoạt khởi chạy UserBot...' : 'Đang tắt UserBot...', 'info', 2000);
+
+  try {
+    const endpoint = action === 'start' ? '/api/userbot/start' : '/api/userbot/stop';
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ account_id: accountId, prefix: prefix })
+    });
+    const d = await res.json();
+    if (d.success) {
+      showToast(d.message, 'success');
+      await loadUserBotStatus();
+      if (typeof loadMultiAccounts === 'function') {
+        loadMultiAccounts();
+      }
+      loadUserBotLogs();
+    } else {
+      showToast(d.message || 'Lỗi xử lý UserBot', 'error');
+    }
+  } catch (e) {
+    showToast('Lỗi kết nối máy chủ', 'error');
+  }
+}
+
+function renderUserBotCommands(catalog) {
+  const grid = document.getElementById('userbot-commands-grid');
+  if (!grid) return;
+  if (!catalog || catalog.length === 0) return;
+
+  grid.innerHTML = catalog.map(cat => `
+    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 1rem;">
+      <div style="font-weight: 700; color: #38bdf8; font-size: 0.92rem; margin-bottom: 4px; display:flex; align-items:center; gap:6px;">
+        <span>${cat.category}</span>
+      </div>
+      <div style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 10px;">${cat.description}</div>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        ${cat.commands.map(cmd => `
+          <div style="background: rgba(0,0,0,0.25); padding: 5px 8px; border-radius: 6px; font-size: 0.76rem; border-left: 2px solid #a855f7;">
+            <code style="color: #f1f5f9; font-weight: 600;">${cmd.name}</code>
+            <div style="color: #94a3b8; font-size: 0.72rem; margin-top: 2px;">${cmd.desc}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadUserBotLogs() {
+  const box = document.getElementById('userbot-console-box');
+  if (!box) return;
+  try {
+    const res = await fetch('/api/userbot/logs');
+    const d = await res.json();
+    if (d.success && d.logs) {
+      if (d.logs.length === 0) {
+        box.innerHTML = '<div style="color: #64748b;">Chưa có log mới. Nhấn "Kích Hoạt Chạy Bot" để xem tiến trình.</div>';
+        return;
+      }
+      box.innerHTML = d.logs.map(log => {
+        let col = '#e2e8f0';
+        if (log.level === 'error') col = '#f43f5e';
+        else if (log.level === 'warning') col = '#fbbf24';
+        else if (log.level === 'success') col = '#22c55e';
+        return `<div><span style="color:#64748b;">[${log.time}]</span> <span style="color:${col};">[${log.level.toUpperCase()}]</span> ${log.message}</div>`;
+      }).join('');
+      box.scrollTop = box.scrollHeight;
+    }
+  } catch (e) {
+    // ignore
+  }
+}
+
+function clearUserBotLogs() {
+  const box = document.getElementById('userbot-console-box');
+  if (box) box.innerHTML = '<div style="color:#64748b;">Đã làm sạch console.</div>';
+}
+
 function init() {
   initTheme();
   initSystemClock();
@@ -3866,6 +4207,7 @@ function init() {
   loadSavedConfig();
   fetchAccountInfo();
   loadMultiAccounts();
+  loadUserBotStatus();
   initAllMultiTokenWidgets();
   loadDashboardStats();
   checkVoiceStatus();

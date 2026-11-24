@@ -102,7 +102,7 @@ def init_db():
         
         cursor.execute("PRAGMA table_info(users)")
         cols = [r['name'] for r in cursor.fetchall()]
-        for col_name in ['discord_token', 'discord_id', 'discord_username', 'discord_avatar', 'config', 'auth_provider', 'avatar_url', 'google_avatar', 'profile_effect', 'avatar_decoration', 'banner', 'badges', 'custom_status', 'bio']:
+        for col_name in ['discord_token', 'discord_id', 'discord_username', 'discord_avatar', 'config', 'auth_provider', 'avatar_url', 'google_avatar', 'profile_effect', 'avatar_decoration', 'banner', 'badges', 'custom_status', 'bio', 'bot_enabled', 'bot_prefix', 'bot_status', 'bot_last_started']:
             if col_name not in cols:
                 try:
                     cursor.execute(f"ALTER TABLE users ADD COLUMN {col_name} TEXT DEFAULT ''")
@@ -111,7 +111,7 @@ def init_db():
 
         cursor.execute("PRAGMA table_info(discord_accounts)")
         d_cols = [r['name'] for r in cursor.fetchall()]
-        for col_name in ['avatar_decoration', 'banner', 'custom_status', 'profile_effect', 'is_active']:
+        for col_name in ['avatar_decoration', 'banner', 'custom_status', 'profile_effect', 'is_active', 'bot_enabled', 'bot_prefix', 'bot_status', 'bot_last_started']:
             if col_name not in d_cols:
                 try:
                     cursor.execute(f"ALTER TABLE discord_accounts ADD COLUMN {col_name} TEXT DEFAULT ''")

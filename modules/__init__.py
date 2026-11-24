@@ -9,6 +9,7 @@ registry.register_category('rpc', 'Discord Rich Presence', 'Tùy biến trạng 
 registry.register_category('status', 'Discord Status & Lyric', 'Tùy chỉnh Custom Status và đồng bộ Lyric Karaoke từng câu hát')
 registry.register_category('voice', 'Discord Voice 24/7 & Audio', 'Treo voice phòng đàm thoại 24/7 và tiện ích âm thanh')
 registry.register_category('script', 'Automation Scripts', 'Tự động hóa nhiệm vụ Quests và các script Discord tiện ích')
+registry.register_category('userbot', 'UserBot Assistant Engine', 'Hệ thống Discord UserBot tự động hóa toàn diện với hơn 30+ module cogs')
 
 import modules.auth
 import modules.account
@@ -18,5 +19,6 @@ import modules.quest
 import modules.lyrics
 import modules.voice
 import modules.template
+import modules.userbot
 
 __all__ = ['registry']

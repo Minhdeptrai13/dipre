@@ -1,0 +1,15 @@
+{
+  "_note": "File mau vi du. He thong uu tien nap tu SQLite Database va Bien moi truong (Environment Variables). KHONG commit token that len Git!",
+  "captcha": {
+    "provider": "web"
+  },
+  "accounts": [
+    {
+      "name": "Demo_Account",
+      "token": "YOUR_DISCORD_TOKEN_HERE",
+      "prefix": "m",
+      "role": "prime",
+      "status": "unlock"
+    }
+  ]
+}

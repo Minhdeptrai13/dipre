@@ -2,6 +2,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.db
+*.sqlite
 *.sqlite3
 .env
 .env.*
@@ -9,8 +10,23 @@ __pycache__/
 !.env.example
 oauth_secrets.json
 client_secrets.json
-config.json
+**/config.json
+config*.json
+!**/config.example.json
+!config.example.json
+*_setting.json
+*.bak
+*.json.bak
 venv/
 .venv/
 
 static/uploads/*
+data/soundcloud/*
+data/tiktok/*
+data/youtube/*
+apps/user_discord/data/downloads/*
+apps/user_discord/data/audio_extract/*
+apps/user_discord/data/ocr_temp/*
+apps/user_discord/data/soundcloud/*
+apps/user_discord/data/tiktok/*
+apps/user_discord/data/youtube/*

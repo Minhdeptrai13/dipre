@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TRIS CLOUD // PRIVATE VPS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #090b10;
+            --card-bg: rgba(18, 22, 34, 0.75);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --card-border-glow: rgba(99, 102, 241, 0.35);
+            --accent-cyan: #06b6d4;
+            --accent-indigo: #6366f1;
+            --accent-gradient: linear-gradient(135deg, #06b6d4 0%, #6366f1 100%);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body {
+            background-color: var(--bg-base);
+            background-image: 
+                radial-gradient(circle at 20% 15%, rgba(6, 182, 212, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 80% 85%, rgba(99, 102, 241, 0.15) 0%, transparent 45%);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+        .ambient-glow {
+            position: absolute;
+            width: 450px;
+            height: 450px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            filter: blur(120px);
+            opacity: 0.15;
+            pointer-events: none;
+        }
+        .auth-card {
+            width: 90%;
+            max-width: 440px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 32px;
+            padding: 40px 32px;
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            box-shadow: 
+                0 25px 60px -15px rgba(0, 0, 0, 0.6),
+                0 0 40px -10px var(--card-border-glow);
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .auth-card.shake { animation: shake 0.45s ease-in-out; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: rgba(6, 182, 212, 0.1);
+            border: 1px solid rgba(6, 182, 212, 0.25);
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+        .badge-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-cyan);
+        }
+        .vps-icon-wrapper {
+            width: 68px;
+            height: 68px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(99, 102, 241, 0.15));
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            margin: 0 auto 18px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .vps-icon-wrapper svg { width: 32px; height: 32px; color: var(--accent-cyan); }
+        h1 {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+            background: linear-gradient(180deg, #ffffff 30%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        p.subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; line-height: 1.5; }
+        .vps-name-tag {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.06);
+            padding: 2px 10px;
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .pin-field {
+            width: 100%;
+            height: 60px;
+            background: rgba(10, 14, 23, 0.8);
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 8px;
+            color: #ffffff;
+            outline: none;
+            transition: all 0.25s ease;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+            margin-bottom: 20px;
+        }
+        .pin-field:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.25);
+        }
+        .btn-unlock {
+            width: 100%;
+            height: 56px;
+            background: var(--accent-gradient);
+            border: none;
+            border-radius: 18px;
+            color: #ffffff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
+        }
+        .btn-unlock:hover { transform: translateY(-2px); }
+        .error-msg {
+            font-size: 12px; font-weight: 600; color: var(--danger);
+            margin-top: 14px; min-height: 18px; opacity: 0; transition: opacity 0.2s ease;
+        }
+        .error-msg.visible { opacity: 1; }
+        .footer-hint { margin-top: 24px; font-size: 11px; color: rgba(148, 163, 184, 0.6); }
+        #terminal-view {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #000; z-index: 100; display: none; flex-direction: column;
+        }
+        .term-header {
+            height: 48px; background: #11141c; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 16px;
+        }
+        .term-title { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: #94a3b8; }
+        .term-badge { background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 8px; border-radius: 6px; font-size: 10px; }
+        .term-actions button {
+            background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #e2e8f0; padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer;
+        }
+        .term-iframe-container { flex: 1; width: 100%; height: calc(100% - 48px); background: #000; }
+        .term-iframe-container iframe { width: 100%; height: 100%; border: none; }
+        .mobile-keys-bar {
+            background: #181c26; border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 6px 10px; display: flex; gap: 8px; overflow-x: auto;
+        }
+        .key-btn {
+            background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f1f5f9; font-family: 'JetBrains Mono', monospace; font-size: 12px;
+            font-weight: 700; padding: 6px 14px; border-radius: 8px; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-glow"></div>
+    <div class="auth-card" id="auth-box">
+        <div class="badge"><span class="badge-dot"></span> TRIS KERNEL // CLOUD NODE</div>
+        <div class="vps-icon-wrapper">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+        </div>
+        <h1>MÁY ẢO LINUX</h1>
+        <p class="subtitle">Máy chủ: <span class="vps-name-tag" id="vps-name-display">VPS</span><br>Nhập mã PIN bảo mật do bot cấp:</p>
+        <form id="auth-form" onsubmit="handleUnlock(event)">
+            <input type="text" id="pin-input" class="pin-field" placeholder="••••••" maxlength="8" autocomplete="off" required>
+            <button type="submit" class="btn-unlock" id="btn-submit">
+                <span>MỞ KHÓA MÁY CHỦ</span>
+            </button>
+        </form>
+        <div class="error-msg" id="error-alert">Mã PIN không chính xác!</div>
+        <div class="footer-hint">Lấy mã PIN qua lệnh <code>vps list</code> trên Discord</div>
+    </div>
+    <div id="terminal-view">
+        <div class="term-header">
+            <div class="term-title">
+                <span class="term-badge">ONLINE</span>
+                <span id="term-vps-title">VPS (Ubuntu 22.04)</span>
+            </div>
+            <div class="term-actions">
+                <button onclick="location.reload()">Đăng xuất</button>
+            </div>
+        </div>
+        <div class="term-iframe-container">
+            <iframe id="term-frame" src="about:blank"></iframe>
+        </div>
+        <div class="mobile-keys-bar">
+            <button class="key-btn" onclick="sendKey('Tab')">Tab</button>
+            <button class="key-btn" onclick="sendKey('Ctrl+C')">Ctrl+C</button>
+            <button class="key-btn" onclick="sendKey('Esc')">Esc</button>
+            <button class="key-btn" onclick="sendKey('Clear')">Clear</button>
+        </div>
+    </div>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const sid = urlParams.get('sid') || '';
+        const nameParam = urlParams.get('name') || 'Linux-Node';
+        document.getElementById('vps-name-display').innerText = nameParam;
+        document.getElementById('term-vps-title').innerText = nameParam + ' (Ubuntu 22.04)';
+
+        async function handleUnlock(e) {
+            e.preventDefault();
+            const pinVal = document.getElementById('pin-input').value.trim();
+            const btn = document.getElementById('btn-submit');
+            const err = document.getElementById('error-alert');
+            const card = document.getElementById('auth-box');
+            if (!pinVal) return;
+            btn.querySelector('span').innerText = 'ĐANG MỞ KHÓA...';
+            err.classList.remove('visible');
+            try {
+                const resp = await fetch('/api/vps/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sid: sid, pin: pinVal })
+                });
+                const res = await resp.json();
+                if (res.ok && res.terminal_url) {
+                    btn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                    btn.querySelector('span').innerText = '✅ XÁC THỰC THÀNH CÔNG!';
+                    err.style.color = '#10b981';
+                    err.innerText = '🚀 Đang kết nối vào máy chủ Linux...';
+                    err.classList.add('visible');
+                    
+                    // Chuyển hướng trực tiếp để tránh bị trình duyệt chặn nhúng iframe (SAMEORIGIN)
+                    setTimeout(() => {
+                        window.location.href = res.terminal_url;
+                    }, 800);
+                } else {
+                    btn.querySelector('span').innerText = 'MỞ KHÓA MÁY CHỦ';
+                    err.style.color = 'var(--danger)';
+                    err.innerText = res.msg || 'Mã PIN không chính xác!';
+                    err.classList.add('visible');
+                    card.classList.add('shake');
+                    setTimeout(() => card.classList.remove('shake'), 500);
+                }
+            } catch (ex) {
+                btn.querySelector('span').innerText = 'MỞ KHÓA MÁY CHỦ';
+                err.style.color = 'var(--danger)';
+                err.innerText = 'Lỗi kết nối máy chủ xác thực!';
+                err.classList.add('visible');
+            }
+        }
+        function sendKey(k) {
+            const frame = document.getElementById('term-frame');
+            if (frame && frame.contentWindow) {
+                frame.contentWindow.postMessage({ type: 'key', key: k }, '*');
+            }
+        }
+    </script>
+</body>
+</html>

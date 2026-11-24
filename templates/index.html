@@ -110,6 +110,17 @@
         </div>
 
         <div class="sidebar-group">
+          <div class="sidebar-group-title" id="sidebar-userbot-group-title">DISCORD USERBOT</div>
+          <div class="sidebar-group-items">
+            <button type="button" class="sidebar-nav-item" data-tab="tab-userbot" onclick="switchTab('tab-userbot')">
+              <svg class="sni-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8" y2="16"></line><line x1="16" y1="16" x2="16" y2="16"></line></svg>
+              <span id="sidebar-userbot-label">{{ username }}'s Bot</span>
+              <span id="sidebar-userbot-badge" class="badge-status-dot d-none" style="margin-left:auto; width:8px; height:8px; border-radius:50%; background:#22c55e; box-shadow:0 0 8px #22c55e;" title="Đang chạy"></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="sidebar-group">
           <div class="sidebar-group-title">ACCOUNT &amp; TOKENS</div>
           <div class="sidebar-group-items">
             <button type="button" class="sidebar-nav-item" data-tab="tab-accounts" onclick="switchTab('tab-accounts')">
@@ -1592,6 +1603,132 @@
           </div>
         </div>
       </section>
+
+      <!-- BẮT ĐẦU: TAB USERBOT (TÊN ACC / GMAIL / DISCORD)'S BOT -->
+      <section class="tab-panel" id="tab-userbot">
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <div>
+              <div class="ssh-title" id="userbot-panel-title">
+                <span id="userbot-header-name">{{ username }}</span>'s Bot Engine
+              </div>
+              <div class="ssh-sub">
+                Tích hợp toàn bộ sức mạnh Discord UserBot: 30+ cogs đa chức năng (AI, Tải video TikTok/YT/FB, Voice 24/7, Auto Quest, AFK, Crypto, War, v.v.). Trạng thái luôn được lưu trữ vĩnh viễn (F5 không mất).
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="ssh-badge" id="userbot-global-badge">30+ Modules Cogs</span>
+              <button type="button" class="rpc-btn rpc-btn-save" onclick="loadUserBotStatus(true)" title="Đồng bộ trạng thái realtime">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                Làm Mới
+              </button>
+            </div>
+          </div>
+
+          <!-- Banner Tổng Quan & Điều Khiển Nhanh -->
+          <div class="userbot-hero-banner" style="background: linear-gradient(135deg, rgba(88, 101, 242, 0.15), rgba(168, 85, 247, 0.15)); border: 1px solid rgba(88, 101, 242, 0.3); border-radius: 14px; padding: 1.5rem; margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: space-between; align-items: center;">
+            <div style="display: flex; gap: 1rem; align-items: center;">
+              <div style="position: relative; width: 60px; height: 60px; border-radius: 50%; overflow: hidden; background: #1e1f22; border: 2px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;">
+                <img id="userbot-hero-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" style="width: 100%; height: 100%; object-fit: cover;" alt="Bot Avatar">
+                <div id="userbot-hero-pulse" style="position: absolute; bottom: 2px; right: 2px; width: 14px; height: 14px; border-radius: 50%; background: #64748b; border: 2px solid #1e1f22;"></div>
+              </div>
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <h3 id="userbot-hero-botname" style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #fff;">Chưa chọn tài khoản</h3>
+                  <span id="userbot-hero-status-pill" class="acc-status-pill unlinked" style="font-size: 0.72rem; padding: 2px 10px;">Đã Tắt</span>
+                </div>
+                <div style="font-size: 0.82rem; color: #94a3b8; margin-top: 4px;">
+                  Tài khoản đang chọn: <b id="userbot-hero-account-label" style="color: #cbd5e1;">---</b> • Tiền tố lệnh: <code id="userbot-hero-prefix-tag" style="background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; color: #38bdf8;">m</code>
+                </div>
+              </div>
+            </div>
+
+            <!-- Controls: Account picker, Prefix input, Big Toggle button -->
+            <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <label style="font-size: 0.75rem; color: #94a3b8; font-weight: 600;">Chọn Tài Khoản</label>
+                <select id="userbot-account-select" class="sf-select" style="min-width: 200px; padding: 7px 12px; font-size: 0.85rem;" onchange="onUserBotAccountSelectChange()">
+                  <option value="">Đang tải danh sách tài khoản...</option>
+                </select>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <label style="font-size: 0.75rem; color: #94a3b8; font-weight: 600;">Prefix (Tiền tố)</label>
+                <input type="text" id="userbot-prefix-input" class="sf-input" value="m" style="width: 75px; text-align: center; padding: 7px 8px; font-size: 0.85rem; font-weight: 700;" placeholder="m" maxlength="5">
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <label style="font-size: 0.75rem; color: transparent; font-weight: 600;">Hành động</label>
+                <button type="button" id="userbot-btn-toggle" class="rpc-btn rpc-btn-start" style="padding: 8px 18px; font-size: 0.88rem; font-weight: 700;" onclick="toggleSelectedUserBot()">
+                  🚀 Kích Hoạt Chạy Bot
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Thẻ thống kê thời gian thực của Bot -->
+          <div class="msc-grid mt-3" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div class="msc-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 1rem;">
+              <div class="msc-label" style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Trạng Thái Bot</div>
+              <div class="msc-value" id="userbot-stat-status" style="font-size: 1.25rem; font-weight: 700; color: #cbd5e1; margin-top: 4px;">Đã Tắt (Stopped)</div>
+            </div>
+            <div class="msc-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 1rem;">
+              <div class="msc-label" style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Server Đang Kết Nối</div>
+              <div class="msc-value" id="userbot-stat-guilds" style="font-size: 1.25rem; font-weight: 700; color: #38bdf8; margin-top: 4px;">0 Servers</div>
+            </div>
+            <div class="msc-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 1rem;">
+              <div class="msc-label" style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Cogs &amp; Extensions</div>
+              <div class="msc-value" id="userbot-stat-cogs" style="font-size: 1.25rem; font-weight: 700; color: #a855f7; margin-top: 4px;">30+ Đầy Đủ</div>
+            </div>
+            <div class="msc-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 1rem;">
+              <div class="msc-label" style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Lưu Trạng Thái</div>
+              <div class="msc-value" style="font-size: 1.25rem; font-weight: 700; color: #22c55e; margin-top: 4px;">Tự Động Lưu SQLite</div>
+            </div>
+          </div>
+
+          <!-- Danh Sách Toàn Bộ Tài Khoản & Trạng Thái Từng Bot -->
+          <div class="settings-section mt-4" style="background: rgba(255,255,255,0.02); border-radius: 12px; padding: 1.25rem; border: 1px solid rgba(255,255,255,0.06);">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <h4 style="margin: 0; font-size: 1rem; color: #fff;">Quản Lý Trạng Thái Từng Tài Khoản (Bật / Tắt Độc Lập)</h4>
+                <div style="font-size: 0.8rem; color: #94a3b8;">Bạn có thể kích hoạt UserBot cho một hoặc nhiều tài khoản cùng lúc. F5 hoặc đóng trình duyệt trạng thái vẫn luôn được giữ nguyên.</div>
+              </div>
+            </div>
+            <div id="userbot-accounts-cards-grid" class="accounts-cards-grid">
+              <div class="acc-grid-loading">Đang tải danh sách tài khoản UserBot...</div>
+            </div>
+          </div>
+
+          <!-- Bảng điều khiển Danh Mục Lệnh (Commands Showcase) -->
+          <div class="settings-section mt-4" style="background: rgba(255,255,255,0.02); border-radius: 12px; padding: 1.25rem; border: 1px solid rgba(255,255,255,0.06);">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <h4 style="margin: 0; font-size: 1rem; color: #fff;">Kho Tính Năng &amp; Lệnh Hoạt Động (Full UserDiscord Modules)</h4>
+                <div style="font-size: 0.8rem; color: #94a3b8;">Gõ trực tiếp các lệnh này trên Discord bằng tài khoản đã kích hoạt bot (hoặc tin nhắn DM).</div>
+              </div>
+              <span class="ssh-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">Full 30+ Cogs</span>
+            </div>
+            <div id="userbot-commands-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+              <!-- Được render động từ API /api/userbot/commands -->
+            </div>
+          </div>
+
+          <!-- Hộp Terminal Console Log Thời Gian Thực -->
+          <div class="settings-section mt-4" style="background: rgba(255,255,255,0.02); border-radius: 12px; padding: 1.25rem; border: 1px solid rgba(255,255,255,0.06);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div>
+                <h4 style="margin: 0; font-size: 1rem; color: #fff;">Live UserBot Console Logs</h4>
+                <div style="font-size: 0.8rem; color: #94a3b8;">Nhật ký khởi chạy, tải cogs và sự kiện lệnh thời gian thực của các UserBot</div>
+              </div>
+              <button type="button" class="rpc-btn" style="padding: 4px 10px; font-size: 0.75rem; background: rgba(255,255,255,0.06);" onclick="clearUserBotLogs()">Xóa Màn Hình</button>
+            </div>
+            <div id="userbot-console-box" style="background: #0f172a; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 1rem; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.82rem; height: 220px; overflow-y: auto; color: #e2e8f0; line-height: 1.5;">
+              <div style="color: #64748b;">Đang kết nối luồng log UserBot...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- KẾT THÚC: TAB USERBOT -->
 
       <section class="tab-panel" id="tab-accounts">
         <div class="settings-section">
