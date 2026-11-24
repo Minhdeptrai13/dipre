@@ -1785,6 +1785,86 @@ beyond the veil, control returns</textarea>
     let cmdSelectedIdx = 0;
 
     /* ---------- BOOTSTRAP ---------- */
+    
+    /* ---------- REAL BACKEND SYNC FUNCTIONS ---------- */
+    async function syncAccountsFromBackend() {
+      try {
+        if (!location.protocol.startsWith('http')) return;
+        const res = await fetch('/api/accounts/list');
+        const data = await res.json();
+        if (data && data.success && Array.isArray(data.accounts)) {
+          const mapped = data.accounts.map(acc => ({
+            id: String(acc.id || acc.discord_id),
+            db_id: acc.id,
+            discord_id: acc.discord_id,
+            name: acc.discord_username || 'Discord User',
+            initials: (acc.discord_username || 'DU').slice(0, 2).toUpperCase(),
+            main: Boolean(acc.is_active || acc.account_type === 'main'),
+            avatar: acc.discord_avatar,
+            nitro: Boolean(acc.premium_type && acc.premium_type > 0),
+            ping: state.ping || 18,
+            botOn: false,
+            prefix: '!',
+            servers: 0,
+            presenceTarget: true
+          }));
+
+          if (SERVER_CONTEXT.hasToken && SERVER_CONTEXT.discordUsername) {
+            const exists = mapped.some(m => m.name === SERVER_CONTEXT.discordUsername);
+            if (!exists) {
+              mapped.unshift({
+                id: SERVER_CONTEXT.discordId || 'main',
+                db_id: 'main',
+                discord_id: SERVER_CONTEXT.discordId,
+                name: SERVER_CONTEXT.discordUsername,
+                initials: SERVER_CONTEXT.initials || 'DU',
+                main: true,
+                avatar: SERVER_CONTEXT.discordAvatar,
+                nitro: true,
+                ping: 18,
+                botOn: false,
+                prefix: '!',
+                servers: 0,
+                presenceTarget: true
+              });
+            }
+          }
+
+          if (mapped.length > 0) {
+            state.accounts = mapped;
+            renderAll();
+          }
+        }
+      } catch (err) {
+        console.warn('Sync accounts note:', err);
+      }
+    }
+
+    async function syncRealInbox() {
+      try {
+        if (!location.protocol.startsWith('http')) return;
+        const res = await fetch('/api/discord/inbox');
+        const data = await res.json();
+        if (data && data.success && Array.isArray(data.conversations) && data.conversations.length > 0) {
+          state.inbox = data.conversations.map((c, idx) => ({
+            id: c.channel_id || idx + 1,
+            type: c.type || 'dm',
+            from: c.name || c.recipient_name || 'Discord Friend',
+            initials: (c.name || 'DF').slice(0, 2).toUpperCase(),
+            time: c.last_time || 'Vừa xong',
+            unread: Boolean(c.unread),
+            preview: c.last_message || 'Không có tin nhắn',
+            messages: [
+              { sender: c.name || 'Friend', time: c.last_time || '12:00', text: c.last_message || '' }
+            ]
+          }));
+          renderInbox();
+        }
+      } catch (e) {
+        console.warn('Sync inbox note:', e);
+      }
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
 
       // Fetch real accounts and real inbox from backend
@@ -2555,12 +2635,6 @@ beyond the veil, control returns</textarea>
     function loadDemoTokenPack() {
       openTokenDrawer();
       showToast('Vui lòng kết nối Discord User Token để sử dụng tính năng.');
-    },
-        
-        
-      ];
-      renderAll();
-      showToast('Đã nạp bộ 3 tài khoản Demo (minhnvb • Active)');
     }
 
     function clearAllTokens() {
