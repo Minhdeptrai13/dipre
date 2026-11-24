@@ -31,6 +31,27 @@ def create_app() -> Flask:
 
     registry.bind_to_app(app)
 
+    # ── Global error handlers ──
+    @app.errorhandler(500)
+    def internal_error(e):
+        from flask import render_template, redirect, url_for
+        try:
+            return render_template('index.html',
+                username='Guest', has_token=False,
+                discord_username='', discord_avatar='', user_bots=[],
+                features_usage={}, avatar_info={'initials':'G','gradient':'','type':'initials','url':''},
+                avatar_url='', auth_provider='local', discord_id='',
+                profile_effect_data=None, banner=None, badges=[],
+                custom_status='', bio='', avatar_decoration=None, sub_count=0
+            ), 500
+        except Exception:
+            return '<h1>500 Internal Server Error</h1><p>Vui lòng thử lại sau.</p>', 500
+
+    @app.errorhandler(404)
+    def not_found(e):
+        from flask import redirect, url_for
+        return redirect(url_for('login'))
+
     try:
         from werkzeug.middleware.proxy_fix import ProxyFix
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
