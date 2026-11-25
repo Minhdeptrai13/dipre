@@ -31,6 +31,15 @@ def normalize_rpc_config(data: dict) -> dict:
         out['appId'] = data['app_id']
     if 'use_timestamp' in data and not data.get('hasTimestamp'):
         out['hasTimestamp'] = bool(data['use_timestamp'])
+
+    if 'button1Text' in data and not data.get('btn1Label'):
+        out['btn1Label'] = data['button1Text']
+    if 'button1Url' in data and not data.get('btn1Url'):
+        out['btn1Url'] = data['button1Url']
+    if 'button2Text' in data and not data.get('btn2Label'):
+        out['btn2Label'] = data['button2Text']
+    if 'button2Url' in data and not data.get('btn2Url'):
+        out['btn2Url'] = data['button2Url']
         
     buttons = data.get('buttons', [])
     if isinstance(buttons, list) and len(buttons) > 0:

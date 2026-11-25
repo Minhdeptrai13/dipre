@@ -588,21 +588,61 @@
                 <input id="rpc-state" type="text" value="Gateway 18ms • Idle-free" class="studio-input w-full h-9 px-3 rounded-md text-[13px]" />
               </div>
               <div class="sm:col-span-2">
-                <label class="block text-[11.5px] font-medium text-muted mb-1.5">Chủ Đề Ảnh Lớn (Asset Style)</label>
+                <label class="block text-[11.5px] font-medium text-muted mb-1.5">Chủ Đề Ảnh Lớn (Preset Nhanh)</label>
                 <select id="rpc-art" class="studio-input w-full h-9 px-3 rounded-md text-[13px]">
                   <option value="dipre">DIPRE Geometric Core (Mặc định)</option>
                   <option value="vscode">Visual Studio Code Dark</option>
                   <option value="terminal">Terminal Matrix CLI</option>
                 </select>
               </div>
+              <div class="sm:col-span-2">
+                <label class="block text-[11.5px] font-medium text-muted mb-1.5">Ảnh Lớn Tùy Chỉnh (URL PNG/JPG/GIF hoặc Tải Ảnh Lên)</label>
+                <div class="flex gap-2">
+                  <input id="rpc-large-img" type="text" placeholder="Dán link ảnh https://... hoặc bấm Tải Ảnh" oninput="updateLiveRpcImgPreview()" class="studio-input flex-1 h-9 px-3 rounded-md font-mono text-[12px]" />
+                  <input id="rpc-large-file" type="file" accept="image/png,image/jpeg,image/gif,image/webp" class="hidden" onchange="uploadRpcImage('large', this)" />
+                  <button type="button" onclick="document.getElementById('rpc-large-file').click()" class="btn-secondary h-9 px-3 rounded-md text-[12px] font-medium shrink-0 flex items-center gap-1.5">
+                    <i data-lucide="upload" class="w-3.5 h-3.5"></i> Tải Ảnh
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label class="block text-[11.5px] font-medium text-muted mb-1.5">Ảnh Nhỏ (Small Image URL / Upload)</label>
+                <div class="flex gap-2">
+                  <input id="rpc-small-img" type="text" placeholder="URL ảnh nhỏ (tuỳ chọn)" class="studio-input flex-1 h-9 px-3 rounded-md font-mono text-[12px]" />
+                  <input id="rpc-small-file" type="file" accept="image/png,image/jpeg,image/gif,image/webp" class="hidden" onchange="uploadRpcImage('small', this)" />
+                  <button type="button" onclick="document.getElementById('rpc-small-file').click()" class="btn-secondary h-9 px-2.5 rounded-md text-[12px] shrink-0" title="Tải ảnh nhỏ">
+                    <i data-lucide="image-plus" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label class="block text-[11.5px] font-medium text-muted mb-1.5">Application ID (Portal App — Tuỳ Chọn)</label>
+                <div class="flex gap-2">
+                  <input id="rpc-app-id" type="text" placeholder="Tự động hoặc dán App ID" class="studio-input flex-1 h-9 px-3 rounded-md font-mono text-[12px]" />
+                  <button type="button" onclick="loadPortalApps()" class="btn-secondary h-9 px-2.5 rounded-md text-[11.5px] shrink-0 text-teal border-teal/30">Lấy App</button>
+                </div>
+              </div>
               <div>
                 <label class="block text-[11.5px] font-medium text-muted mb-1.5">Nút Bấm 1</label>
                 <input id="rpc-btn1" type="text" value="Mở DIPRE Studio" class="studio-input w-full h-9 px-3 rounded-md text-[13px]" />
               </div>
               <div>
+                <label class="block text-[11.5px] font-medium text-muted mb-1.5">Link Nút Bấm 1</label>
+                <input id="rpc-btn1-url" type="text" value="https://dipre.onrender.com" class="studio-input w-full h-9 px-3 rounded-md font-mono text-[12px]" />
+              </div>
+              <div>
                 <label class="block text-[11.5px] font-medium text-muted mb-1.5">Nút Bấm 2</label>
                 <input id="rpc-btn2" type="text" value="Discord Server" class="studio-input w-full h-9 px-3 rounded-md text-[13px]" />
               </div>
+              <div>
+                <label class="block text-[11.5px] font-medium text-muted mb-1.5">Link Nút Bấm 2</label>
+                <input id="rpc-btn2-url" type="text" value="https://discord.com" class="studio-input w-full h-9 px-3 rounded-md font-mono text-[12px]" />
+              </div>
+            </div>
+
+            <div id="rpc-live-status-box" class="px-3 py-2 rounded-md bg-obsidian border border-hairline text-[11.5px] font-mono text-muted flex items-center justify-between gap-2">
+              <span id="rpc-live-status-text">Gateway RPC: Chờ kích hoạt</span>
+              <button type="button" onclick="syncRpcGatewayStatus()" class="text-teal hover:underline">Kiểm tra</button>
             </div>
 
             <div class="flex items-center justify-between pt-2 border-t border-hairline">
@@ -1018,18 +1058,25 @@ beyond the veil, control returns</textarea>
 
           <!-- Inputs -->
           <div class="space-y-3.5">
-            <div class="flex items-center justify-between">
-              <span class="text-[12px] font-medium text-ink">Thông Số Phòng Thoại</span>
-              <button onclick="fillSampleVoiceIds()" class="text-[11.5px] font-mono text-teal hover:underline">Điền ID Mẫu</button>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="text-[12px] font-medium text-ink">Thông Số Phòng Thoại (Hỗ trợ ID hoặc Link Discord)</span>
+              <button type="button" onclick="loadVoiceChannels()" class="text-[11.5px] font-mono text-teal hover:underline flex items-center gap-1">
+                <i data-lucide="refresh-cw" class="w-3 h-3"></i> Quét Phòng Voice Thật
+              </button>
+            </div>
+            <div id="voice-picker-wrap" class="hidden">
+              <select id="voice-channel-picker" onchange="onVoicePickerChange(this.value)" class="studio-input w-full h-9 px-3 rounded-md text-[12.5px]">
+                <option value="">-- Chọn nhanh Server &amp; Phòng Voice --</option>
+              </select>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label class="block text-[11.5px] font-medium text-muted mb-1.5">Guild ID (Server Discord) *</label>
-                <input id="voice-guild-id" type="text" placeholder="104712345678901234" class="studio-input w-full h-9 px-3 rounded-md font-mono text-[12.5px]" />
+                <label class="block text-[11.5px] font-medium text-muted mb-1.5">Guild ID (Tự nhận nếu có Channel ID)</label>
+                <input id="voice-guild-id" type="text" placeholder="Tự nhận diện hoặc nhập ID Server" class="studio-input w-full h-9 px-3 rounded-md font-mono text-[12.5px]" />
               </div>
               <div>
-                <label class="block text-[11.5px] font-medium text-muted mb-1.5">Channel ID (Phòng Voice) *</label>
-                <input id="voice-channel-id" type="text" placeholder="104798765432109876" class="studio-input w-full h-9 px-3 rounded-md font-mono text-[12.5px]" />
+                <label class="block text-[11.5px] font-medium text-muted mb-1.5">Channel ID hoặc Link Voice Discord *</label>
+                <input id="voice-channel-id" type="text" placeholder="ID phòng voice hoặc https://discord.com/channels/..." class="studio-input w-full h-9 px-3 rounded-md font-mono text-[12.5px]" />
               </div>
             </div>
           </div>
@@ -1493,6 +1540,7 @@ beyond the veil, control returns</textarea>
               <div class="flex items-start gap-3">
                 <!-- Stylized Thumbnail (zero broken images) -->
                 <div id="sim-rpc-thumb" class="w-14 h-14 rounded-md shrink-0 flex flex-col items-center justify-center border border-white/10 overflow-hidden relative" style="background: linear-gradient(135deg, #161619, #0F2E2A);">
+                  <img id="sim-rpc-thumb-img" src="" alt="RPC" class="hidden w-full h-full object-cover" />
                   <i id="sim-rpc-thumb-icon" data-lucide="cpu" class="w-6 h-6 text-teal"></i>
                   <span id="sim-rpc-thumb-tag" class="font-mono text-[8px] uppercase text-zinc-300 mt-0.5">v5.0</span>
                 </div>
@@ -1987,8 +2035,10 @@ beyond the veil, control returns</textarea>
       syncAccountsFromBackend();
       syncRealInbox();
       syncUserbotStatus();
+      syncRpcGatewayStatus();
       refreshUserbotLogs();
       setInterval(syncUserbotStatus, 5000);
+      setInterval(syncRpcGatewayStatus, 5000);
       setInterval(refreshUserbotLogs, 4000);
 
       initSoundboardVisualizer();
@@ -2109,14 +2159,95 @@ beyond the veil, control returns</textarea>
       if (tab === 'karaoke') renderKaraokeLines();
     }
 
+    async function uploadRpcImage(slot, inputEl) {
+      const file = inputEl?.files?.[0];
+      if (!file) return;
+      showToast('Đang tải ảnh lên máy chủ...');
+      const fd = new FormData();
+      fd.append('image', file);
+      try {
+        const res = await fetch('/api/upload', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data && data.success && data.url) {
+          const fullUrl = location.origin + data.url;
+          const targetInp = document.getElementById(slot === 'small' ? 'rpc-small-img' : 'rpc-large-img');
+          if (targetInp) targetInp.value = fullUrl;
+          updateLiveRpcImgPreview();
+          showToast('Đã tải ảnh RPC thành công! Bấm Áp Dụng Presence để đẩy lên Discord.');
+        } else {
+          showToast(data.message || 'Lỗi tải ảnh lên');
+        }
+      } catch (e) {
+        showToast('Lỗi kết nối khi upload ảnh');
+      }
+      inputEl.value = '';
+    }
+
+    function updateLiveRpcImgPreview() {
+      const imgUrl = (document.getElementById('rpc-large-img')?.value || '').trim();
+      state.presence.thumbUrl = imgUrl;
+      renderSimulator();
+    }
+
+    async function loadPortalApps() {
+      showToast('Đang quét danh sách Application trên Discord Developer Portal...');
+      try {
+        const res = await fetch('/api/portal_app_info');
+        const data = await res.json();
+        if (data && data.success && Array.isArray(data.apps) && data.apps.length > 0) {
+          const app = data.apps[0];
+          const appInp = document.getElementById('rpc-app-id');
+          if (appInp) appInp.value = app.id;
+          const imgInp = document.getElementById('rpc-large-img');
+          if (imgInp && !imgInp.value.trim() && app.display_avatar) {
+            imgInp.value = app.display_avatar;
+            updateLiveRpcImgPreview();
+          }
+          showToast(`Đã tìm thấy ${data.apps.length} App! Tự chọn: ${app.name} (${app.id})`);
+        } else {
+          showToast(data.message || 'Tài khoản chưa có App nào trên Discord Developer Portal (tạo 1 app ở discord.com/developers/applications để có full ảnh/nút)');
+        }
+      } catch (e) {
+        showToast('Lỗi lấy danh sách Portal App');
+      }
+    }
+
+    async function syncRpcGatewayStatus() {
+      try {
+        if (!location.protocol.startsWith('http')) return;
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        const txtEl = document.getElementById('rpc-live-status-text');
+        if (!txtEl) return;
+        if (data.status === 'running') {
+          txtEl.className = 'text-teal font-semibold';
+          txtEl.textContent = `Gateway RPC: RUNNING • ${data.user_tag || 'Online'} (${data.running_count || 1} luồng)`;
+        } else if (data.status === 'connecting') {
+          txtEl.className = 'text-amber';
+          txtEl.textContent = 'Gateway RPC: Đang kết nối Discord...';
+        } else if (data.status === 'error') {
+          txtEl.className = 'text-rose';
+          txtEl.textContent = `Gateway RPC Lỗi: ${data.error_message || 'Không thể kết nối'}`;
+        } else {
+          txtEl.className = 'text-muted';
+          txtEl.textContent = 'Gateway RPC: Đã tắt (Standby)';
+        }
+      } catch (e) {}
+    }
+
     async function applyCustomRpc() {
       const name = document.getElementById('rpc-name').value.trim() || 'DIPRE STUDIO v5.0';
       const type = document.getElementById('rpc-type').value;
       const details = document.getElementById('rpc-details').value.trim();
       const st = document.getElementById('rpc-state').value.trim();
       const art = document.getElementById('rpc-art').value;
+      const largeImg = (document.getElementById('rpc-large-img')?.value || '').trim();
+      const smallImg = (document.getElementById('rpc-small-img')?.value || '').trim();
+      const appId = (document.getElementById('rpc-app-id')?.value || '').trim();
       const btn1 = document.getElementById('rpc-btn1').value.trim();
+      const btn1Url = (document.getElementById('rpc-btn1-url')?.value || '').trim() || 'https://dipre.onrender.com';
       const btn2 = document.getElementById('rpc-btn2').value.trim();
+      const btn2Url = (document.getElementById('rpc-btn2-url')?.value || '').trim() || 'https://discord.com';
 
       const artMap = {
         dipre: { icon: 'cpu', tag: 'v5.0', grad: 'linear-gradient(135deg, #161619, #0F2E2A)' },
@@ -2137,15 +2268,18 @@ beyond the veil, control returns</textarea>
         thumbIcon: chosen.icon,
         thumbTag: chosen.tag,
         thumbGrad: chosen.grad,
+        thumbUrl: largeImg,
         showProgress: false,
       };
       state.rpcStartTs = Date.now();
       state.usage.rpc++;
       renderAll();
 
-      // Gọi API Backend thật để áp dụng Rich Presence lên Discord
       const targetAccounts = state.accounts.filter(a => a.presenceTarget);
       const targetIds = targetAccounts.map(a => a.main ? 'main' : (a.db_id || a.id));
+      const txtEl = document.getElementById('rpc-live-status-text');
+      if (txtEl) { txtEl.className = 'text-amber'; txtEl.textContent = 'Gateway RPC: Đang kết nối tới Discord...'; }
+
       try {
         const res = await fetch('/api/start', {
           method: 'POST',
@@ -2155,21 +2289,25 @@ beyond the veil, control returns</textarea>
             activityName: name,
             details: details,
             state: st,
-            button1Text: btn1 ? (btn1.length > 20 ? btn1.slice(0, 20) : btn1) : '',
-            button1Url: btn1 ? 'https://dipre.onrender.com' : '',
-            button2Text: btn2 ? (btn2.length > 20 ? btn2.slice(0, 20) : btn2) : '',
-            button2Url: btn2 ? 'https://dipre.onrender.com' : '',
+            largeImage: largeImg,
+            smallImage: smallImg,
+            appId: appId,
+            button1Text: btn1 ? btn1.slice(0, 32) : '',
+            button1Url: btn1 ? btn1Url : '',
+            button2Text: btn2 ? btn2.slice(0, 32) : '',
+            button2Url: btn2 ? btn2Url : '',
             account_ids: targetIds
           })
         });
         const data = await res.json();
+        await syncRpcGatewayStatus();
         if (data && data.success) {
           showToast(data.message || `Đã kích hoạt Rich Presence trên ${targetIds.length || 1} tài khoản!`);
         } else {
           showToast(data.message || 'Lỗi khi kích hoạt RPC Discord');
         }
       } catch (err) {
-        showToast('Đã lưu cấu hình Rich Presence');
+        showToast('Lỗi gửi yêu cầu Rich Presence tới máy chủ');
       }
     }
 
@@ -2178,6 +2316,7 @@ beyond the veil, control returns</textarea>
       renderAll();
       try {
         await fetch('/api/stop', { method: 'POST' });
+        await syncRpcGatewayStatus();
         showToast('Đã tắt toàn bộ Rich Presence trên Discord');
       } catch (e) {
         showToast('Đã tắt Rich Presence');
@@ -2185,10 +2324,26 @@ beyond the veil, control returns</textarea>
     }
 
     let ytSampleCursor = 0;
-    function fetchYoutubeSample() {
+    async function fetchYoutubeSample() {
+      const urlVal = (document.getElementById('yt-url')?.value || '').trim();
+      if (!urlVal) {
+        showToast('Vui lòng dán link YouTube trước');
+        return;
+      }
+      showToast('Đang trích xuất thông tin & ảnh thumbnail video YouTube...');
+      try {
+        const res = await fetch(`/api/youtube/meta?url=${encodeURIComponent(urlVal)}`);
+        const data = await res.json();
+        if (data && data.success) {
+          document.getElementById('yt-title').value = data.title || 'YouTube Video';
+          state.presence.thumbUrl = data.thumbnail || '';
+          showToast(`Đã lấy metadata: ${data.title}`);
+          return;
+        }
+      } catch (e) {}
       ytSampleCursor = (ytSampleCursor + 1) % YT_PRESETS.length;
       loadYtPreset(ytSampleCursor);
-      showToast('Đã trích xuất metadata video YouTube');
+      showToast('Đã tải mẫu YouTube');
     }
 
     function loadYtPreset(idx) {
@@ -2199,9 +2354,13 @@ beyond the veil, control returns</textarea>
     }
 
     async function applyYoutubeRpc() {
+      const ytUrl = document.getElementById('yt-url').value.trim() || 'https://youtube.com';
       const title = document.getElementById('yt-title').value.trim() || 'YouTube Video';
       const channel = document.getElementById('yt-channel').value.trim() || 'YouTube';
       const mode = document.getElementById('yt-mode').value;
+      const vidMatch = ytUrl.match(/(?:v=|\/|youtu\.be\/)([0-9A-Za-z_-]{11})/);
+      const thumbUrl = vidMatch ? `https://img.youtube.com/vi/${vidMatch[1]}/hqdefault.jpg` : '';
+
       state.presence = {
         active: true,
         mode: 'youtube',
@@ -2214,6 +2373,7 @@ beyond the veil, control returns</textarea>
         thumbIcon: 'youtube',
         thumbTag: 'YT 4K',
         thumbGrad: 'linear-gradient(135deg, #2A0F14, #58121E)',
+        thumbUrl,
         showProgress: true,
         progressPct: 35,
         curTime: '01:14',
@@ -2226,22 +2386,25 @@ beyond the veil, control returns</textarea>
       const targetAccounts = state.accounts.filter(a => a.presenceTarget);
       const targetIds = targetAccounts.map(a => a.main ? 'main' : (a.db_id || a.id));
       try {
-        await fetch('/api/start', {
+        const res = await fetch('/api/start', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            activityType: 'Watching',
+            activityType: mode,
             activityName: 'YouTube',
             details: title,
             state: `Kênh: ${channel}`,
+            largeImage: thumbUrl,
             button1Text: 'Xem YouTube',
-            button1Url: 'https://youtube.com',
+            button1Url: ytUrl,
             account_ids: targetIds
           })
         });
-        showToast(`Đã áp dụng YouTube RPC cho ${targetIds.length || 1} tài khoản!`);
+        const data = await res.json();
+        await syncRpcGatewayStatus();
+        showToast(data.message || `Đã áp dụng YouTube RPC cho ${targetIds.length || 1} tài khoản!`);
       } catch (e) {
-        showToast('Đã áp dụng YouTube Rich Presence');
+        showToast('Lỗi áp dụng YouTube Rich Presence');
       }
     }
 
@@ -2688,10 +2851,46 @@ beyond the veil, control returns</textarea>
     }
 
     /* ---------- VOICE & AUDIO + WEB AUDIO SOUNDBOARD ---------- */
-    function fillSampleVoiceIds() {
-      document.getElementById('voice-guild-id').value = '104712345678901234';
-      document.getElementById('voice-channel-id').value = '104798765432109876';
-      showToast('Đã điền Guild ID & Channel ID mẫu');
+    async function loadVoiceChannels() {
+      const targetId = state.voice.targetAccountId || getMainAccount()?.id || 'main';
+      const acc = state.accounts.find(a => a.id === targetId) || getMainAccount();
+      const accParam = acc ? (acc.main ? 'main' : (acc.db_id || acc.id)) : 'main';
+      showToast('Đang quét danh sách phòng Voice thật trên các Server...');
+      try {
+        const res = await fetch(`/api/voice/channels?account_id=${encodeURIComponent(accParam)}`);
+        const data = await res.json();
+        const wrap = document.getElementById('voice-picker-wrap');
+        const sel = document.getElementById('voice-channel-picker');
+        if (data && data.success && Array.isArray(data.guilds) && data.guilds.length) {
+          let opts = '<option value="">-- Chọn Server & Phòng Voice muốn treo --</option>';
+          data.guilds.forEach(g => {
+            opts += `<optgroup label="🏰 ${g.guild_name}">`;
+            g.channels.forEach(c => {
+              opts += `<option value="${g.guild_id}|${c.id}|${c.name}|${g.guild_name}">🔊 ${c.name} (${c.id})</option>`;
+            });
+            opts += '</optgroup>';
+          });
+          sel.innerHTML = opts;
+          wrap.classList.remove('hidden');
+          showToast(`Đã tải danh sách phòng Voice từ ${data.guilds.length} Server!`);
+        } else {
+          showToast(data.message || 'Không tìm thấy phòng Voice nào');
+        }
+      } catch (err) {
+        showToast('Lỗi quét danh sách phòng Voice');
+      }
+    }
+
+    function onVoicePickerChange(val) {
+      if (!val) return;
+      const parts = val.split('|');
+      if (parts.length >= 2) {
+        document.getElementById('voice-guild-id').value = parts[0];
+        document.getElementById('voice-channel-id').value = parts[1];
+        if (parts[2]) state.voice.channelName = parts[2];
+        if (parts[3]) state.voice.guildName = parts[3];
+        showToast(`Đã chọn phòng #${parts[2] || parts[1]} (${parts[3] || parts[0]})`);
+      }
     }
 
     function toggleVoiceFlag(flag) {
@@ -2701,20 +2900,19 @@ beyond the veil, control returns</textarea>
     }
 
     async function startVoiceAfk() {
-      const g = document.getElementById('voice-guild-id').value.trim();
-      const c = document.getElementById('voice-channel-id').value.trim();
-      if (!g || !c) {
-        fillSampleVoiceIds();
-      }
       const guildId = document.getElementById('voice-guild-id').value.trim();
       const channelId = document.getElementById('voice-channel-id').value.trim();
+      if (!channelId) {
+        showToast('Vui lòng nhập Channel ID, dán Link Voice hoặc bấm "Quét Phòng Voice Thật"!');
+        return;
+      }
       state.voice.guildId = guildId;
       state.voice.channelId = channelId;
 
       const targetId = state.voice.targetAccountId || getMainAccount()?.id || 'main';
       const acc = state.accounts.find(a => a.id === targetId) || getMainAccount();
 
-      showToast(`Đang kết nối phòng thoại cho ${acc ? acc.name : 'tài khoản'}...`);
+      showToast(`Đang kiểm tra kênh & kết nối Voice Gateway cho ${acc ? acc.name : 'tài khoản'}...`);
       try {
         const res = await fetch('/api/voice/start', {
           method: 'POST',
@@ -2730,6 +2928,12 @@ beyond the veil, control returns</textarea>
         const data = await res.json();
         if (data && data.success) {
           state.voice.connected = true;
+          state.voice.guildId = data.guild_id || guildId;
+          state.voice.channelId = data.channel_id || channelId;
+          state.voice.channelName = data.channel_name || '';
+          state.voice.guildName = data.guild_name || '';
+          document.getElementById('voice-guild-id').value = state.voice.guildId;
+          document.getElementById('voice-channel-id').value = state.voice.channelId;
           state.voice.seconds = 0;
           state.usage.voice++;
           if (state.voice.timer) clearInterval(state.voice.timer);
@@ -2738,12 +2942,16 @@ beyond the veil, control returns</textarea>
             updateVoiceUptimeDisplay();
           }, 1000);
           renderAll();
-          showToast(data.message || `Đã kết nối Treo Voice 24/7 (${channelId})!`);
+          showToast(data.message || `Đã kết nối Treo Voice 24/7!`);
         } else {
-          showToast(data.message || 'Không thể kết nối phòng Voice. Kiểm tra lại Guild/Channel ID.');
+          state.voice.connected = false;
+          renderAll();
+          showToast(data.message || 'Không thể kết nối phòng Voice. Kiểm tra lại ID!');
         }
       } catch (err) {
         console.error('Voice start err:', err);
+        state.voice.connected = false;
+        renderAll();
         showToast('Lỗi gửi lệnh kết nối Voice tới máy chủ');
       }
     }
@@ -3692,8 +3900,25 @@ beyond the veil, control returns</textarea>
         document.getElementById('sim-rpc-details').textContent = p.details;
         document.getElementById('sim-rpc-state').textContent = p.state;
         document.getElementById('sim-rpc-thumb').style.background = p.thumbGrad;
-        document.getElementById('sim-rpc-thumb-icon').setAttribute('data-lucide', p.thumbIcon);
-        document.getElementById('sim-rpc-thumb-tag').textContent = p.thumbTag;
+        const thumbImg = document.getElementById('sim-rpc-thumb-img');
+        const thumbIcon = document.getElementById('sim-rpc-thumb-icon');
+        const thumbTag = document.getElementById('sim-rpc-thumb-tag');
+        if (thumbImg && p.thumbUrl && (p.thumbUrl.startsWith('http') || p.thumbUrl.startsWith('/static/'))) {
+          thumbImg.src = p.thumbUrl;
+          thumbImg.classList.remove('hidden');
+          if (thumbIcon) thumbIcon.classList.add('hidden');
+          if (thumbTag) thumbTag.classList.add('hidden');
+        } else {
+          if (thumbImg) thumbImg.classList.add('hidden');
+          if (thumbIcon) {
+            thumbIcon.classList.remove('hidden');
+            thumbIcon.setAttribute('data-lucide', p.thumbIcon);
+          }
+          if (thumbTag) {
+            thumbTag.classList.remove('hidden');
+            thumbTag.textContent = p.thumbTag;
+          }
+        }
 
         const barWrap = document.getElementById('sim-media-bar-wrap');
         barWrap.classList.toggle('hidden', !p.showProgress);
@@ -3998,11 +4223,13 @@ beyond the veil, control returns</textarea>
       const on = state.voice.connected;
       document.getElementById('voice-op4-badge').textContent = on ? 'CONNECTED' : 'IDLE';
       document.getElementById('voice-op4-badge').className = on ? 'text-teal' : 'text-zinc-400';
+      const chLabel = state.voice.channelName ? `#${state.voice.channelName}` : `#${String(state.voice.channelId || '').slice(-6)}`;
+      const gLabel = state.voice.guildName || `Guild ${String(state.voice.guildId || '').slice(0, 8)}...`;
       document.getElementById('voice-status-title').textContent = on
-        ? `Đang Treo Phòng #${state.voice.channelId.slice(-6)}`
+        ? `Đang Treo ${chLabel}`
         : 'Phòng Voice Chưa Kết Nối';
       document.getElementById('voice-status-sub').textContent = on
-        ? `Guild ${state.voice.guildId.slice(0, 8)}... • ${state.voice.selfMute ? 'Muted' : 'Mic On'} • ${state.voice.selfDeaf ? 'Deafened' : 'Audio On'}`
+        ? `${gLabel} • ${state.voice.selfMute ? 'Muted' : 'Mic On'} • ${state.voice.selfDeaf ? 'Deafened' : 'Audio On'}`
         : 'Sẵn sàng giữ kết nối 24/7 qua Gateway';
 
       const iconWrap = document.getElementById('voice-icon-wrap');

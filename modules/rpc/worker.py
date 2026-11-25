@@ -44,8 +44,43 @@ class DiscordRPCWorker:
                 'config': self.current_config
             }
 
+    def _get_live_userbot(self, token: str):
+        try:
+            from apps.user_discord.core import runtime
+            if runtime.is_live(token):
+                return runtime.get_live(token)
+        except Exception:
+            pass
+        return None
+
     def start(self, config):
         self.stop()
+        token = (config.get('token') or '').strip()
+
+        # Nếu UserBot đang chạy sẵn trên token này -> dùng luôn phiên Gateway live của UserBot!
+        live_bot = self._get_live_userbot(token)
+        if live_bot and getattr(live_bot, 'loop', None) and live_bot.loop.is_running() and not live_bot.is_closed():
+            with self._lock:
+                self._run_id += 1
+                self.status = 'connecting'
+                self.error_message = None
+                self.current_config = config
+                self.start_timestamp = time.time()
+                self._active_client = live_bot
+                self._active_loop = live_bot.loop
+                self.client = live_bot
+                self.loop = live_bot.loop
+                self.user_tag = str(live_bot.user) if live_bot.user else None
+                self.user_id = str(live_bot.user.id) if live_bot.user else None
+            try:
+                fut = asyncio.run_coroutine_threadsafe(self._apply_presence(config), live_bot.loop)
+                fut.result(timeout=12.0)
+                with self._lock:
+                    self.status = 'running'
+                return True
+            except Exception as e:
+                log_event(f'Cảnh báo áp dụng RPC qua UserBot live ({e}), chuyển sang client riêng...', 'warning')
+
         with self._lock:
             self._run_id += 1
             current_run_id = self._run_id
@@ -53,8 +88,16 @@ class DiscordRPCWorker:
             self.error_message = None
             self.current_config = config
             self.start_timestamp = time.time()
+            self._ready_event = threading.Event()
             self.thread = threading.Thread(target=self._run_thread, args=(config, current_run_id), daemon=True)
             self.thread.start()
+        return True
+
+    def wait_ready(self, timeout: float = 12.0) -> bool:
+        ev = getattr(self, '_ready_event', None)
+        if ev:
+            ev.wait(timeout=timeout)
+        return self.status == 'running'
 
     def update_presence(self, config):
         with self._lock:
@@ -102,13 +145,22 @@ class DiscordRPCWorker:
             thread = self.thread
 
         if loop and client and not client.is_closed() and loop.is_running():
+            is_live_bot = bool(self.current_config and self._get_live_userbot((self.current_config.get('token') or '').strip()) is client)
             try:
-                fut = asyncio.run_coroutine_threadsafe(self._safe_close_client(client, loop), loop)
-                fut.result(timeout=3.0)
+                if is_live_bot:
+                    async def _clear_only():
+                        try:
+                            await client.change_presence(activity=None)
+                        except Exception:
+                            pass
+                    asyncio.run_coroutine_threadsafe(_clear_only(), loop).result(timeout=4.0)
+                else:
+                    fut = asyncio.run_coroutine_threadsafe(self._safe_close_client(client, loop), loop)
+                    fut.result(timeout=3.0)
             except Exception:
                 pass
 
-        if loop and loop.is_running():
+        if loop and loop.is_running() and not (self.current_config and self._get_live_userbot((self.current_config.get('token') or '').strip()) is client):
             try:
                 loop.call_soon_threadsafe(loop.stop)
             except Exception:
@@ -406,7 +458,7 @@ class DiscordRPCWorker:
     def _run_thread(self, config, run_id):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        client = discord.Client()
+        client = discord.Client(chunk_guilds_at_startup=False)
 
         with self._lock:
             if self._run_id != run_id:
@@ -447,12 +499,18 @@ class DiscordRPCWorker:
                 with self._lock:
                     if self._run_id == run_id:
                         self.status = 'running'
+                ev = getattr(self, '_ready_event', None)
+                if ev:
+                    ev.set()
                 log_event(f'Đã phát trạng thái Rich Presence ({discord_status.value}) thành công!', 'success')
             except Exception as e:
                 with self._lock:
                     if self._run_id == run_id:
                         self.status = 'error'
                         self.error_message = f'Lỗi khi phát trạng thái: {e}'
+                ev = getattr(self, '_ready_event', None)
+                if ev:
+                    ev.set()
                 log_event(f'Lỗi nghiêm trọng khi phát trạng thái: {e}', 'error')
                 import traceback
                 traceback.print_exc()
@@ -465,6 +523,9 @@ class DiscordRPCWorker:
                 if self._run_id == run_id:
                     self.status = 'error'
                     self.error_message = 'Discord User Token không hợp lệ hoặc đã bị khóa!'
+            ev = getattr(self, '_ready_event', None)
+            if ev:
+                ev.set()
             log_event('Lỗi LoginFailure: Discord User Token không hợp lệ!', 'error')
         except (asyncio.CancelledError, KeyboardInterrupt):
             pass
@@ -473,9 +534,15 @@ class DiscordRPCWorker:
                 if self._run_id == run_id and self.status not in ('stopped', 'stopping'):
                     self.status = 'error'
                     self.error_message = str(e)
+            ev = getattr(self, '_ready_event', None)
+            if ev:
+                ev.set()
             if self._run_id == run_id and self.status not in ('stopped', 'stopping'):
                 log_event(f'Ngoại lệ kết nối Gateway: {e}', 'error')
         finally:
+            ev = getattr(self, '_ready_event', None)
+            if ev:
+                ev.set()
             try:
                 if not client.is_closed():
                     loop.run_until_complete(self._safe_close_client(client, loop))
@@ -532,6 +599,7 @@ class MultiDiscordRPCWorker:
                         pass
                     del self.workers[tok]
 
+            started_workers = []
             for cfg in configs_list:
                 tok = cfg.get('token')
                 if not tok:
@@ -540,8 +608,12 @@ class MultiDiscordRPCWorker:
                     w = DiscordRPCWorker()
                     self.workers[tok] = w
                     w.start(cfg)
+                    started_workers.append(w)
                 else:
                     self.workers[tok].update_presence(cfg)
+
+        for w in started_workers:
+            w.wait_ready(timeout=12.0)
 
     def start(self, config):
         """Hỗ trợ tương thích ngược: chạy 1 config duy nhất"""

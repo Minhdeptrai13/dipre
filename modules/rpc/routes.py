@@ -70,10 +70,15 @@ def api_start():
             cursor = conn.cursor()
             for aid in account_ids:
                 if str(aid) == 'main':
-                    cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
-                    r = cursor.fetchone()
-                    if r and r['discord_token']:
-                        tokens_list.append(r['discord_token'])
+                    cursor.execute('SELECT token FROM discord_accounts WHERE user_id = ? AND is_active = 1 LIMIT 1', (user_id,))
+                    acc_r = cursor.fetchone()
+                    if acc_r and acc_r['token']:
+                        tokens_list.append(acc_r['token'])
+                    else:
+                        cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
+                        r = cursor.fetchone()
+                        if r and r['discord_token']:
+                            tokens_list.append(r['discord_token'])
                 else:
                     cursor.execute('SELECT token FROM discord_accounts WHERE id = ? AND user_id = ?', (aid, user_id))
                     r = cursor.fetchone()
@@ -127,11 +132,20 @@ def api_start():
         track_feature_use(user_id, 'rpc_custom')
 
     rpc_worker.start_accounts(configs_to_run)
-    log_event(f'Khởi động Discord RPC song song cho {len(configs_to_run)} tài khoản: {activity_name}', 'success')
+    st = rpc_worker.get_status_data()
+    if st.get('status') == 'error':
+        return jsonify({
+            'success': False,
+            'message': st.get('error_message') or 'Lỗi kết nối Discord RPC Gateway',
+            'status': st
+        }), 400
+
+    log_event(f'Khởi động Discord RPC song song cho {len(configs_to_run)} tài khoản: {activity_name} ({st.get("status")})', 'success')
     return jsonify({
         'success': True,
-        'message': f'Đã kích hoạt Rich Presence đồng loạt trên {len(configs_to_run)} tài khoản!',
-        'count': len(configs_to_run)
+        'message': f'Đã kích hoạt Rich Presence ({st.get("status", "running")}) trên {len(configs_to_run)} tài khoản!',
+        'count': len(configs_to_run),
+        'status': st
     })
 
 @rpc_bp.route('/api/custom_status', methods=['POST'])
