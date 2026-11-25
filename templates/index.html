@@ -2090,7 +2090,7 @@ beyond the veil, control returns</textarea>
       if (tab === 'karaoke') renderKaraokeLines();
     }
 
-    function applyCustomRpc() {
+    async function applyCustomRpc() {
       const name = document.getElementById('rpc-name').value.trim() || 'DIPRE STUDIO v5.0';
       const type = document.getElementById('rpc-type').value;
       const details = document.getElementById('rpc-details').value.trim();
