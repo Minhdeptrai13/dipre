@@ -375,6 +375,133 @@ def api_vice_city_promo():
     except Exception as e:
         return jsonify({'success': False, 'message': f'Lỗi kết nối Discord Promo API: {str(e)}'}), 500
 
+@quest_bp.route('/api/automation/appearance_style', methods=['POST'])
+@login_required
+def api_appearance_style():
+    """Đổi nền Discord (Theme + Gradient Preset Protobuf) và/hoặc Font/Hiệu ứng/Màu tên hiển thị (display_name_styles)"""
+    import base64
+    user_id = session['user_id']
+    data = request.get_json() or {}
+    account_id = data.get('account_id')
+    mode = str(data.get('mode', 'both')).strip().lower()  # 'theme' | 'name_style' | 'both' | 'reset_name'
+
+    with get_db() as conn:
+        cursor = conn.cursor()
+        token = ''
+        acc_name = ''
+        if account_id and str(account_id) != 'main':
+            cursor.execute('SELECT token, discord_username FROM discord_accounts WHERE id = ? AND user_id = ?', (account_id, user_id))
+            r = cursor.fetchone()
+            if r:
+                token = r['token']
+                acc_name = r['discord_username'] or f'Sub-{account_id}'
+        if not token:
+            cursor.execute('SELECT token, discord_username FROM discord_accounts WHERE user_id = ? AND is_active = 1 LIMIT 1', (user_id,))
+            acc_r = cursor.fetchone()
+            if acc_r and acc_r['token']:
+                token = acc_r['token']
+                acc_name = acc_r['discord_username'] or 'Main'
+        if not token:
+            cursor.execute('SELECT discord_token, discord_username FROM users WHERE id = ?', (user_id,))
+            row = cursor.fetchone()
+            if row:
+                token = row['discord_token'] or ''
+                acc_name = row['discord_username'] or session.get('username', 'Main')
+            if not token:
+                token = session.get('discord_token', '')
+
+    if not token or len(token) < 20:
+        return jsonify({'success': False, 'message': 'Vui lòng liên kết Discord Token trước!'}), 400
+
+    headers = make_discord_headers(token)
+    logs = []
+    any_ok = False
+
+    # 1. Đổi Nền Discord (Dark/Light + Gradient Preset ID qua settings-proto/1)
+    if mode in ('theme', 'both'):
+        base_theme = int(data.get('base_theme', 1))  # 1=DARK, 2=LIGHT
+        preset_id = int(data.get('gradient_preset_id', 0))
+        try:
+            from discord_protos import PreloadedUserSettings
+            r_get = requests.get('https://discord.com/api/v9/users/@me/settings-proto/1', headers=headers, timeout=8)
+            proto = PreloadedUserSettings()
+            if r_get.status_code == 200 and r_get.json().get('settings'):
+                proto.ParseFromString(base64.b64decode(r_get.json()['settings']))
+            proto.appearance.theme = base_theme if base_theme in (1, 2) else 1
+            if preset_id > 0:
+                proto.appearance.client_theme_settings.background_gradient_preset_id.value = preset_id
+            else:
+                proto.appearance.client_theme_settings.ClearField('background_gradient_preset_id')
+
+            new_b64 = base64.b64encode(proto.SerializeToString()).decode('ascii')
+            r_patch = requests.patch(
+                'https://discord.com/api/v9/users/@me/settings-proto/1',
+                headers=headers,
+                json={'settings': new_b64},
+                timeout=8
+            )
+            if r_patch.status_code == 200:
+                any_ok = True
+                logs.append(f"Đã đổi Nền Discord: Base={'Dark' if base_theme==1 else 'Light'}, Gradient ID={preset_id}")
+            else:
+                logs.append(f"Đổi Nền Discord thất bại: HTTP {r_patch.status_code} ({r_patch.text[:120]})")
+        except Exception as e:
+            logs.append(f"Lỗi đổi Nền Discord: {e}")
+
+    # 2. Đổi Font / Hiệu Ứng / Màu Tên Hiển Thị (display_name_styles)
+    if mode in ('name_style', 'both', 'reset_name'):
+        if mode == 'reset_name':
+            payload = {'display_name_styles': None}
+        else:
+            font_id = int(data.get('font_id', 1))
+            effect_id = int(data.get('effect_id', 1))
+            raw_colors = data.get('colors') or []
+            colors_int = []
+            for c in raw_colors:
+                if isinstance(c, int):
+                    colors_int.append(c)
+                elif isinstance(c, str) and c.strip():
+                    hx = c.strip().lstrip('#')
+                    try:
+                        colors_int.append(int(hx, 16))
+                    except ValueError:
+                        pass
+            if not colors_int:
+                colors_int = [0x1FCAAD, 0xFF4FD8]
+            # Effect 1 (Solid) & 3 (Neon) & 4 (Toon) & 5 (Pop) dùng 1 màu, Effect 2 (Gradient) dùng 2 màu
+            if effect_id != 2:
+                colors_int = [colors_int[0]]
+            payload = {
+                'display_name_styles': {
+                    'font_id': font_id,
+                    'effect_id': effect_id,
+                    'colors': colors_int
+                }
+            }
+
+        try:
+            r_prof = requests.patch('https://discord.com/api/v9/users/@me/profile', headers=headers, json=payload, timeout=8)
+            if r_prof.status_code in (200, 204):
+                any_ok = True
+                logs.append("Đã cập nhật Font & Màu Tên hiển thị trên Discord thành công!")
+            else:
+                # Thử fallback qua /users/@me nếu /profile từ chối field
+                r_me = requests.patch('https://discord.com/api/v9/users/@me', headers=headers, json=payload, timeout=8)
+                if r_me.status_code in (200, 204):
+                    any_ok = True
+                    logs.append("Đã cập nhật Font & Màu Tên qua /users/@me thành công!")
+                else:
+                    logs.append(f"Đổi Font Tên: HTTP {r_prof.status_code} - {r_prof.text[:140]}")
+        except Exception as e:
+            logs.append(f"Lỗi đổi Font Tên: {e}")
+
+    log_event(f'Appearance & Name Style ({acc_name}): {" | ".join(logs)}', 'success' if any_ok else 'warning')
+    return jsonify({
+        'success': any_ok,
+        'message': logs[-1] if logs else 'Đã xử lý xong',
+        'logs': logs
+    }), (200 if any_ok else 400)
+
 registry.register_module(SubModule(
     key='auto_quest',
     category_key='script',

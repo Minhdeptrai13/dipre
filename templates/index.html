@@ -1175,23 +1175,103 @@ beyond the veil, control returns</textarea>
         </div>
       </div>
 
-      <!-- LIMITED-TIME FEATURE CARD (EXPIRES DEC 14): GTA 6 VICE CITY THEME & PROMO -->
-      <div class="p-4 rounded-lg bg-gradient-to-r from-[#1A1025] via-[#13141C] to-[#0D1E22] border border-amber/30 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div class="space-y-1">
-          <div class="flex flex-wrap items-center gap-2">
-            <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-amber/15 text-amber border border-amber/35 font-semibold">ƯU ĐÃI GTA 6 • HẾT HẠN 14/12</span>
-            <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-teal/10 text-teal border border-teal/25">ROCKSTAR VICE CITY • NITRO TỚI 21/02</span>
+      <!-- DISCORD APPEARANCE & DISPLAY NAME STYLE + GTA 6 VICE CITY PROMO -->
+      <div class="p-4 rounded-lg bg-gradient-to-r from-[#1A1025] via-[#13141C] to-[#0D1E22] border border-amber/30 space-y-4">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-white/10 pb-3">
+          <div class="space-y-1">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-amber/15 text-amber border border-amber/35 font-semibold">APPEARANCE &amp; FONT TÊN</span>
+              <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-teal/10 text-teal border border-teal/25">GTA 6 VICE CITY • HẠN 14/12</span>
+            </div>
+            <h3 class="font-display text-[15px] font-semibold text-ink">Đổi Nền Discord &amp; Font/Màu Tên Hiển Thị (Display Name Styles)</h3>
+            <p class="text-[12px] text-muted">Đổi nền ứng dụng (Dark/Light + Gradient Preset) &amp; tùy biến Font chữ, Hiệu ứng, Màu tên trực tiếp lên Discord.</p>
           </div>
-          <h3 class="font-display text-[15px] font-semibold text-ink">Trải Nghiệm Giao Diện GTA 6 Vice City &amp; Quét Store Promo</h3>
-          <p class="text-[12px] text-muted">Kích hoạt chủ đề diện mạo Vice City (tất cả user tới 14/12, giữ tới 21/02 nếu có Nitro) &amp; quét Storefront Promo/Trial trên tài khoản.</p>
+          <div class="flex flex-wrap items-center gap-2 shrink-0">
+            <button onclick="runViceCityPromo('claim_nitro')" class="btn-secondary h-8 px-3 rounded-md text-[11.5px] font-medium flex items-center gap-1.5 border-amber/35 text-amber hover:bg-amber/10">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Quét Store Promo
+            </button>
+          </div>
         </div>
-        <div class="flex flex-wrap items-center gap-2 shrink-0">
-          <button onclick="runViceCityPromo('both')" class="btn-primary h-9 px-3.5 rounded-md text-[12px] font-semibold flex items-center gap-1.5">
-            <i data-lucide="palette" class="w-3.5 h-3.5"></i> Kích Hoạt Vice City
-          </button>
-          <button onclick="runViceCityPromo('claim_nitro')" class="btn-secondary h-9 px-3.5 rounded-md text-[12px] font-medium flex items-center gap-1.5 border-amber/35 text-amber hover:bg-amber/10">
-            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Quét Nitro &amp; Promo
-          </button>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Box 1: Đổi Nền Discord -->
+          <div class="p-3.5 rounded-md bg-obsidian/70 border border-hairline space-y-3">
+            <div class="text-[12px] font-semibold text-ink flex items-center justify-between">
+              <span>1. Đổi Nền Ứng Dụng Discord</span>
+              <span class="font-mono text-[10px] text-teal">/settings-proto/1</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2.5">
+              <div>
+                <label class="block text-[11px] text-muted mb-1">Nền Gốc</label>
+                <select id="app-base-theme" class="studio-input w-full h-8 px-2.5 rounded text-[12px]">
+                  <option value="1" selected>Dark (Tối)</option>
+                  <option value="2">Light (Sáng)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] text-muted mb-1">Chủ Đề Gradient (Preset)</label>
+                <select id="app-gradient-preset" onchange="document.getElementById('app-gradient-id').value=this.value" class="studio-input w-full h-8 px-2.5 rounded text-[12px]">
+                  <option value="0">Tắt Gradient (Mặc định)</option>
+                  <option value="1">Mint Apple (1)</option>
+                  <option value="5">Sunrise (5)</option>
+                  <option value="9">Sunset (9)</option>
+                  <option value="12">Crimson Moon (12)</option>
+                  <option value="13">Midnight Blurple (13)</option>
+                  <option value="17">Retro Storm (17)</option>
+                  <option value="18">Neon Nights (18)</option>
+                  <option value="20">Aurora (20)</option>
+                  <option value="22">Preset 22 (Đặc biệt)</option>
+                  <option value="23">Preset 23 (Event)</option>
+                  <option value="24">Preset 24 (Event)</option>
+                </select>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <input id="app-gradient-id" type="number" min="0" max="99" value="18" placeholder="Preset ID" class="studio-input w-24 h-8 px-2.5 rounded font-mono text-[12px]" title="Nhập ID preset tuỳ ý" />
+              <button onclick="applyAppearanceStyle('theme')" class="btn-primary flex-1 h-8 px-3 rounded text-[12px] font-semibold">Áp Dụng Nền</button>
+            </div>
+          </div>
+
+          <!-- Box 2: Đổi Font & Màu Tên -->
+          <div class="p-3.5 rounded-md bg-obsidian/70 border border-hairline space-y-3">
+            <div class="text-[12px] font-semibold text-ink flex items-center justify-between">
+              <span>2. Đổi Font &amp; Màu Tên Hiển Thị</span>
+              <span class="font-mono text-[10px] text-amber">display_name_styles</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2.5">
+              <div>
+                <label class="block text-[11px] text-muted mb-1">Kiểu Font Chữ</label>
+                <select id="dns-font-id" class="studio-input w-full h-8 px-2.5 rounded text-[12px]">
+                  <option value="1">gg sans (Mặc định - 1)</option>
+                  <option value="2">Tempo (2)</option>
+                  <option value="3">Sakura (3)</option>
+                  <option value="4">Jellybean (4)</option>
+                  <option value="5">Modern (5)</option>
+                  <option value="6">Medieval (6)</option>
+                  <option value="7">8Bit / Pixel (7)</option>
+                  <option value="8">Vampyre (8)</option>
+                  <option value="9">Event / Vice City (9)</option>
+                  <option value="10">Event Font (10)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] text-muted mb-1">Hiệu Ứng Chữ</label>
+                <select id="dns-effect-id" class="studio-input w-full h-8 px-2.5 rounded text-[12px]">
+                  <option value="1">Solid (Đơn sắc - 1)</option>
+                  <option value="2" selected>Gradient (Chuyển màu - 2)</option>
+                  <option value="3">Neon (Phát sáng - 3)</option>
+                  <option value="4">Toon (Viền nổi - 4)</option>
+                  <option value="5">Pop (3D - 5)</option>
+                </select>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <input id="dns-color-1" type="color" value="#1fcaad" class="h-8 w-10 rounded bg-panel border border-hairline cursor-pointer p-0.5" title="Màu chính" />
+              <input id="dns-color-2" type="color" value="#ff4fd8" class="h-8 w-10 rounded bg-panel border border-hairline cursor-pointer p-0.5" title="Màu chuyển Gradient" />
+              <button onclick="applyAppearanceStyle('name_style')" class="btn-primary flex-1 h-8 px-3 rounded text-[12px] font-semibold">Đổi Font Tên</button>
+              <button onclick="applyAppearanceStyle('reset_name')" class="btn-secondary h-8 px-2.5 rounded text-[11.5px]" title="Khôi phục tên mặc định">Reset</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -3177,6 +3257,46 @@ beyond the veil, control returns</textarea>
         }
       } catch (e) {
         showToast('Lỗi gửi lệnh nhận Quest');
+      }
+    }
+
+    async function applyAppearanceStyle(mode = 'both') {
+      const targetId = state.quest.targetAccountId || getMainAccount()?.id || 'main';
+      const acc = state.accounts.find(a => a.id === targetId) || getMainAccount();
+      const reqAccId = acc?.main ? 'main' : (acc?.db_id || targetId);
+
+      const baseTheme = Number(document.getElementById('app-base-theme')?.value || 1);
+      const gradId = Number(document.getElementById('app-gradient-id')?.value || 0);
+      const fontId = Number(document.getElementById('dns-font-id')?.value || 1);
+      const effectId = Number(document.getElementById('dns-effect-id')?.value || 2);
+      const c1 = document.getElementById('dns-color-1')?.value || '#1fcaad';
+      const c2 = document.getElementById('dns-color-2')?.value || '#ff4fd8';
+
+      showToast(`Đang gửi cấu hình ${mode === 'theme' ? 'Nền Discord' : (mode === 'reset_name' ? 'Reset Font Tên' : 'Font & Màu Tên')}...`);
+      try {
+        const res = await fetch('/api/automation/appearance_style', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            account_id: reqAccId,
+            mode,
+            base_theme: baseTheme,
+            gradient_preset_id: gradId,
+            font_id: fontId,
+            effect_id: effectId,
+            colors: [c1, c2]
+          })
+        });
+        const data = await res.json();
+        if (data && Array.isArray(data.logs)) {
+          data.logs.forEach(l => {
+            appendQuestLog(`[STYLE] ${l}`, data.success ? 'text-teal' : 'text-rose');
+            appendSniperLog(`[STYLE] ${l}`, data.success ? 'text-teal' : 'text-rose');
+          });
+        }
+        showToast(data.message || (data.success ? 'Đã cập nhật thành công!' : 'Không thể cập nhật trên Discord'));
+      } catch (err) {
+        showToast('Lỗi kết nối API Appearance & Name Style');
       }
     }
 
