@@ -266,41 +266,42 @@ def api_vice_city_promo():
                 )
                 if r_store_promo.status_code == 200 and isinstance(r_store_promo.json(), list):
                     for pr in r_store_promo.json():
-                        title = pr.get('outbound_title') or pr.get('inbound_header_text') or pr.get('inbound_body_text') or pr.get('id')
-                        if len(str(title)) > 55:
-                            title = str(title)[:55] + '...'
+                        title = pr.get('outbound_title') or pr.get('outbound_promo_page') or pr.get('inbound_header_text') or pr.get('outbound_redemption_page_link') or pr.get('id')
+                        if len(str(title)) > 60:
+                            title = str(title)[:60] + '...'
                         end_d = str(pr.get('end_date') or '')[:10]
                         logs.append(f"Store Promo: {title} (Hết hạn: {end_d})")
                         promos_found.append({'title': title, 'end_date': end_d, 'id': pr.get('id')})
             except Exception:
                 pass
 
-            # 3. Kiểm tra User Trial Offer & Nitro Affinity (/users/@me/billing/user-offer, /nitro-affinity, /subscriptions)
+            # 3. Kiểm tra trạng thái Nitro thật của acc (@me, subscriptions, nitro-affinity, storefront/promotions)
             try:
-                r_uo_get = requests.get('https://discord.com/api/v9/users/@me/billing/user-offer', headers=headers, timeout=8)
-                if r_uo_get.status_code == 200:
-                    uo = r_uo_get.json() or {}
-                    ut = uo.get('user_trial_offer')
-                    ud = uo.get('user_discount')
-                    if ut:
-                        tid = ut.get('id')
-                        trials_found.append({'id': tid, 'expires_at': ut.get('expires_at', '')})
-                        logs.append(f"Tài khoản CÓ gói Trial Nitro: {tid} (Hạn: {str(ut.get('expires_at', ''))[:10]})")
-                    elif ud:
-                        logs.append(f"Tài khoản có Discount Offer: {ud.get('discount_id')}")
-                    else:
-                        logs.append("User Offer Status: Tài khoản hiện chưa có gói Nitro Trial miễn phí mới từ Discord.")
-                else:
-                    logs.append(f"Kiểm tra User Offer: HTTP {r_uo_get.status_code}")
+                r_me = requests.get('https://discord.com/api/v9/users/@me', headers=headers, timeout=8)
+                if r_me.status_code == 200:
+                    me_j = r_me.json()
+                    pt = me_j.get('premium_type', 0)
+                    pt_map = {0: 'Chưa có Nitro', 1: 'Nitro Classic', 2: 'Nitro Boost', 3: 'Nitro Basic'}
+                    logs.append(f"Tài khoản {me_j.get('username')}: {pt_map.get(pt, f'Type {pt}')}")
 
                 r_sub = requests.get('https://discord.com/api/v9/users/@me/billing/subscriptions?sync_level=2&with_gift_subscription=true', headers=headers, timeout=8)
                 if r_sub.status_code == 200 and isinstance(r_sub.json(), list):
-                    active_subs = [s for s in r_sub.json() if s.get('status') in (1, 3)]
-                    logs.append(f"Gói Nitro đang kích hoạt trên acc: {len(active_subs)}")
+                    subs_list = r_sub.json()
+                    if subs_list:
+                        for s in subs_list:
+                            logs.append(f"Subscription: status={s.get('status')}, hết hạn={str(s.get('current_period_end', ''))[:10]}")
+                    else:
+                        logs.append("Subscriptions: 0 gói trả phí trực tiếp (có thể đang dùng Nitro Trial / Gift).")
+
+                r_sf = requests.get('https://discord.com/api/v9/storefront/promotions?application_ids=1096190356233670716', headers=headers, timeout=8)
+                if r_sf.status_code == 200 and r_sf.text:
+                    sf_data = r_sf.json()
+                    if isinstance(sf_data, list) and sf_data:
+                        logs.append(f"Storefront Promotions: {len(sf_data)} ưu đãi khả dụng.")
             except Exception as te:
                 logs.append(f"Billing check note: {te}")
 
-            # 4. Quét Code Outbound Promotions & Entitlements (entitlement_type=11 từ Storefront)
+            # 4. Quét Code Outbound Promotions & Toàn bộ Entitlements (không lọc type để thấy cả Nitro Trial/Vice City)
             r_promo = requests.get('https://discord.com/api/v9/users/@me/outbound-promotions/codes', headers=headers, timeout=8)
             if r_promo.status_code == 200 and isinstance(r_promo.json(), list):
                 for c in r_promo.json():
@@ -311,12 +312,13 @@ def api_vice_city_promo():
                         logs.append(f"Code Promo khả dụng: {promo_title} -> {code_val}")
 
             r_ent = requests.get(
-                'https://discord.com/api/v9/users/@me/entitlements?with_sku=false&with_application=false&entitlement_type=11&exclude_ended=true',
+                'https://discord.com/api/v9/users/@me/entitlements?exclude_ended=true',
                 headers=headers,
                 timeout=8
             )
             if r_ent.status_code == 200 and isinstance(r_ent.json(), list):
-                logs.append(f"Đang sở hữu {len(r_ent.json())} gói quyền lợi Store/Trial đang hoạt động.")
+                ents = r_ent.json()
+                logs.append(f"Đang sở hữu {len(ents)} quyền lợi (Entitlements) đang hoạt động trên acc.")
 
         # 5. Áp dụng Theme qua PreloadedUserSettings Protobuf (/users/@me/settings-proto/1)
         if action in ('theme', 'both'):
