@@ -266,31 +266,39 @@ def api_vice_city_promo():
                 )
                 if r_store_promo.status_code == 200 and isinstance(r_store_promo.json(), list):
                     for pr in r_store_promo.json():
-                        title = pr.get('outbound_title') or pr.get('id')
+                        title = pr.get('outbound_title') or pr.get('inbound_header_text') or pr.get('inbound_body_text') or pr.get('id')
+                        if len(str(title)) > 55:
+                            title = str(title)[:55] + '...'
                         end_d = str(pr.get('end_date') or '')[:10]
                         logs.append(f"Store Promo: {title} (Hết hạn: {end_d})")
                         promos_found.append({'title': title, 'end_date': end_d, 'id': pr.get('id')})
             except Exception:
                 pass
 
-            # 3. Quét & Redeem Nitro Free Trials (/users/@me/billing/trials)
-            r_trials = requests.get('https://discord.com/api/v9/users/@me/billing/trials', headers=headers, timeout=8)
-            if r_trials.status_code == 200:
-                trials = r_trials.json() if isinstance(r_trials.json(), list) else []
-                for tr in trials:
-                    tid = tr.get('id')
-                    expires_at = tr.get('expires_at') or ''
-                    trials_found.append({'id': tid, 'expires_at': expires_at})
-                    logs.append(f"Tìm thấy Nitro Free Trial ID {tid} (Hạn: {expires_at[:10] if expires_at else '14/12'})")
-                    if tid:
-                        r_red = requests.post(f'https://discord.com/api/v9/users/@me/billing/trials/{tid}/redeem', headers=headers, json={}, timeout=8)
-                        if r_red.status_code in (200, 201, 204):
-                            claimed_items.append(f"Nitro Trial {tid}")
-                            logs.append(f"ĐÃ CLAIM THÀNH CÔNG Nitro Trial {tid}!")
-                        else:
-                            logs.append(f"Trial {tid}: Discord yêu cầu thêm phương thức thanh toán hoặc không đủ điều kiện (HTTP {r_red.status_code})")
-            else:
-                logs.append(f"Quét Billing Trials: HTTP {r_trials.status_code}")
+            # 3. Kiểm tra User Trial Offer & Nitro Affinity (/users/@me/billing/user-offer, /nitro-affinity, /subscriptions)
+            try:
+                r_uo_get = requests.get('https://discord.com/api/v9/users/@me/billing/user-offer', headers=headers, timeout=8)
+                if r_uo_get.status_code == 200:
+                    uo = r_uo_get.json() or {}
+                    ut = uo.get('user_trial_offer')
+                    ud = uo.get('user_discount')
+                    if ut:
+                        tid = ut.get('id')
+                        trials_found.append({'id': tid, 'expires_at': ut.get('expires_at', '')})
+                        logs.append(f"Tài khoản CÓ gói Trial Nitro: {tid} (Hạn: {str(ut.get('expires_at', ''))[:10]})")
+                    elif ud:
+                        logs.append(f"Tài khoản có Discount Offer: {ud.get('discount_id')}")
+                    else:
+                        logs.append("User Offer Status: Tài khoản hiện chưa có gói Nitro Trial miễn phí mới từ Discord.")
+                else:
+                    logs.append(f"Kiểm tra User Offer: HTTP {r_uo_get.status_code}")
+
+                r_sub = requests.get('https://discord.com/api/v9/users/@me/billing/subscriptions?sync_level=2&with_gift_subscription=true', headers=headers, timeout=8)
+                if r_sub.status_code == 200 and isinstance(r_sub.json(), list):
+                    active_subs = [s for s in r_sub.json() if s.get('status') in (1, 3)]
+                    logs.append(f"Gói Nitro đang kích hoạt trên acc: {len(active_subs)}")
+            except Exception as te:
+                logs.append(f"Billing check note: {te}")
 
             # 4. Quét Code Outbound Promotions & Entitlements (entitlement_type=11 từ Storefront)
             r_promo = requests.get('https://discord.com/api/v9/users/@me/outbound-promotions/codes', headers=headers, timeout=8)
