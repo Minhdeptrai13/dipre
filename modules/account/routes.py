@@ -5,6 +5,7 @@ from flask import Blueprint, request, jsonify, session
 from werkzeug.security import generate_password_hash
 
 from core.database import get_db
+from core.discord_guard import discord_guard
 from core.logger import log_event
 from core.security import clear_failed_attempts, get_client_ip
 from core.registry import registry, SubModule
@@ -531,12 +532,20 @@ def api_discord_read_all():
                     if scope in ('dm_group', 'all') and ch_type not in (1, 3):
                         continue
                     try:
+                        allowed, reason = discord_guard.wait_if_needed(token, action='ack')
+                        if not allowed:
+                            return jsonify({
+                                'success': True,
+                                'message': f'Anti-Ban Shield đã tạm dừng Read All ({reason}) — đã đọc {read_dms} DM, {read_groups} Nhóm.',
+                                'read_dms': read_dms, 'read_groups': read_groups, 'read_guilds': read_guilds, 'failed': failed, 'anti_ban_paused': True
+                            })
                         r_ack = requests.post(
                             f"https://discord.com/api/v9/channels/{ch['id']}/messages/{last_id}/ack",
                             headers=headers,
                             json={'token': None},
                             timeout=6
                         )
+                        discord_guard.record_response(token, r_ack.status_code, r_ack.headers, r_ack.text)
                         if r_ack.status_code in (200, 204):
                             if ch_type == 3:
                                 read_groups += 1
@@ -544,7 +553,8 @@ def api_discord_read_all():
                                 read_dms += 1
                         else:
                             failed += 1
-                        time.sleep(0.08)
+                            if r_ack.status_code == 429:
+                                break
                     except Exception:
                         failed += 1
 
@@ -557,17 +567,26 @@ def api_discord_read_all():
                     if not gid:
                         continue
                     try:
+                        allowed, reason = discord_guard.wait_if_needed(token, action='ack')
+                        if not allowed:
+                            return jsonify({
+                                'success': True,
+                                'message': f'Anti-Ban Shield đã tạm dừng Read All ({reason}) — đã đọc {read_guilds} Server.',
+                                'read_dms': read_dms, 'read_groups': read_groups, 'read_guilds': read_guilds, 'failed': failed, 'anti_ban_paused': True
+                            })
                         r_ack_g = requests.post(
                             f'https://discord.com/api/v9/guilds/{gid}/ack',
                             headers=headers,
                             json={},
                             timeout=6
                         )
+                        discord_guard.record_response(token, r_ack_g.status_code, r_ack_g.headers, r_ack_g.text)
                         if r_ack_g.status_code in (200, 204):
                             read_guilds += 1
                         else:
                             failed += 1
-                        time.sleep(0.1)
+                            if r_ack_g.status_code == 429:
+                                break
                     except Exception:
                         failed += 1
 

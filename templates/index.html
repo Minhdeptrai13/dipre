@@ -1175,6 +1175,27 @@ beyond the veil, control returns</textarea>
         </div>
       </div>
 
+      <!-- ANTI-BAN & SMART RATE-LIMIT CIRCUIT BREAKER BAR -->
+      <div class="p-3.5 rounded-lg bg-obsidian border border-teal/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 rounded-md bg-teal/15 border border-teal/35 flex items-center justify-center text-teal shrink-0 mt-0.5">
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="text-[13px] font-semibold text-ink">Anti-Ban Rate-Limit Shield</span>
+              <span id="antiban-status-badge" class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-teal/15 text-teal border border-teal/30">ACTIVE • SAFE PACING</span>
+            </div>
+            <div id="antiban-stats-text" class="text-[11.5px] text-muted mt-0.5 font-mono">
+              Giới hạn an toàn: 16 write/phút • Auto Jitter • Tự ngắt mạch khi gặp 429 / Captcha
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 shrink-0">
+          <button id="antiban-shield-sw" onclick="toggleAntiBanGuard()" class="hw-switch on" aria-label="Bật/Tắt Anti-Ban Shield"></button>
+        </div>
+      </div>
+
       <!-- SUB-VIEW A: DISCORD QUEST AUTO-COMPLETER -->
       <div id="atab-quest" class="space-y-5">
         <div class="surface-carbon rounded-lg p-5 space-y-4">
@@ -2016,9 +2037,11 @@ beyond the veil, control returns</textarea>
       syncRealInbox();
       syncUserbotStatus();
       syncRpcGatewayStatus();
+      syncSniperStatus();
       refreshUserbotLogs();
       setInterval(syncUserbotStatus, 5000);
       setInterval(syncRpcGatewayStatus, 5000);
+      setInterval(syncSniperStatus, 6000);
       setInterval(refreshUserbotLogs, 4000);
 
       initSoundboardVisualizer();
@@ -3198,33 +3221,151 @@ beyond the veil, control returns</textarea>
       box.scrollTop = box.scrollHeight;
     }
 
-    function toggleMasterSniper() {
-      state.sniper.masterOn = !state.sniper.masterOn;
+    function renderSniperLogsFromBackend(logsArr) {
+      const box = document.getElementById('sniper-log');
+      if (!box || !Array.isArray(logsArr) || !logsArr.length) return;
+      box.innerHTML = logsArr.map(entry => {
+        const lvl = (entry.level || 'info').toLowerCase();
+        const cls = lvl === 'success' ? 'text-teal' : (lvl === 'warn' || lvl === 'warning' ? 'text-amber' : (lvl === 'error' ? 'text-rose' : 'text-zinc-300'));
+        return `<div class="${cls}">[${entry.time || ''}] ${entry.message || ''}</div>`;
+      }).join('');
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function syncSniperStatus() {
+      try {
+        if (!location.protocol.startsWith('http')) return;
+        const res = await fetch('/api/sniper/status');
+        const data = await res.json();
+        if (!data || !data.success || !data.status) return;
+        const st = data.status;
+        state.sniper.masterOn = Boolean(st.is_running);
+        state.sniper.nitro = Boolean(st.nitro);
+        state.sniper.giveaway = Boolean(st.giveaway);
+        state.sniper.vanity = Boolean(st.vanity);
+
+        if (Array.isArray(st.logs) && st.logs.length) {
+          renderSniperLogsFromBackend(st.logs);
+        }
+
+        const ab = st.anti_ban || {};
+        const sw = document.getElementById('antiban-shield-sw');
+        const badge = document.getElementById('antiban-status-badge');
+        const txt = document.getElementById('antiban-stats-text');
+        if (sw) sw.classList.toggle('on', Boolean(ab.enabled));
+        if (badge) {
+          if (!ab.enabled) {
+            badge.className = 'font-mono text-[10px] px-1.5 py-0.5 rounded bg-rose/15 text-rose border border-rose/30';
+            badge.textContent = 'SHIELD OFF (RỦI RO)';
+          } else if (ab.is_cooling_down) {
+            badge.className = 'font-mono text-[10px] px-1.5 py-0.5 rounded bg-amber/15 text-amber border border-amber/30';
+            badge.textContent = `COOLDOWN ${ab.cooldown_remaining}s (429 GUARD)`;
+          } else {
+            badge.className = 'font-mono text-[10px] px-1.5 py-0.5 rounded bg-teal/15 text-teal border border-teal/30';
+            badge.textContent = `ACTIVE • ${ab.requests_1m || 0}/${ab.max_writes_per_min || 16} RPM`;
+          }
+        }
+        if (txt && ab.flagged_reason) {
+          txt.textContent = ab.flagged_reason;
+        } else if (txt) {
+          txt.textContent = `Đã chặn spam: ${ab.blocked_count || 0} • Quà thấy: ${st.gifts_seen || 0} (Claim: ${st.gifts_claimed || 0}) • GA: ${st.giveaways_joined || 0} • Vanity check: ${st.vanity_checks || 0}`;
+        }
+        renderSniperView();
+      } catch (e) {}
+    }
+
+    async function toggleAntiBanGuard() {
+      try {
+        const res = await fetch('/api/security/antiban', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+        const data = await res.json();
+        if (data && data.success && data.anti_ban) {
+          showToast(data.anti_ban.enabled ? '🛡️ Đã BẬT Anti-Ban Rate-Limit Shield!' : '⚠️ Đã TẮT Anti-Ban Shield (cẩn thận bị 429!)');
+          await syncSniperStatus();
+        }
+      } catch (err) {
+        showToast('Lỗi bật/tắt Anti-Ban Shield');
+      }
+    }
+
+    async function toggleMasterSniper() {
+      const targetId = state.quest.targetAccountId || getMainAccount()?.id || 'main';
+      const acc = state.accounts.find(a => a.id === targetId) || getMainAccount();
+      const accId = acc?.main ? 'main' : (acc?.db_id || targetId);
+
       if (state.sniper.radarTimer) clearInterval(state.sniper.radarTimer);
 
-      if (state.sniper.masterOn) {
-        state.usage.sniper++;
-        appendSniperLog('[RADAR] Bật chế độ lắng nghe 24/7 trên tất cả Gateway shards (0.05s).', 'text-amber');
-        state.sniper.radarTimer = setInterval(() => {
-          const sampleEvents = [
-            '[HEARTBEAT] Quét 124 kênh server — 0 gift hợp lệ mới • latency 14ms',
-            '[GIVEAWAY] Phát hiện bài đăng từ GiveawayBot (#giveaways) — đã kiểm tra điều kiện.',
-            '[VANITY] Kiểm tra mã mục tiêu "dipre" — trạng thái: đang được sở hữu.',
-          ];
-          const pick = sampleEvents[Math.floor(Math.random() * sampleEvents.length)];
-          appendSniperLog(pick, 'text-zinc-400');
-        }, 4200);
-        showToast('Nitro & Vanity Sniper: ĐANG HOẠT ĐỘNG');
+      if (!state.sniper.masterOn) {
+        const nitroDelay = Number(document.getElementById('sn-nitro-delay')?.value || 150);
+        const gaDelay = Number(document.getElementById('sn-giveaway-delay')?.value || 4);
+        const vanityCodes = document.getElementById('sn-vanity-code')?.value || '';
+        const webhookUrl = document.getElementById('sn-webhook-url')?.value || '';
+
+        showToast(`Đang kết nối Sniper Gateway thật cho ${acc ? acc.name : 'tài khoản'}...`);
+        try {
+          const res = await fetch('/api/sniper/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              account_id: accId,
+              nitro: state.sniper.nitro,
+              giveaway: state.sniper.giveaway,
+              vanity: state.sniper.vanity,
+              nitro_delay_ms: nitroDelay,
+              giveaway_delay_sec: gaDelay,
+              vanity_codes: vanityCodes,
+              webhook_url: webhookUrl
+            })
+          });
+          const data = await res.json();
+          if (data && data.success) {
+            state.sniper.masterOn = true;
+            state.usage.sniper++;
+            state.sniper.radarTimer = setInterval(syncSniperStatus, 3500);
+            showToast(data.message || 'Sniper Radar THẬT đã hoạt động!');
+            await syncSniperStatus();
+          } else {
+            state.sniper.masterOn = false;
+            showToast(data.message || 'Không thể bật Sniper Gateway');
+          }
+        } catch (err) {
+          showToast('Lỗi kết nối API Sniper tới máy chủ');
+        }
       } else {
-        appendSniperLog('[STOP] Đã tắt Gateway Radar Sniper.', 'text-rose');
-        showToast('Đã dừng Nitro & Vanity Sniper');
+        try {
+          await fetch('/api/sniper/stop', { method: 'POST' });
+          state.sniper.masterOn = false;
+          showToast('Đã dừng Nitro & Vanity Sniper');
+          await syncSniperStatus();
+        } catch (e) {
+          state.sniper.masterOn = false;
+        }
       }
       renderAll();
     }
 
-    function toggleSniperModule(key, forceOn = false) {
+    async function toggleSniperModule(key, forceOn = false) {
       state.sniper[key] = forceOn ? true : !state.sniper[key];
       const names = { nitro: 'Auto Nitro Code Sniping', giveaway: 'Auto Giveaway Clicker', vanity: 'Vanity URL Monitor' };
+      const payload = {
+        nitro: state.sniper.nitro,
+        giveaway: state.sniper.giveaway,
+        vanity: state.sniper.vanity,
+        nitro_delay_ms: Number(document.getElementById('sn-nitro-delay')?.value || 150),
+        giveaway_delay_sec: Number(document.getElementById('sn-giveaway-delay')?.value || 4),
+        vanity_codes: document.getElementById('sn-vanity-code')?.value || ''
+      };
+      try {
+        await fetch('/api/sniper/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        await syncSniperStatus();
+      } catch (e) {}
       appendSniperLog(`[CONFIG] ${names[key]} → ${state.sniper[key] ? 'BẬT' : 'TẮT'}`, state.sniper[key] ? 'text-teal' : 'text-muted');
       renderSniperView();
       showToast(`${names[key]}: ${state.sniper[key] ? 'Đã bật' : 'Đã tắt'}`);
@@ -3236,29 +3377,25 @@ beyond the veil, control returns</textarea>
         showToast('Vui lòng nhập Discord Webhook URL');
         return;
       }
-      appendSniperLog(`[WEBHOOK] Đang gửi tin nhắn thử nghiệm tới Webhook...`, 'text-teal');
+      appendSniperLog(`[WEBHOOK] Đang gửi tin nhắn thử nghiệm qua máy chủ...`, 'text-teal');
       try {
-        const res = await fetch(url, {
+        const res = await fetch('/api/sniper/webhook', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            content: '⚡ **[DIPRE STUDIO RADAR]** Webhook đã được liên kết thành công! Sẵn sàng nhận thông báo Nitro & Giveaway.'
-          })
+          body: JSON.stringify({ webhook_url: url })
         });
-        if (res.ok || res.status === 204) {
-          appendSniperLog(`[WEBHOOK] Gửi thành công 204 OK tới ${url.slice(0, 42)}...`, 'text-teal');
-          showToast('Webhook phản hồi 204 OK — Đã lưu cấu hình');
-        } else {
-          appendSniperLog(`[WARN] Webhook phản hồi: HTTP ${res.status}`, 'text-amber');
-          showToast(`Đã lưu cấu hình Webhook (HTTP ${res.status})`);
-        }
+        const data = await res.json();
+        await syncSniperStatus();
+        showToast(data.message || (data.success ? 'Đã gửi Webhook thành công!' : 'Webhook lỗi'));
       } catch (err) {
-        appendSniperLog(`[WEBHOOK] Đã lưu cấu hình Webhook cục bộ`, 'text-teal');
-        showToast('Đã lưu cấu hình Webhook');
+        showToast('Lỗi kiểm tra Webhook');
       }
     }
 
-    function clearSniperLog() {
+    async function clearSniperLog() {
+      try {
+        await fetch('/api/sniper/logs', { method: 'DELETE' });
+      } catch (e) {}
       document.getElementById('sniper-log').innerHTML = '';
       appendSniperLog('[READY] Nhật ký Radar đã được làm sạch.');
     }

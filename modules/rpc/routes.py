@@ -7,6 +7,7 @@ from flask import Blueprint, request, jsonify, session, redirect
 
 from core.config import UPLOAD_FOLDER, UPLOAD_PATH_MAP
 from core.database import get_db, track_feature_use
+from core.discord_guard import discord_guard
 from core.logger import log_event, LOG_BUFFER
 from core.registry import registry, SubModule
 from modules.auth.helpers import login_required
@@ -198,6 +199,10 @@ def api_custom_status():
     last_err = ''
     for tok in list(dict.fromkeys(tokens)):
         try:
+            allowed, reason, _ = discord_guard.can_call(tok, action='write')
+            if not allowed:
+                last_err = reason
+                continue
             headers = {
                 'Authorization': tok,
                 'Content-Type': 'application/json',
@@ -211,6 +216,7 @@ def api_custom_status():
                     cs_obj['emoji_name'] = emoji
                 payload = {'custom_status': cs_obj}
             res = requests.patch('https://discord.com/api/v9/users/@me/settings', headers=headers, json=payload, timeout=8)
+            discord_guard.record_response(tok, res.status_code, res.headers, res.text)
             if res.status_code == 200:
                 updated += 1
             else:

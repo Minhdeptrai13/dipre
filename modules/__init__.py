@@ -16,6 +16,7 @@ import modules.account
 import modules.captcha
 import modules.rpc
 import modules.quest
+import modules.sniper
 import modules.lyrics
 import modules.voice
 import modules.template
