@@ -196,7 +196,8 @@ def api_hypesquad_claim():
 @quest_bp.route('/api/automation/vice_city_promo', methods=['POST'])
 @login_required
 def api_vice_city_promo():
-    """Chức năng hữu hạn (hết hạn 14/12): Quét & nhận Nitro Trial/Promo miễn phí + kích hoạt diện mạo Vice City"""
+    """Chức năng hữu hạn (hết hạn 14/12): Gọi đúng chuỗi Discord API (user-offer, promotions, trials, entitlements, settings-proto)"""
+    import base64
     user_id = session['user_id']
     data = request.get_json() or {}
     account_id = data.get('account_id')
@@ -237,56 +238,116 @@ def api_vice_city_promo():
     promos_found = []
 
     try:
-        # 1. Kiểm tra các gói Nitro Free Trial khả dụng trên tài khoản
+        # 1. Kích hoạt User Offer Trigger giống hệt Discord Store (POST /users/@me/billing/user-offer)
         if action in ('claim_nitro', 'both'):
+            try:
+                r_offer = requests.post(
+                    'https://discord.com/api/v9/users/@me/billing/user-offer',
+                    headers=headers,
+                    json={'allow_triggers': True},
+                    timeout=8
+                )
+                logs.append(f"Kích hoạt User Offer Trigger: HTTP {r_offer.status_code}")
+                if r_offer.status_code == 200 and r_offer.text:
+                    offer_json = r_offer.json()
+                    if offer_json.get('user_trial_offer'):
+                        ut = offer_json['user_trial_offer']
+                        trials_found.append({'id': ut.get('id'), 'expires_at': ut.get('expires_at', '')})
+                        logs.append(f"Phát hiện User Trial Offer: ID {ut.get('id')}")
+            except Exception as oe:
+                logs.append(f"User Offer check: {oe}")
+
+            # 2. Quét danh sách Promotions đang chạy trên Discord Store (GET /promotions?locale=vi&platform=0)
+            try:
+                r_store_promo = requests.get(
+                    'https://discord.com/api/v9/promotions?locale=vi&platform=0',
+                    headers=headers,
+                    timeout=8
+                )
+                if r_store_promo.status_code == 200 and isinstance(r_store_promo.json(), list):
+                    for pr in r_store_promo.json():
+                        title = pr.get('outbound_title') or pr.get('id')
+                        end_d = str(pr.get('end_date') or '')[:10]
+                        logs.append(f"Store Promo: {title} (Hết hạn: {end_d})")
+                        promos_found.append({'title': title, 'end_date': end_d, 'id': pr.get('id')})
+            except Exception:
+                pass
+
+            # 3. Quét & Redeem Nitro Free Trials (/users/@me/billing/trials)
             r_trials = requests.get('https://discord.com/api/v9/users/@me/billing/trials', headers=headers, timeout=8)
             if r_trials.status_code == 200:
                 trials = r_trials.json() if isinstance(r_trials.json(), list) else []
                 for tr in trials:
                     tid = tr.get('id')
-                    offer = tr.get('trial_offer') or {}
                     expires_at = tr.get('expires_at') or ''
                     trials_found.append({'id': tid, 'expires_at': expires_at})
                     logs.append(f"Tìm thấy Nitro Free Trial ID {tid} (Hạn: {expires_at[:10] if expires_at else '14/12'})")
-                    # Thử redeem trial nếu API cho phép không cần thẻ
                     if tid:
                         r_red = requests.post(f'https://discord.com/api/v9/users/@me/billing/trials/{tid}/redeem', headers=headers, json={}, timeout=8)
                         if r_red.status_code in (200, 201, 204):
                             claimed_items.append(f"Nitro Trial {tid}")
                             logs.append(f"ĐÃ CLAIM THÀNH CÔNG Nitro Trial {tid}!")
                         else:
-                            logs.append(f"Trial {tid}: Discord yêu cầu xác minh/phương thức thanh toán hoặc đã hết lượt (HTTP {r_red.status_code})")
+                            logs.append(f"Trial {tid}: Discord yêu cầu thêm phương thức thanh toán hoặc không đủ điều kiện (HTTP {r_red.status_code})")
             else:
-                logs.append(f"Quét Nitro Trials: HTTP {r_trials.status_code}")
+                logs.append(f"Quét Billing Trials: HTTP {r_trials.status_code}")
 
-            # 2. Quét Outbound Promotions & Claimed Gifts / Rewards khả dụng
+            # 4. Quét Code Outbound Promotions & Entitlements (entitlement_type=11 từ Storefront)
             r_promo = requests.get('https://discord.com/api/v9/users/@me/outbound-promotions/codes', headers=headers, timeout=8)
-            if r_promo.status_code == 200:
-                codes = r_promo.json() if isinstance(r_promo.json(), list) else []
-                for c in codes:
+            if r_promo.status_code == 200 and isinstance(r_promo.json(), list):
+                for c in r_promo.json():
                     code_val = c.get('code')
                     promo_title = (c.get('promotion') or {}).get('outbound_title', 'Discord Promo')
                     if code_val:
                         promos_found.append({'title': promo_title, 'code': code_val})
                         logs.append(f"Code Promo khả dụng: {promo_title} -> {code_val}")
 
-            r_gifts = requests.get('https://discord.com/api/v9/users/@me/entitlements/gifts', headers=headers, timeout=8)
-            if r_gifts.status_code == 200 and isinstance(r_gifts.json(), list):
-                for g in r_gifts.json():
-                    logs.append(f"Gift Inventory: {g.get('sku_id')} (Còn {g.get('remaining_uses', 0)} lượt)")
-
-        # 3. Quét & kích hoạt giao diện Vice City Theme (Khả dụng tới 14/12 cho mọi user & 21/02 cho Nitro)
-        if action in ('theme', 'both'):
-            r_set = requests.patch(
-                'https://discord.com/api/v9/users/@me/settings',
+            r_ent = requests.get(
+                'https://discord.com/api/v9/users/@me/entitlements?with_sku=false&with_application=false&entitlement_type=11&exclude_ended=true',
                 headers=headers,
-                json={'theme': 'dark'},
                 timeout=8
             )
-            if r_set.status_code == 200:
-                logs.append("Đã đồng bộ nền Dark Base chuẩn bị áp dụng diện mạo Vice City (hạn 14/12).")
-            else:
-                logs.append(f"Cập nhật theme cơ bản: HTTP {r_set.status_code}")
+            if r_ent.status_code == 200 and isinstance(r_ent.json(), list):
+                logs.append(f"Đang sở hữu {len(r_ent.json())} gói quyền lợi Store/Trial đang hoạt động.")
+
+        # 5. Áp dụng Theme qua PreloadedUserSettings Protobuf (/users/@me/settings-proto/1)
+        if action in ('theme', 'both'):
+            theme_applied = False
+            try:
+                from discord_protos import PreloadedUserSettings
+                r_get_proto = requests.get('https://discord.com/api/v9/users/@me/settings-proto/1', headers=headers, timeout=8)
+                if r_get_proto.status_code == 200:
+                    b64_cur = r_get_proto.json().get('settings', '')
+                    proto = PreloadedUserSettings()
+                    if b64_cur:
+                        proto.ParseFromString(base64.b64decode(b64_cur))
+                    # Đặt Dark theme + Gradient Client Theme ID (Vice City / Custom gradient)
+                    proto.appearance.theme = 2
+                    proto.appearance.client_theme_settings.background_gradient_preset_id.value = 18
+                    new_b64 = base64.b64encode(proto.SerializeToString()).decode('ascii')
+                    r_patch_proto = requests.patch(
+                        'https://discord.com/api/v9/users/@me/settings-proto/1',
+                        headers=headers,
+                        json={'settings': new_b64},
+                        timeout=8
+                    )
+                    if r_patch_proto.status_code == 200:
+                        theme_applied = True
+                        logs.append("Đã đồng bộ Client Theme Gradient lên Discord qua Protobuf (/settings-proto/1)!")
+                    else:
+                        logs.append(f"Cập nhật Client Theme Protobuf: HTTP {r_patch_proto.status_code} (Discord có thể giới hạn theo gói Nitro)")
+            except Exception as pe:
+                logs.append(f"Protobuf Theme note: {pe}")
+
+            if not theme_applied:
+                r_set = requests.patch(
+                    'https://discord.com/api/v9/users/@me/settings',
+                    headers=headers,
+                    json={'theme': 'dark'},
+                    timeout=8
+                )
+                if r_set.status_code == 200:
+                    logs.append("Đã đồng bộ Dark Base Theme cho Discord.")
 
         if not logs:
             logs.append("Đã quét xong ưu đãi hữu hạn (hết hạn 14/12) trên Discord API.")
@@ -295,7 +356,7 @@ def api_vice_city_promo():
         log_event(f'Vice City & Nitro Promo Scan ({acc_name}): {len(trials_found)} trials, {len(promos_found)} promos', 'success')
         return jsonify({
             'success': True,
-            'message': f'Đã quét ưu đãi Vice City & Nitro (14/12) cho {acc_name}: tìm thấy {len(trials_found)} Trial, {len(promos_found)} Code.',
+            'message': f'Đã quét ưu đãi Vice City & Nitro (14/12) cho {acc_name}: tìm thấy {len(trials_found)} Trial, {len(promos_found)} Promo.',
             'logs': logs,
             'trials': trials_found,
             'promos': promos_found,
