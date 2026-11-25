@@ -1175,23 +1175,6 @@ beyond the veil, control returns</textarea>
         </div>
       </div>
 
-      <!-- LIMITED-TIME FEATURE CARD (EXPIRES DEC 14): GTA 6 VICE CITY THEME & PROMO -->
-      <div class="p-4 rounded-lg bg-gradient-to-r from-[#1A1025] via-[#13141C] to-[#0D1E22] border border-amber/30 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div class="space-y-1">
-          <div class="flex flex-wrap items-center gap-2">
-            <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-amber/15 text-amber border border-amber/35 font-semibold">ƯU ĐÃI GTA 6 • HẾT HẠN 14/12</span>
-            <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-teal/10 text-teal border border-teal/25">READ-ONLY SAFE MODE</span>
-          </div>
-          <h3 class="font-display text-[15px] font-semibold text-ink">Kiểm Tra Store Promo GTA 6 Vice City (Chế Độ An Toàn)</h3>
-          <p class="text-[12px] text-muted">Chỉ quét danh sách Store Promo hiện có (tắt tự động ghi đè Profile/Billing từ Server để bảo vệ an toàn cho tài khoản).</p>
-        </div>
-        <div class="flex flex-wrap items-center gap-2 shrink-0">
-          <button onclick="runViceCityPromo('safe')" class="btn-secondary h-9 px-4 rounded-md text-[12.5px] font-semibold flex items-center gap-1.5 border-amber/35 text-amber hover:bg-amber/10">
-            <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Quét Promo (An Toàn)
-          </button>
-        </div>
-      </div>
-
       <!-- SUB-VIEW A: DISCORD QUEST AUTO-COMPLETER -->
       <div id="atab-quest" class="space-y-5">
         <div class="surface-carbon rounded-lg p-5 space-y-4">
@@ -3174,33 +3157,6 @@ beyond the veil, control returns</textarea>
         }
       } catch (e) {
         showToast('Lỗi gửi lệnh nhận Quest');
-      }
-    }
-
-    async function runViceCityPromo(action = 'both') {
-      const targetId = state.quest.targetAccountId || getMainAccount()?.id || 'main';
-      const acc = state.accounts.find(a => a.id === targetId) || getMainAccount();
-      const reqAccId = acc?.main ? 'main' : (acc?.db_id || targetId);
-
-      showToast(`Đang quét ưu đãi Vice City & Nitro (14/12) cho ${acc ? acc.name : 'tài khoản'}...`);
-      appendQuestLog(`[PROMO 14/12] Bắt đầu quét Nitro Free Trial & Vice City cho ${acc ? acc.name : 'Main'}...`, 'text-amber');
-      appendSniperLog(`[PROMO 14/12] Đang kiểm tra Nitro Trial & Promo khả dụng cho ${acc ? acc.name : 'Main'}...`, 'text-amber');
-      try {
-        const res = await fetch('/api/automation/vice_city_promo', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ account_id: reqAccId, action })
-        });
-        const data = await res.json();
-        if (data && data.logs && Array.isArray(data.logs)) {
-          data.logs.forEach(line => {
-            appendQuestLog(`[PROMO] ${line}`, 'text-teal');
-            appendSniperLog(`[PROMO] ${line}`, 'text-teal');
-          });
-        }
-        showToast(data.message || 'Đã quét xong ưu đãi Vice City & Nitro 14/12!');
-      } catch (err) {
-        showToast('Lỗi kết nối API kiểm tra ưu đãi Discord');
       }
     }
 

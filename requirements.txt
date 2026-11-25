@@ -6,4 +6,3 @@ gunicorn>=21.2.0
 Pillow>=10.0.0
 websocket-client>=1.6.0
 supabase>=2.0.0
-discord-protos>=0.0.2
