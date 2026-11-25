@@ -331,8 +331,8 @@ def api_vice_city_promo():
                     proto = PreloadedUserSettings()
                     if b64_cur:
                         proto.ParseFromString(base64.b64decode(b64_cur))
-                    # Đặt Dark theme + Gradient Client Theme ID (Vice City / Custom gradient)
-                    proto.appearance.theme = 2
+                    # Theme enum: 0=UNSET, 1=DARK, 2=LIGHT
+                    proto.appearance.theme = 1
                     proto.appearance.client_theme_settings.background_gradient_preset_id.value = 18
                     new_b64 = base64.b64encode(proto.SerializeToString()).decode('ascii')
                     r_patch_proto = requests.patch(
