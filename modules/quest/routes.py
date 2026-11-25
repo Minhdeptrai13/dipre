@@ -196,12 +196,10 @@ def api_hypesquad_claim():
 @quest_bp.route('/api/automation/vice_city_promo', methods=['POST'])
 @login_required
 def api_vice_city_promo():
-    """Chức năng hữu hạn (hết hạn 14/12): Gọi đúng chuỗi Discord API (user-offer, promotions, trials, entitlements, settings-proto)"""
-    import base64
+    """Chức năng kiểm tra an toàn (chỉ đọc nhẹ) tránh bị Discord khóa/bay phiên đăng nhập từ IP Cloud."""
     user_id = session['user_id']
     data = request.get_json() or {}
     account_id = data.get('account_id')
-    action = str(data.get('action', 'both')).strip().lower()
 
     with get_db() as conn:
         cursor = conn.cursor()
@@ -233,297 +231,33 @@ def api_vice_city_promo():
 
     headers = make_discord_headers(token)
     logs = []
-    claimed_items = []
-    trials_found = []
     promos_found = []
 
     try:
-        # 1. Kích hoạt User Offer Trigger giống hệt Discord Store (POST /users/@me/billing/user-offer)
-        if action in ('claim_nitro', 'both'):
-            try:
-                r_offer = requests.post(
-                    'https://discord.com/api/v9/users/@me/billing/user-offer',
-                    headers=headers,
-                    json={'allow_triggers': True},
-                    timeout=8
-                )
-                logs.append(f"Kích hoạt User Offer Trigger: HTTP {r_offer.status_code}")
-                if r_offer.status_code == 200 and r_offer.text:
-                    offer_json = r_offer.json()
-                    if offer_json.get('user_trial_offer'):
-                        ut = offer_json['user_trial_offer']
-                        trials_found.append({'id': ut.get('id'), 'expires_at': ut.get('expires_at', '')})
-                        logs.append(f"Phát hiện User Trial Offer: ID {ut.get('id')}")
-            except Exception as oe:
-                logs.append(f"User Offer check: {oe}")
+        # Chỉ đọc nhẹ GET /promotions để tránh Discord khóa token do bắn nhiều lệnh PATCH profile/billing từ IP Cloud
+        r_store_promo = requests.get(
+            'https://discord.com/api/v9/promotions?locale=vi&platform=0',
+            headers=headers,
+            timeout=8
+        )
+        if r_store_promo.status_code == 200 and isinstance(r_store_promo.json(), list):
+            for pr in r_store_promo.json():
+                title = pr.get('outbound_title') or pr.get('inbound_header_text') or pr.get('id')
+                end_d = str(pr.get('end_date') or '')[:10]
+                logs.append(f"Store Promo: {title} (Hết hạn: {end_d})")
+                promos_found.append({'title': title, 'end_date': end_d, 'id': pr.get('id')})
 
-            # 2. Quét danh sách Promotions đang chạy trên Discord Store (GET /promotions?locale=vi&platform=0)
-            try:
-                r_store_promo = requests.get(
-                    'https://discord.com/api/v9/promotions?locale=vi&platform=0',
-                    headers=headers,
-                    timeout=8
-                )
-                if r_store_promo.status_code == 200 and isinstance(r_store_promo.json(), list):
-                    for pr in r_store_promo.json():
-                        title = pr.get('outbound_title') or pr.get('outbound_promo_page') or pr.get('inbound_header_text') or pr.get('outbound_redemption_page_link') or pr.get('id')
-                        if len(str(title)) > 60:
-                            title = str(title)[:60] + '...'
-                        end_d = str(pr.get('end_date') or '')[:10]
-                        logs.append(f"Store Promo: {title} (Hết hạn: {end_d})")
-                        promos_found.append({'title': title, 'end_date': end_d, 'id': pr.get('id')})
-            except Exception:
-                pass
-
-            # 3. Kiểm tra trạng thái Nitro thật của acc (@me, subscriptions, nitro-affinity, storefront/promotions)
-            try:
-                r_me = requests.get('https://discord.com/api/v9/users/@me', headers=headers, timeout=8)
-                if r_me.status_code == 200:
-                    me_j = r_me.json()
-                    pt = me_j.get('premium_type', 0)
-                    pt_map = {0: 'Chưa có Nitro', 1: 'Nitro Classic', 2: 'Nitro Boost', 3: 'Nitro Basic'}
-                    logs.append(f"Tài khoản {me_j.get('username')}: {pt_map.get(pt, f'Type {pt}')}")
-
-                r_sub = requests.get('https://discord.com/api/v9/users/@me/billing/subscriptions?sync_level=2&with_gift_subscription=true', headers=headers, timeout=8)
-                if r_sub.status_code == 200 and isinstance(r_sub.json(), list):
-                    subs_list = r_sub.json()
-                    if subs_list:
-                        for s in subs_list:
-                            logs.append(f"Subscription: status={s.get('status')}, hết hạn={str(s.get('current_period_end', ''))[:10]}")
-                    else:
-                        logs.append("Subscriptions: 0 gói trả phí trực tiếp (có thể đang dùng Nitro Trial / Gift).")
-
-                r_sf = requests.get('https://discord.com/api/v9/storefront/promotions?application_ids=1096190356233670716', headers=headers, timeout=8)
-                if r_sf.status_code == 200 and r_sf.text:
-                    sf_data = r_sf.json()
-                    if isinstance(sf_data, list) and sf_data:
-                        logs.append(f"Storefront Promotions: {len(sf_data)} ưu đãi khả dụng.")
-            except Exception as te:
-                logs.append(f"Billing check note: {te}")
-
-            # 4. Quét Code Outbound Promotions & Toàn bộ Entitlements (không lọc type để thấy cả Nitro Trial/Vice City)
-            r_promo = requests.get('https://discord.com/api/v9/users/@me/outbound-promotions/codes', headers=headers, timeout=8)
-            if r_promo.status_code == 200 and isinstance(r_promo.json(), list):
-                for c in r_promo.json():
-                    code_val = c.get('code')
-                    promo_title = (c.get('promotion') or {}).get('outbound_title', 'Discord Promo')
-                    if code_val:
-                        promos_found.append({'title': promo_title, 'code': code_val})
-                        logs.append(f"Code Promo khả dụng: {promo_title} -> {code_val}")
-
-            r_ent = requests.get(
-                'https://discord.com/api/v9/users/@me/entitlements?exclude_ended=true',
-                headers=headers,
-                timeout=8
-            )
-            if r_ent.status_code == 200 and isinstance(r_ent.json(), list):
-                ents = r_ent.json()
-                logs.append(f"Đang sở hữu {len(ents)} quyền lợi (Entitlements) đang hoạt động trên acc.")
-
-        # 5. Áp dụng Theme qua PreloadedUserSettings Protobuf (/users/@me/settings-proto/1)
-        if action in ('theme', 'both'):
-            theme_applied = False
-            try:
-                from discord_protos import PreloadedUserSettings
-                r_get_proto = requests.get('https://discord.com/api/v9/users/@me/settings-proto/1', headers=headers, timeout=8)
-                if r_get_proto.status_code == 200:
-                    b64_cur = r_get_proto.json().get('settings', '')
-                    proto = PreloadedUserSettings()
-                    if b64_cur:
-                        proto.ParseFromString(base64.b64decode(b64_cur))
-                    # Theme enum: 0=UNSET, 1=DARK, 2=LIGHT
-                    proto.appearance.theme = 1
-                    proto.appearance.client_theme_settings.background_gradient_preset_id.value = 18
-                    new_b64 = base64.b64encode(proto.SerializeToString()).decode('ascii')
-                    r_patch_proto = requests.patch(
-                        'https://discord.com/api/v9/users/@me/settings-proto/1',
-                        headers=headers,
-                        json={'settings': new_b64},
-                        timeout=8
-                    )
-                    if r_patch_proto.status_code == 200:
-                        theme_applied = True
-                        logs.append("Đã đồng bộ Client Theme Gradient lên Discord qua Protobuf (/settings-proto/1)!")
-                    else:
-                        logs.append(f"Cập nhật Client Theme Protobuf: HTTP {r_patch_proto.status_code} (Discord có thể giới hạn theo gói Nitro)")
-            except Exception as pe:
-                logs.append(f"Protobuf Theme note: {pe}")
-
-            if not theme_applied:
-                r_set = requests.patch(
-                    'https://discord.com/api/v9/users/@me/settings',
-                    headers=headers,
-                    json={'theme': 'dark'},
-                    timeout=8
-                )
-                if r_set.status_code == 200:
-                    logs.append("Đã đồng bộ Dark Base Theme cho Discord.")
-
-            # Áp luôn Font & Màu Tên Neon Vice City (Pink -> Cyan Gradient)
-            try:
-                dns_payload = {
-                    'display_name_styles': {
-                        'font_id': 9,
-                        'effect_id': 2,
-                        'colors': [0xFF4FD8, 0x00F0FF]
-                    }
-                }
-                r_dns = requests.patch('https://discord.com/api/v9/users/@me/profile', headers=headers, json=dns_payload, timeout=8)
-                if r_dns.status_code in (200, 204):
-                    logs.append("Đã áp dụng Font & Màu Tên phong cách Vice City (Neon Pink-Cyan)!")
-                else:
-                    # Fallback font_id=2 (Tempo) nếu font_id=9 bị giới hạn
-                    dns_payload['display_name_styles']['font_id'] = 2
-                    r_dns2 = requests.patch('https://discord.com/api/v9/users/@me/profile', headers=headers, json=dns_payload, timeout=8)
-                    if r_dns2.status_code in (200, 204):
-                        logs.append("Đã áp dụng Font & Màu Tên Gradient Vice City (Tempo)!")
-                    else:
-                        logs.append(f"Font tên Vice City: HTTP {r_dns.status_code}")
-            except Exception as de:
-                logs.append(f"Font tên note: {de}")
-
-        if not logs:
-            logs.append("Đã quét xong ưu đãi hữu hạn (hết hạn 14/12) trên Discord API.")
-
-        track_feature_use(user_id, 'auto_quest')
-        log_event(f'Vice City & Nitro Promo Scan ({acc_name}): {len(trials_found)} trials, {len(promos_found)} promos', 'success')
+        logs.append("Chế độ an toàn: Đã tắt tự động PATCH /profile & /settings-proto/1 từ Server để bảo vệ tài khoản (vui lòng đổi giao diện Vice City trực tiếp trong Cài đặt Discord của bạn).")
         return jsonify({
             'success': True,
-            'message': f'Đã quét ưu đãi Vice City & Nitro (14/12) cho {acc_name}: tìm thấy {len(trials_found)} Trial, {len(promos_found)} Promo.',
+            'message': f'Đã quét an toàn {len(promos_found)} Store Promo cho {acc_name}.',
             'logs': logs,
-            'trials': trials_found,
+            'trials': [],
             'promos': promos_found,
-            'claimed': claimed_items
+            'claimed': []
         })
     except Exception as e:
-        return jsonify({'success': False, 'message': f'Lỗi kết nối Discord Promo API: {str(e)}'}), 500
-
-@quest_bp.route('/api/automation/appearance_style', methods=['POST'])
-@login_required
-def api_appearance_style():
-    """Đổi nền Discord (Theme + Gradient Preset Protobuf) và/hoặc Font/Hiệu ứng/Màu tên hiển thị (display_name_styles)"""
-    import base64
-    user_id = session['user_id']
-    data = request.get_json() or {}
-    account_id = data.get('account_id')
-    mode = str(data.get('mode', 'both')).strip().lower()  # 'theme' | 'name_style' | 'both' | 'reset_name'
-
-    with get_db() as conn:
-        cursor = conn.cursor()
-        token = ''
-        acc_name = ''
-        if account_id and str(account_id) != 'main':
-            cursor.execute('SELECT token, discord_username FROM discord_accounts WHERE id = ? AND user_id = ?', (account_id, user_id))
-            r = cursor.fetchone()
-            if r:
-                token = r['token']
-                acc_name = r['discord_username'] or f'Sub-{account_id}'
-        if not token:
-            cursor.execute('SELECT token, discord_username FROM discord_accounts WHERE user_id = ? AND is_active = 1 LIMIT 1', (user_id,))
-            acc_r = cursor.fetchone()
-            if acc_r and acc_r['token']:
-                token = acc_r['token']
-                acc_name = acc_r['discord_username'] or 'Main'
-        if not token:
-            cursor.execute('SELECT discord_token, discord_username FROM users WHERE id = ?', (user_id,))
-            row = cursor.fetchone()
-            if row:
-                token = row['discord_token'] or ''
-                acc_name = row['discord_username'] or session.get('username', 'Main')
-            if not token:
-                token = session.get('discord_token', '')
-
-    if not token or len(token) < 20:
-        return jsonify({'success': False, 'message': 'Vui lòng liên kết Discord Token trước!'}), 400
-
-    headers = make_discord_headers(token)
-    logs = []
-    any_ok = False
-
-    # 1. Đổi Nền Discord (Dark/Light + Gradient Preset ID qua settings-proto/1)
-    if mode in ('theme', 'both'):
-        base_theme = int(data.get('base_theme', 1))  # 1=DARK, 2=LIGHT
-        preset_id = int(data.get('gradient_preset_id', 0))
-        try:
-            from discord_protos import PreloadedUserSettings
-            r_get = requests.get('https://discord.com/api/v9/users/@me/settings-proto/1', headers=headers, timeout=8)
-            proto = PreloadedUserSettings()
-            if r_get.status_code == 200 and r_get.json().get('settings'):
-                proto.ParseFromString(base64.b64decode(r_get.json()['settings']))
-            proto.appearance.theme = base_theme if base_theme in (1, 2) else 1
-            if preset_id > 0:
-                proto.appearance.client_theme_settings.background_gradient_preset_id.value = preset_id
-            else:
-                proto.appearance.client_theme_settings.ClearField('background_gradient_preset_id')
-
-            new_b64 = base64.b64encode(proto.SerializeToString()).decode('ascii')
-            r_patch = requests.patch(
-                'https://discord.com/api/v9/users/@me/settings-proto/1',
-                headers=headers,
-                json={'settings': new_b64},
-                timeout=8
-            )
-            if r_patch.status_code == 200:
-                any_ok = True
-                logs.append(f"Đã đổi Nền Discord: Base={'Dark' if base_theme==1 else 'Light'}, Gradient ID={preset_id}")
-            else:
-                logs.append(f"Đổi Nền Discord thất bại: HTTP {r_patch.status_code} ({r_patch.text[:120]})")
-        except Exception as e:
-            logs.append(f"Lỗi đổi Nền Discord: {e}")
-
-    # 2. Đổi Font / Hiệu Ứng / Màu Tên Hiển Thị (display_name_styles)
-    if mode in ('name_style', 'both', 'reset_name'):
-        if mode == 'reset_name':
-            payload = {'display_name_styles': None}
-        else:
-            font_id = int(data.get('font_id', 1))
-            effect_id = int(data.get('effect_id', 1))
-            raw_colors = data.get('colors') or []
-            colors_int = []
-            for c in raw_colors:
-                if isinstance(c, int):
-                    colors_int.append(c)
-                elif isinstance(c, str) and c.strip():
-                    hx = c.strip().lstrip('#')
-                    try:
-                        colors_int.append(int(hx, 16))
-                    except ValueError:
-                        pass
-            if not colors_int:
-                colors_int = [0x1FCAAD, 0xFF4FD8]
-            # Effect 1 (Solid) & 3 (Neon) & 4 (Toon) & 5 (Pop) dùng 1 màu, Effect 2 (Gradient) dùng 2 màu
-            if effect_id != 2:
-                colors_int = [colors_int[0]]
-            payload = {
-                'display_name_styles': {
-                    'font_id': font_id,
-                    'effect_id': effect_id,
-                    'colors': colors_int
-                }
-            }
-
-        try:
-            r_prof = requests.patch('https://discord.com/api/v9/users/@me/profile', headers=headers, json=payload, timeout=8)
-            if r_prof.status_code in (200, 204):
-                any_ok = True
-                logs.append("Đã cập nhật Font & Màu Tên hiển thị trên Discord thành công!")
-            else:
-                # Thử fallback qua /users/@me nếu /profile từ chối field
-                r_me = requests.patch('https://discord.com/api/v9/users/@me', headers=headers, json=payload, timeout=8)
-                if r_me.status_code in (200, 204):
-                    any_ok = True
-                    logs.append("Đã cập nhật Font & Màu Tên qua /users/@me thành công!")
-                else:
-                    logs.append(f"Đổi Font Tên: HTTP {r_prof.status_code} - {r_prof.text[:140]}")
-        except Exception as e:
-            logs.append(f"Lỗi đổi Font Tên: {e}")
-
-    log_event(f'Appearance & Name Style ({acc_name}): {" | ".join(logs)}', 'success' if any_ok else 'warning')
-    return jsonify({
-        'success': any_ok,
-        'message': logs[-1] if logs else 'Đã xử lý xong',
-        'logs': logs
-    }), (200 if any_ok else 400)
+        return jsonify({'success': False, 'message': f'Lỗi kết nối: {str(e)}'}), 500
 
 registry.register_module(SubModule(
     key='auto_quest',
