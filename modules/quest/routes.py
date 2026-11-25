@@ -359,6 +359,29 @@ def api_vice_city_promo():
                 if r_set.status_code == 200:
                     logs.append("Đã đồng bộ Dark Base Theme cho Discord.")
 
+            # Áp luôn Font & Màu Tên Neon Vice City (Pink -> Cyan Gradient)
+            try:
+                dns_payload = {
+                    'display_name_styles': {
+                        'font_id': 9,
+                        'effect_id': 2,
+                        'colors': [0xFF4FD8, 0x00F0FF]
+                    }
+                }
+                r_dns = requests.patch('https://discord.com/api/v9/users/@me/profile', headers=headers, json=dns_payload, timeout=8)
+                if r_dns.status_code in (200, 204):
+                    logs.append("Đã áp dụng Font & Màu Tên phong cách Vice City (Neon Pink-Cyan)!")
+                else:
+                    # Fallback font_id=2 (Tempo) nếu font_id=9 bị giới hạn
+                    dns_payload['display_name_styles']['font_id'] = 2
+                    r_dns2 = requests.patch('https://discord.com/api/v9/users/@me/profile', headers=headers, json=dns_payload, timeout=8)
+                    if r_dns2.status_code in (200, 204):
+                        logs.append("Đã áp dụng Font & Màu Tên Gradient Vice City (Tempo)!")
+                    else:
+                        logs.append(f"Font tên Vice City: HTTP {r_dns.status_code}")
+            except Exception as de:
+                logs.append(f"Font tên note: {de}")
+
         if not logs:
             logs.append("Đã quét xong ưu đãi hữu hạn (hết hạn 14/12) trên Discord API.")
 
