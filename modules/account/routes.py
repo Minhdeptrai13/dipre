@@ -353,16 +353,40 @@ def api_account_unbind_token():
     return jsonify({'success': True, 'message': 'Đã hủy liên kết token thành công'})
 
 
+def _resolve_active_token(user_id, account_id=None):
+    with get_db() as conn:
+        cursor = conn.cursor()
+        if account_id and str(account_id) != 'main':
+            cursor.execute('SELECT token FROM discord_accounts WHERE id = ? AND user_id = ?', (account_id, user_id))
+            r = cursor.fetchone()
+            if r and r['token']:
+                return r['token']
+        cursor.execute('SELECT token FROM discord_accounts WHERE user_id = ? AND is_active = 1 LIMIT 1', (user_id,))
+        acc_r = cursor.fetchone()
+        if acc_r and acc_r['token']:
+            return acc_r['token']
+        cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
+        row = cursor.fetchone()
+        if row and row['discord_token']:
+            return row['discord_token']
+    return session.get('discord_token', '')
+
+def _snowflake_to_time_str(snowflake_id) -> str:
+    try:
+        import datetime
+        ms = (int(snowflake_id) >> 22) + 1420070400000
+        dt = datetime.datetime.fromtimestamp(ms / 1000.0)
+        return dt.strftime('%H:%M %d/%m')
+    except Exception:
+        return ''
+
 @account_bp.route('/api/discord/inbox', methods=['GET'])
 @login_required
 def api_discord_inbox():
-    """Đọc hòm thư / tin nhắn chưa đọc & kênh gần nhất của token active"""
+    """Đọc 100% thật danh sách DM, Nhóm chat (Group DM) và Server từ Discord API"""
     user_id = session['user_id']
-    with get_db() as conn:
-        cursor = conn.cursor()
-        cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
-        row = cursor.fetchone()
-    token = (row['discord_token'] if row else '') or session.get('discord_token', '')
+    account_id = request.args.get('account_id')
+    token = _resolve_active_token(user_id, account_id)
     if not token:
         return jsonify({'success': False, 'message': 'Chưa liên kết token Discord'}), 400
     try:
@@ -370,31 +394,203 @@ def api_discord_inbox():
             'Authorization': token,
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         }
-        res = requests.get('https://discord.com/api/v9/users/@me/channels', headers=headers, timeout=8)
-        if res.status_code == 200:
-            channels = res.json()
-            formatted = []
-            for ch in channels[:15]:
-                recipients = ch.get('recipients', [])
+        res = requests.get('https://discord.com/api/v9/users/@me/channels', headers=headers, timeout=10)
+        if res.status_code != 200:
+            return jsonify({'success': False, 'message': f'Lỗi Discord API ({res.status_code})'}), 400
+
+        channels = res.json() if isinstance(res.json(), list) else []
+        # Sắp xếp mới nhất lên đầu theo last_message_id (snowflake)
+        channels.sort(key=lambda ch: int(ch.get('last_message_id') or 0), reverse=True)
+
+        formatted = []
+        for ch in channels[:40]:
+            ch_type = ch.get('type')  # 1 = DM, 3 = Group DM
+            recipients = ch.get('recipients', [])
+            if ch_type == 3:
+                name = ch.get('name') or (', '.join([r.get('global_name') or r.get('username', '') for r in recipients[:3]]) or 'Nhóm Chat')
+                item_type = 'group'
+                icon_hash = ch.get('icon')
+                avatar = f"https://cdn.discordapp.com/channel-icons/{ch.get('id')}/{icon_hash}.png?size=64" if icon_hash else ''
+            else:
                 name = ', '.join([r.get('global_name') or r.get('username', '') for r in recipients]) if recipients else 'Direct Message'
-                last_msg_id = ch.get('last_message_id')
+                item_type = 'dm'
                 avatar = ''
                 if recipients:
                     r0 = recipients[0]
                     av_hash = r0.get('avatar')
                     avatar = f"https://cdn.discordapp.com/avatars/{r0['id']}/{av_hash}.png?size=64" if av_hash else "https://cdn.discordapp.com/embed/avatars/0.png"
-                formatted.append({
-                    'id': ch.get('id'),
-                    'name': name or 'DM',
-                    'avatar': avatar,
-                    'last_message_id': last_msg_id,
-                    'type': ch.get('type')
-                })
-            return jsonify({'success': True, 'channels': formatted, 'conversations': formatted})
-        else:
-            return jsonify({'success': False, 'message': f'Lỗi Discord API ({res.status_code})'}), 400
+
+            last_msg_id = ch.get('last_message_id')
+            formatted.append({
+                'id': ch.get('id'),
+                'channel_id': ch.get('id'),
+                'name': name or ('Nhóm' if item_type == 'group' else 'DM'),
+                'avatar': avatar,
+                'last_message_id': last_msg_id,
+                'last_time': _snowflake_to_time_str(last_msg_id) if last_msg_id else 'Trống',
+                'type': item_type,
+                'raw_type': ch_type,
+                'recipients_count': len(recipients) + (1 if ch_type == 3 else 0),
+                'unread': bool(last_msg_id)
+            })
+
+        # Lấy thêm danh sách Servers (Guilds) thực tế để phục vụ nút Read All Guilds (như read.py)
+        guilds_list = []
+        try:
+            g_res = requests.get('https://discord.com/api/v9/users/@me/guilds', headers=headers, timeout=8)
+            if g_res.status_code == 200 and isinstance(g_res.json(), list):
+                for g in g_res.json():
+                    gid = g.get('id')
+                    gicon = g.get('icon')
+                    guilds_list.append({
+                        'id': gid,
+                        'name': g.get('name', 'Server'),
+                        'icon': f"https://cdn.discordapp.com/icons/{gid}/{gicon}.png?size=64" if gicon else ''
+                    })
+        except Exception:
+            pass
+
+        return jsonify({
+            'success': True,
+            'channels': formatted,
+            'conversations': formatted,
+            'guilds': guilds_list,
+            'guilds_count': len(guilds_list)
+        })
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
+
+@account_bp.route('/api/discord/ack_channel', methods=['POST'])
+@login_required
+def api_discord_ack_channel():
+    """Đánh dấu đã đọc 1 kênh DM hoặc Group DM cụ thể"""
+    user_id = session['user_id']
+    data = request.get_json() or {}
+    channel_id = str(data.get('channel_id', '')).strip()
+    message_id = str(data.get('message_id', '')).strip()
+    account_id = data.get('account_id')
+    token = _resolve_active_token(user_id, account_id)
+    if not token or not channel_id:
+        return jsonify({'success': False, 'message': 'Thiếu token hoặc channel_id'}), 400
+    headers = {
+        'Authorization': token,
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    }
+    try:
+        if not message_id:
+            r_ch = requests.get(f'https://discord.com/api/v9/channels/{channel_id}', headers=headers, timeout=6)
+            if r_ch.status_code == 200:
+                message_id = str(r_ch.json().get('last_message_id') or '')
+        if message_id:
+            r = requests.post(f'https://discord.com/api/v9/channels/{channel_id}/messages/{message_id}/ack', headers=headers, json={'token': None}, timeout=6)
+            return jsonify({'success': r.status_code in (200, 204), 'status_code': r.status_code})
+        return jsonify({'success': True, 'message': 'Kênh chưa có tin nhắn'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@account_bp.route('/api/discord/read_all', methods=['POST'])
+@login_required
+def api_discord_read_all():
+    """Đánh dấu đã đọc toàn bộ DM, Nhóm (Group DM) và/hoặc Server (tham khảo logic read.py của userdis)"""
+    import time
+    user_id = session['user_id']
+    data = request.get_json() or {}
+    scope = str(data.get('scope', 'all')).strip().lower()  # 'dms', 'groups', 'dm_group', 'guilds', 'all'
+    account_id = data.get('account_id')
+    token = _resolve_active_token(user_id, account_id)
+
+    if not token:
+        return jsonify({'success': False, 'message': 'Chưa liên kết token Discord'}), 400
+
+    headers = {
+        'Authorization': token,
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    }
+
+    read_dms = 0
+    read_groups = 0
+    read_guilds = 0
+    failed = 0
+
+    try:
+        # 1. Đánh dấu đã đọc DM & Group DM (channels)
+        if scope in ('dms', 'groups', 'dm_group', 'all'):
+            r_ch = requests.get('https://discord.com/api/v9/users/@me/channels', headers=headers, timeout=10)
+            if r_ch.status_code == 200 and isinstance(r_ch.json(), list):
+                for ch in r_ch.json():
+                    ch_type = ch.get('type')
+                    last_id = ch.get('last_message_id')
+                    if not last_id:
+                        continue
+                    if scope == 'dms' and ch_type != 1:
+                        continue
+                    if scope == 'groups' and ch_type != 3:
+                        continue
+                    if scope in ('dm_group', 'all') and ch_type not in (1, 3):
+                        continue
+                    try:
+                        r_ack = requests.post(
+                            f"https://discord.com/api/v9/channels/{ch['id']}/messages/{last_id}/ack",
+                            headers=headers,
+                            json={'token': None},
+                            timeout=6
+                        )
+                        if r_ack.status_code in (200, 204):
+                            if ch_type == 3:
+                                read_groups += 1
+                            else:
+                                read_dms += 1
+                        else:
+                            failed += 1
+                        time.sleep(0.08)
+                    except Exception:
+                        failed += 1
+
+        # 2. Đánh dấu đã đọc toàn bộ Server (Guilds Ack - giống read.py ack_guild)
+        if scope in ('guilds', 'all'):
+            r_g = requests.get('https://discord.com/api/v9/users/@me/guilds', headers=headers, timeout=10)
+            if r_g.status_code == 200 and isinstance(r_g.json(), list):
+                for g in r_g.json():
+                    gid = g.get('id')
+                    if not gid:
+                        continue
+                    try:
+                        r_ack_g = requests.post(
+                            f'https://discord.com/api/v9/guilds/{gid}/ack',
+                            headers=headers,
+                            json={},
+                            timeout=6
+                        )
+                        if r_ack_g.status_code in (200, 204):
+                            read_guilds += 1
+                        else:
+                            failed += 1
+                        time.sleep(0.1)
+                    except Exception:
+                        failed += 1
+
+        msg_parts = []
+        if read_dms:
+            msg_parts.append(f'{read_dms} DM')
+        if read_groups:
+            msg_parts.append(f'{read_groups} Nhóm')
+        if read_guilds:
+            msg_parts.append(f'{read_guilds} Server')
+        summary = ', '.join(msg_parts) if msg_parts else '0 mục cần đánh dấu'
+
+        log_event(f'Read All ({scope}): Đã đánh dấu đã đọc {summary} (Lỗi: {failed})', 'success')
+        return jsonify({
+            'success': True,
+            'message': f'Đã đánh dấu đã đọc: {summary}!',
+            'read_dms': read_dms,
+            'read_groups': read_groups,
+            'read_guilds': read_guilds,
+            'failed': failed
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Lỗi Read All: {str(e)}'}), 500
 
 @account_bp.route('/api/discord/channel_messages/<channel_id>', methods=['GET'])
 @login_required

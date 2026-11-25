@@ -73,7 +73,18 @@ class DiscordRPCWorker:
         status_choice = config.get('userStatus', 'online')
         discord_status = getattr(discord.Status, status_choice, discord.Status.online)
         if self.client and not self.client.is_closed():
-            await self.client.change_presence(status=discord_status, activity=activity)
+            try:
+                await self.client.change_presence(status=discord_status, activity=activity)
+            except Exception as err:
+                log_event(f'Cảnh báo phát RPC đầy đủ ({err}), chuyển sang chế độ tương thích...', 'warning')
+                fallback_act = discord.Activity(
+                    type=activity.type,
+                    name=activity.name,
+                    details=getattr(activity, 'details', None),
+                    state=getattr(activity, 'state', None),
+                    timestamps=getattr(activity, 'timestamps', None)
+                )
+                await self.client.change_presence(status=discord_status, activity=fallback_act)
             log_event(f'Đã cập nhật trạng thái Rich Presence ({discord_status.value}) thành công.', 'success')
 
     def stop(self):
@@ -124,7 +135,7 @@ class DiscordRPCWorker:
         try:
             if client and not client.is_closed():
                 try:
-                    await client.change_presence(activity=None, status=discord.Status.invisible)
+                    await client.change_presence(activity=None)
                 except BaseException:
                     pass
                 await client.close()
@@ -284,9 +295,9 @@ class DiscordRPCWorker:
         return None
 
     async def _build_activity(self, config):
-        activity_type_str = config.get('activityType', 'playing')
+        raw_type = str(config.get('activityType', 'playing')).strip().lower()
         stream_url = config.get('streamUrl', '').strip()
-        activity_name = config.get('activityName', 'Visual Studio Code').strip()
+        activity_name = config.get('activityName', 'DIPRE STUDIO v5.0').strip() or 'DIPRE STUDIO v5.0'
         details = config.get('details', '').strip()
         state = config.get('state', '').strip()
         large_image = config.get('largeImage', '').strip()
@@ -298,20 +309,23 @@ class DiscordRPCWorker:
         btn1_url = config.get('btn1Url', '').strip()
         btn2_label = config.get('btn2Label', '').strip()
         btn2_url = config.get('btn2Url', '').strip()
-        app_id_str = config.get('appId', '').strip()
+        app_id_str = str(config.get('appId', '') or '').strip()
         auto_app = config.get('autoApp', True)
         type_mapping = {
             'playing': discord.ActivityType.playing,
             'streaming': discord.ActivityType.streaming,
             'listening': discord.ActivityType.listening,
+            'listening to': discord.ActivityType.listening,
             'watching': discord.ActivityType.watching,
-            'competing': discord.ActivityType.competing
+            'competing': discord.ActivityType.competing,
+            'competing in': discord.ActivityType.competing,
         }
-        act_type = type_mapping.get(activity_type_str, discord.ActivityType.playing)
+        act_type = type_mapping.get(raw_type, discord.ActivityType.playing)
         timestamps = None
         if has_timestamp and self.start_timestamp:
             timestamps = {'start': int(self.start_timestamp * 1000)}
-        app_id = 383226320970055681
+
+        app_id = None
         managed_app = None
         if self.client and (not self.client.is_closed()):
             managed_app = await self._get_or_create_managed_app(activity_name, app_id_str)
@@ -324,13 +338,25 @@ class DiscordRPCWorker:
                 try:
                     app_id = int(app_id_str)
                 except ValueError:
-                    app_id = 383226320970055681
-        final_large = await self._resolve_or_upload_asset(managed_app, large_image, 'l')
-        final_small = await self._resolve_or_upload_asset(managed_app, small_image, 's')
-        if self.client and hasattr(self.client, 'proxy_external_application_assets'):
+                    app_id = None
+
+        final_large = await self._resolve_or_upload_asset(managed_app, large_image, 'l') if managed_app else (large_image if large_image.startswith(('http://', 'https://', 'mp:')) else None)
+        final_small = await self._resolve_or_upload_asset(managed_app, small_image, 's') if managed_app else (small_image if small_image.startswith(('http://', 'https://', 'mp:')) else None)
+
+        # Discord không chấp nhận file .svg hoặc URL https chưa proxy qua external-assets
+        def _is_valid_discord_asset(val: Optional[str]) -> bool:
+            if not val:
+                return False
+            if val.startswith(('mp:', 'spotify:')):
+                return True
+            if any(k in val for k in ('discordapp.com/app-assets/', 'discordapp.com/app-icons/', 'discordapp.com/avatars/', 'discordapp.com/attachments/', 'discordapp.net/attachments/')):
+                return True
+            return False
+
+        if app_id and self.client and hasattr(self.client, 'proxy_external_application_assets'):
             urls_to_proxy = []
             for img in (final_large, final_small):
-                if img and img.startswith(('http://', 'https://')) and (not any((d in img for d in ('discordapp.com', 'discordapp.net', 'mp:')))):
+                if img and img.startswith(('http://', 'https://')) and not img.lower().split('?')[0].endswith('.svg') and (not _is_valid_discord_asset(img)):
                     urls_to_proxy.append(img)
             if urls_to_proxy:
                 try:
@@ -342,23 +368,33 @@ class DiscordRPCWorker:
                             final_small = proxied
                 except Exception:
                     pass
+
+        if not _is_valid_discord_asset(final_large):
+            final_large = None
+        if not _is_valid_discord_asset(final_small):
+            final_small = None
+
         activity_assets = None
         if final_large or final_small or large_text or small_text:
-            activity_assets = discord.ActivityAssets(
-                large_image=final_large if final_large else None,
-                large_text=large_text if large_text else None,
-                small_image=final_small if final_small else None,
-                small_text=small_text if small_text else None
-            )
+            if final_large or final_small:
+                activity_assets = discord.ActivityAssets(
+                    large_image=final_large if final_large else None,
+                    large_text=large_text if large_text else None,
+                    small_image=final_small if final_small else None,
+                    small_text=small_text if small_text else None
+                )
+
         buttons = []
-        if btn1_label and btn1_url:
-            buttons.append(discord.ActivityButton(label=btn1_label, url=btn1_url))
-        if btn2_label and btn2_url:
-            buttons.append(discord.ActivityButton(label=btn2_label, url=btn2_url))
+        if app_id:
+            if btn1_label and btn1_url and btn1_url.startswith(('http://', 'https://')):
+                buttons.append(discord.ActivityButton(label=btn1_label[:32], url=btn1_url))
+            if btn2_label and btn2_url and btn2_url.startswith(('http://', 'https://')):
+                buttons.append(discord.ActivityButton(label=btn2_label[:32], url=btn2_url))
+
         return discord.Activity(
             type=act_type,
             name=activity_name,
-            url=stream_url if act_type == discord.ActivityType.streaming else None,
+            url=stream_url if act_type == discord.ActivityType.streaming and stream_url else None,
             details=details if details else None,
             state=state if state else None,
             timestamps=timestamps,
@@ -396,7 +432,18 @@ class DiscordRPCWorker:
                 activity = await self._build_activity(config)
                 status_choice = config.get('userStatus', 'online')
                 discord_status = getattr(discord.Status, status_choice, discord.Status.online)
-                await client.change_presence(status=discord_status, activity=activity)
+                try:
+                    await client.change_presence(status=discord_status, activity=activity)
+                except Exception as pres_err:
+                    log_event(f'Cảnh báo phát RPC ({pres_err}), thử phát không kèm buttons/assets...', 'warning')
+                    fallback_act = discord.Activity(
+                        type=activity.type,
+                        name=activity.name,
+                        details=getattr(activity, 'details', None),
+                        state=getattr(activity, 'state', None),
+                        timestamps=getattr(activity, 'timestamps', None)
+                    )
+                    await client.change_presence(status=discord_status, activity=fallback_act)
                 with self._lock:
                     if self._run_id == run_id:
                         self.status = 'running'

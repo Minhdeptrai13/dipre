@@ -137,11 +137,12 @@ def api_start():
 @rpc_bp.route('/api/custom_status', methods=['POST'])
 @login_required
 def api_custom_status():
-    """Cập nhật Custom Status trực tiếp lên Discord qua User Settings API"""
+    """Cập nhật hoặc xóa Custom Status trực tiếp lên Discord qua User Settings API"""
     user_id = session.get('user_id')
     data = request.get_json() or {}
     text = str(data.get('text', '')).strip()
     emoji = str(data.get('emoji', '')).strip()
+    clear_flag = bool(data.get('clear', False)) or (not text and not emoji)
     account_ids = data.get('account_ids') or []
 
     tokens = []
@@ -150,25 +151,37 @@ def api_custom_status():
         if account_ids:
             for aid in account_ids:
                 if str(aid) == 'main':
-                    cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
+                    cursor.execute('SELECT token FROM discord_accounts WHERE user_id = ? AND is_active = 1 LIMIT 1', (user_id,))
                     r = cursor.fetchone()
-                    if r and r['discord_token']:
-                        tokens.append(r['discord_token'])
+                    if r and r['token']:
+                        tokens.append(r['token'])
+                    else:
+                        cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
+                        ru = cursor.fetchone()
+                        if ru and ru['discord_token']:
+                            tokens.append(ru['discord_token'])
                 else:
                     cursor.execute('SELECT token FROM discord_accounts WHERE id = ? AND user_id = ?', (aid, user_id))
                     r = cursor.fetchone()
                     if r and r['token']:
                         tokens.append(r['token'])
         if not tokens:
+            cursor.execute('SELECT token FROM discord_accounts WHERE user_id = ? AND is_active = 1 LIMIT 1', (user_id,))
+            acc = cursor.fetchone()
+            if acc and acc['token']:
+                tokens.append(acc['token'])
             cursor.execute('SELECT discord_token FROM users WHERE id = ?', (user_id,))
             r = cursor.fetchone()
             if r and r['discord_token']:
                 tokens.append(r['discord_token'])
+            if not tokens and 'discord_token' in session:
+                tokens.append(session['discord_token'])
 
     if not tokens:
         return jsonify({'success': False, 'message': 'Chưa liên kết token Discord'}), 400
 
     updated = 0
+    last_err = ''
     for tok in list(dict.fromkeys(tokens)):
         try:
             headers = {
@@ -176,17 +189,27 @@ def api_custom_status():
                 'Content-Type': 'application/json',
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
             }
-            payload = {
-                'custom_status': {
-                    'text': text,
-                    'emoji_name': emoji or None
-                }
-            }
-            res = requests.patch('https://discord.com/api/v9/users/@me/settings', headers=headers, json=payload, timeout=6)
+            if clear_flag:
+                payload = {'custom_status': None}
+            else:
+                cs_obj = {'text': text}
+                if emoji:
+                    cs_obj['emoji_name'] = emoji
+                payload = {'custom_status': cs_obj}
+            res = requests.patch('https://discord.com/api/v9/users/@me/settings', headers=headers, json=payload, timeout=8)
             if res.status_code == 200:
                 updated += 1
-        except Exception:
-            pass
+            else:
+                last_err = f'HTTP {res.status_code}'
+        except Exception as e:
+            last_err = str(e)
+
+    if updated == 0:
+        return jsonify({'success': False, 'message': f'Không thể cập nhật Custom Status lên Discord ({last_err})'}), 400
+
+    if clear_flag:
+        log_event(f'Đã xóa sạch Custom Status trên Discord ({updated} tài khoản)', 'info')
+        return jsonify({'success': True, 'message': f'Đã xóa Custom Status trên Discord ({updated} tài khoản)!', 'count': updated})
 
     log_event(f'Đã cập nhật Custom Status: "{emoji} {text}" trên {updated} tài khoản', 'success')
     return jsonify({

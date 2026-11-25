@@ -1128,6 +1128,26 @@ beyond the veil, control returns</textarea>
         </div>
       </div>
 
+      <!-- LIMITED-TIME FEATURE CARD (EXPIRES DEC 14): VICE CITY THEME & FREE NITRO PROMO -->
+      <div class="p-4 rounded-lg bg-gradient-to-r from-[#1A1025] via-[#13141C] to-[#0D1E22] border border-amber/30 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-amber/15 text-amber border border-amber/35 font-semibold">ƯU ĐÃI HỮU HẠN • HẾT HẠN 14/12</span>
+            <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-teal/10 text-teal border border-teal/25">VICE CITY &amp; FREE NITRO</span>
+          </div>
+          <h3 class="font-display text-[15px] font-semibold text-ink">Thay Đổi Diện Mạo Vice City &amp; Quét Nhận Nitro Free (Hết Hạn 14/12)</h3>
+          <p class="text-[12px] text-muted">Tự động quét Nitro Trial / Outbound Promo miễn phí trên tài khoản &amp; đồng bộ giao diện Vice City (khả dụng tới 14/12 cho mọi người và 21/02 cho Nitro).</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 shrink-0">
+          <button onclick="runViceCityPromo('claim_nitro')" class="btn-primary h-9 px-3.5 rounded-md text-[12px] font-semibold flex items-center gap-1.5">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Quét &amp; Nhận Nitro Free
+          </button>
+          <button onclick="runViceCityPromo('both')" class="btn-secondary h-9 px-3.5 rounded-md text-[12px] font-medium flex items-center gap-1.5 border-amber/35 text-amber hover:bg-amber/10">
+            <i data-lucide="palette" class="w-3.5 h-3.5"></i> Kích Hoạt Vice City
+          </button>
+        </div>
+      </div>
+
       <!-- SUB-VIEW A: DISCORD QUEST AUTO-COMPLETER -->
       <div id="atab-quest" class="space-y-5">
         <div class="surface-carbon rounded-lg p-5 space-y-4">
@@ -1355,17 +1375,28 @@ beyond the veil, control returns</textarea>
           </div>
         </div>
 
-        <!-- RIGHT (6 Cols): Discord Inbox (Unified DM & Mentions Feed) -->
+        <!-- RIGHT (6 Cols): Discord Inbox (Unified Real DM, Group & Read All) -->
         <div class="lg:col-span-6 surface-carbon rounded-lg overflow-hidden flex flex-col min-h-[460px]">
-          <div class="px-5 py-3.5 border-b border-hairline flex items-center justify-between gap-3">
+          <div class="px-4 py-3 border-b border-hairline flex flex-wrap items-center justify-between gap-2.5">
             <div>
-              <h2 class="font-display text-[15px] font-semibold">Discord Inbox</h2>
-              <p class="text-[12px] text-muted">Tin nhắn trực tiếp &amp; thông báo hệ thống tập trung.</p>
+              <h2 class="font-display text-[15px] font-semibold flex items-center gap-2">
+                <span>Discord Inbox</span>
+                <span id="inbox-guilds-badge" class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-panel border border-hairline text-muted">0 Servers</span>
+              </h2>
+              <p class="text-[11.5px] text-muted">100% Realtime DM, Nhóm &amp; Đánh dấu đã đọc (read.py).</p>
             </div>
-            <div class="flex items-center gap-1 p-0.5 rounded-md bg-obsidian border border-hairline text-[11.5px]">
-              <button data-ifilter="all" onclick="setInboxFilter('all')" class="ifilter-btn px-2 py-1 rounded bg-panel text-ink">Tất cả</button>
-              <button data-ifilter="dm" onclick="setInboxFilter('dm')" class="ifilter-btn px-2 py-1 rounded text-muted hover:text-ink">DM</button>
-              <button data-ifilter="system" onclick="setInboxFilter('system')" class="ifilter-btn px-2 py-1 rounded text-muted hover:text-ink">Hệ thống</button>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <div class="flex items-center gap-1 p-0.5 rounded-md bg-obsidian border border-hairline text-[11px]">
+                <button data-ifilter="all" onclick="setInboxFilter('all')" class="ifilter-btn px-2 py-1 rounded bg-panel text-ink">Tất cả</button>
+                <button data-ifilter="dm" onclick="setInboxFilter('dm')" class="ifilter-btn px-2 py-1 rounded text-muted hover:text-ink">DM</button>
+                <button data-ifilter="group" onclick="setInboxFilter('group')" class="ifilter-btn px-2 py-1 rounded text-muted hover:text-ink">Nhóm</button>
+              </div>
+              <button onclick="syncRealInbox()" title="Tải lại Inbox" class="btn-secondary h-7 px-2 rounded text-[11px] font-medium flex items-center gap-1">
+                <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+              </button>
+              <button onclick="readAllDiscord('dm_group')" class="btn-secondary h-7 px-2.5 rounded text-[11px] font-medium text-teal border-teal/30 hover:bg-teal/10">Đọc DM &amp; Nhóm</button>
+              <button onclick="readAllDiscord('guilds')" class="btn-secondary h-7 px-2.5 rounded text-[11px] font-medium text-amber border-amber/30 hover:bg-amber/10">Đọc All Server</button>
+              <button onclick="readAllDiscord('all')" class="btn-primary h-7 px-2.5 rounded text-[11px] font-semibold">Read All</button>
             </div>
           </div>
 
@@ -1643,7 +1674,7 @@ beyond the veil, control returns</textarea>
       presenceTab: 'custom',
       automationTab: 'quest',
       inboxFilter: 'all',
-      activeInboxId: 1,
+      activeInboxId: null,
       ping: 18,
       simStatusIdx: 0, // 0: Online, 1: Idle, 2: DND
       rpcStartTs: Date.now(),
@@ -1785,31 +1816,9 @@ beyond the veil, control returns</textarea>
         { name: 'YT', cmd: 'yt', cat: 'MEDIA & ENTERTAINMENT', desc: 'Phát Voice YouTube (yt-dlp Info + Lavalink Voice)', on: true },
       ],
 
-      // Inbox Messages
-      inbox: [
-        {
-          id: 1, type: 'dm', from: 'khang.dev', initials: 'KD', time: '19:54', unread: true,
-          preview: 'Ê bản DIPRE v5 nhìn sạch hơn hẳn bản cũ luôn...',
-          messages: [
-            { sender: 'khang.dev', time: '19:52', text: 'Ông mới code lại giao diện DIPRE Studio à?' },
-            { sender: 'khang.dev', time: '19:54', text: 'Ê bản DIPRE v5 nhìn sạch hơn hẳn bản cũ luôn, không bị kiểu xanh lè AI nữa.' },
-          ],
-        },
-        {
-          id: 2, type: 'system', from: 'DIPRE Gateway', initials: 'DG', time: '19:40', unread: false,
-          preview: 'SQLite WAL đồng bộ thành công 32 cogs...',
-          messages: [
-            { sender: 'DIPRE Gateway', time: '19:40', text: 'Kết nối WebSocket v10 ổn định (18ms). SQLite WAL đã đồng bộ 32 modules cogs.' },
-          ],
-        },
-        {
-          id: 3, type: 'dm', from: 'linh_uiux', initials: 'LU', time: '18:20', unread: false,
-          preview: 'Gửi tôi xin preset YouTube RPC với!',
-          messages: [
-            { sender: 'linh_uiux', time: '18:20', text: 'Gửi tôi xin preset YouTube RPC với, lát treo voice chung nhé!' },
-          ],
-        },
-      ],
+      // Real Inbox Messages (100% từ Discord API)
+      inbox: [],
+      guildsCount: 0,
     };
 
     const YT_PRESETS = [
@@ -1941,21 +1950,30 @@ beyond the veil, control returns</textarea>
     async function syncRealInbox() {
       try {
         if (!location.protocol.startsWith('http')) return;
-        const res = await fetch('/api/discord/inbox');
+        const mainAcc = getMainAccount();
+        const accParam = mainAcc ? `?account_id=${encodeURIComponent(mainAcc.main ? 'main' : (mainAcc.db_id || mainAcc.id))}` : '';
+        const res = await fetch('/api/discord/inbox' + accParam);
         const data = await res.json();
-        if (data && data.success && Array.isArray(data.conversations) && data.conversations.length > 0) {
+        if (data && data.success && Array.isArray(data.conversations)) {
+          state.guildsCount = data.guilds_count || 0;
+          const badge = document.getElementById('inbox-guilds-badge');
+          if (badge) badge.textContent = `${state.guildsCount} Servers`;
           state.inbox = data.conversations.map((c, idx) => ({
-            id: c.channel_id || idx + 1,
+            id: String(c.channel_id || c.id || idx + 1),
             type: c.type || 'dm',
-            from: c.name || c.recipient_name || 'Discord Friend',
-            initials: (c.name || 'DF').slice(0, 2).toUpperCase(),
-            time: c.last_time || 'Vừa xong',
+            from: c.name || c.recipient_name || 'Discord User',
+            avatar: c.avatar || '',
+            initials: (c.name || 'DU').slice(0, 2).toUpperCase(),
+            time: c.last_time || '',
+            lastMessageId: c.last_message_id || '',
+            recipientsCount: c.recipients_count || 1,
             unread: Boolean(c.unread),
-            preview: c.last_message || 'Không có tin nhắn',
-            messages: [
-              { sender: c.name || 'Friend', time: c.last_time || '12:00', text: c.last_message || '' }
-            ]
+            preview: c.type === 'group' ? `Nhóm chat • ${c.recipients_count || 2} thành viên` : 'Tin nhắn trực tiếp (DM)',
+            messages: []
           }));
+          if (state.inbox.length > 0 && (!state.activeInboxId || !state.inbox.some(m => String(m.id) === String(state.activeInboxId)))) {
+            state.activeInboxId = state.inbox[0].id;
+          }
           renderInbox();
         }
       } catch (e) {
@@ -2310,22 +2328,62 @@ beyond the veil, control returns</textarea>
       }
     }
 
-    function clearCustomStatus() {
+    async function clearCustomStatus() {
       state.customStatus.text = '';
       state.customStatus.emoji = '';
-      document.getElementById('cs-text').value = '';
-      if (state.customStatus.rotatorOn) toggleStatusRotator();
+      const csInp = document.getElementById('cs-text');
+      if (csInp) csInp.value = '';
+      if (state.customStatus.rotatorOn) {
+        state.customStatus.rotatorOn = false;
+        if (state.customStatus.rotatorTimer) clearInterval(state.customStatus.rotatorTimer);
+        const rSw = document.getElementById('rotator-switch');
+        if (rSw) rSw.classList.remove('on');
+        const lbl = document.getElementById('rotator-status-lbl');
+        if (lbl) { lbl.textContent = 'STANDBY'; lbl.className = 'font-mono text-[11px] text-muted'; }
+      }
+      if (state.customStatus.karaokeOn) {
+        state.customStatus.karaokeOn = false;
+        if (state.customStatus.karaokeTimer) clearInterval(state.customStatus.karaokeTimer);
+        const kSw = document.getElementById('karaoke-switch');
+        if (kSw) kSw.classList.remove('on');
+        renderKaraokeLines();
+      }
       renderAll();
-      showToast('Đã xóa Custom Status');
+
+      const targetAccounts = state.accounts.filter(a => a.presenceTarget);
+      const targetIds = targetAccounts.map(a => a.main ? 'main' : (a.db_id || a.id));
+      try {
+        const res = await fetch('/api/custom_status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ clear: true, text: '', emoji: '', account_ids: targetIds })
+        });
+        const data = await res.json();
+        showToast(data.message || 'Đã xóa sạch Custom Status trên Discord');
+      } catch (e) {
+        showToast('Đã xóa Custom Status');
+      }
     }
 
-    function toggleStatusRotator() {
+    async function pushLiveCustomStatus(text, emoji) {
+      const targetAccounts = state.accounts.filter(a => a.presenceTarget);
+      const targetIds = targetAccounts.map(a => a.main ? 'main' : (a.db_id || a.id));
+      try {
+        await fetch('/api/custom_status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: text || '', emoji: emoji || '', clear: !text && !emoji, account_ids: targetIds })
+        });
+      } catch (e) {}
+    }
+
+    async function toggleStatusRotator() {
       state.customStatus.rotatorOn = !state.customStatus.rotatorOn;
       if (state.customStatus.rotatorTimer) clearInterval(state.customStatus.rotatorTimer);
 
       const lbl = document.getElementById('rotator-status-lbl');
       if (state.customStatus.rotatorOn) {
-        const sec = Math.max(3, Number(document.getElementById('rotator-interval').value) || 15);
+        const sec = Math.max(4, Number(document.getElementById('rotator-interval').value) || 15);
         const tick = () => {
           const lines = document.getElementById('rotator-lines').value
             .split('\n')
@@ -2337,17 +2395,22 @@ beyond the veil, control returns</textarea>
           state.customStatus.text = line;
           state.customStatus.emoji = document.getElementById('cs-emoji').value || '⚡';
           renderSimulator();
+          pushLiveCustomStatus(state.customStatus.text, state.customStatus.emoji);
         };
         tick();
         state.customStatus.rotatorTimer = setInterval(tick, sec * 1000);
         state.usage.status++;
         lbl.textContent = `ROTATING (${sec}s)`;
         lbl.className = 'font-mono text-[11px] text-teal';
-        showToast(`Đã bật xoay vòng Status mỗi ${sec} giây`);
+        showToast(`Đã bật xoay vòng Status lên Discord mỗi ${sec}s`);
       } else {
+        state.customStatus.text = '';
+        state.customStatus.emoji = '';
+        renderSimulator();
         lbl.textContent = 'STANDBY';
         lbl.className = 'font-mono text-[11px] text-muted';
-        showToast('Đã dừng bộ xoay vòng Status');
+        await pushLiveCustomStatus('', '');
+        showToast('Đã dừng xoay vòng & xóa Status trên Discord');
       }
       document.getElementById('rotator-switch').classList.toggle('on', state.customStatus.rotatorOn);
     }
@@ -2358,7 +2421,7 @@ beyond the veil, control returns</textarea>
       renderKaraokeLines();
     }
 
-    function toggleKaraoke() {
+    async function toggleKaraoke() {
       state.customStatus.karaokeOn = !state.customStatus.karaokeOn;
       if (state.customStatus.karaokeTimer) clearInterval(state.customStatus.karaokeTimer);
 
@@ -2371,14 +2434,19 @@ beyond the veil, control returns</textarea>
           state.customStatus.text = line;
           renderKaraokeLines();
           renderSimulator();
+          pushLiveCustomStatus(line, '🎵');
           state.customStatus.karaokeLineIdx = (state.customStatus.karaokeLineIdx + 1) % s.lines.length;
         };
         step();
-        state.customStatus.karaokeTimer = setInterval(step, 3500);
+        state.customStatus.karaokeTimer = setInterval(step, 4000);
         state.usage.status++;
-        showToast(`Đang chạy Lyric Karaoke: ${song.title}`);
+        showToast(`Đang chạy Lyric Karaoke lên Discord: ${song.title}`);
       } else {
-        showToast('Đã tắt Lyric Karaoke Sync');
+        state.customStatus.text = '';
+        state.customStatus.emoji = '';
+        renderSimulator();
+        await pushLiveCustomStatus('', '');
+        showToast('Đã tắt Lyric Karaoke & xóa Status trên Discord');
       }
       document.getElementById('karaoke-switch').classList.toggle('on', state.customStatus.karaokeOn);
       renderKaraokeLines();
@@ -2904,6 +2972,33 @@ beyond the veil, control returns</textarea>
       }
     }
 
+    async function runViceCityPromo(action = 'both') {
+      const targetId = state.quest.targetAccountId || getMainAccount()?.id || 'main';
+      const acc = state.accounts.find(a => a.id === targetId) || getMainAccount();
+      const reqAccId = acc?.main ? 'main' : (acc?.db_id || targetId);
+
+      showToast(`Đang quét ưu đãi Vice City & Nitro (14/12) cho ${acc ? acc.name : 'tài khoản'}...`);
+      appendQuestLog(`[PROMO 14/12] Bắt đầu quét Nitro Free Trial & Vice City cho ${acc ? acc.name : 'Main'}...`, 'text-amber');
+      appendSniperLog(`[PROMO 14/12] Đang kiểm tra Nitro Trial & Promo khả dụng cho ${acc ? acc.name : 'Main'}...`, 'text-amber');
+      try {
+        const res = await fetch('/api/automation/vice_city_promo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ account_id: reqAccId, action })
+        });
+        const data = await res.json();
+        if (data && data.logs && Array.isArray(data.logs)) {
+          data.logs.forEach(line => {
+            appendQuestLog(`[PROMO] ${line}`, 'text-teal');
+            appendSniperLog(`[PROMO] ${line}`, 'text-teal');
+          });
+        }
+        showToast(data.message || 'Đã quét xong ưu đãi Vice City & Nitro 14/12!');
+      } catch (err) {
+        showToast('Lỗi kết nối API kiểm tra ưu đãi Discord');
+      }
+    }
+
     async function rescanQuests() {
       state.quest.progress = 0;
       const targetId = state.quest.targetAccountId || getMainAccount()?.id || 'main';
@@ -3048,6 +3143,7 @@ beyond the veil, control returns</textarea>
         if (data && data.success) {
           showToast(`Đã kết nối thành công: ${data.username || data.discord_username || 'Discord User'}`);
           await syncAccountsFromBackend();
+          await syncRealInbox();
           return true;
         } else {
           showToast(data.message || 'Token không hợp lệ hoặc lỗi kết nối');
@@ -3155,38 +3251,87 @@ beyond the veil, control returns</textarea>
     }
 
     async function selectInboxThread(id) {
-      state.activeInboxId = id;
-      const item = state.inbox.find((m) => m.id === id);
+      const strId = String(id);
+      state.activeInboxId = strId;
+      const item = state.inbox.find((m) => String(m.id) === strId);
       if (item) item.unread = false;
       renderInbox();
 
+      const mainAcc = getMainAccount();
+      const accIdParam = mainAcc ? (mainAcc.main ? 'main' : (mainAcc.db_id || mainAcc.id)) : 'main';
+
+      // Đánh dấu đã đọc kênh đang mở trên Discord (như read.py)
+      if (item && item.lastMessageId) {
+        fetch('/api/discord/ack_channel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ channel_id: strId, message_id: item.lastMessageId, account_id: accIdParam })
+        }).catch(() => {});
+      }
+
       // Fetch real messages from Discord channel
       try {
-        const res = await fetch(`/api/discord/channel_messages/${id}`);
+        const res = await fetch(`/api/discord/channel_messages/${strId}`);
         const data = await res.json();
-        if (data && data.success && Array.isArray(data.messages) && data.messages.length) {
-          const detailEl = document.getElementById('inbox-detail');
-          if (detailEl) {
-            const mainAcc = getMainAccount();
-            const myDiscordId = mainAcc?.discord_id || SERVER_CONTEXT.discordId || '';
-            detailEl.innerHTML = data.messages.map(m => {
-              const isMe = m.author_id === myDiscordId;
-              return `
-                <div class="flex items-start gap-2.5 ${isMe ? 'justify-end' : ''}">
-                  ${!isMe ? `<img src="${m.author_avatar}" class="w-7 h-7 rounded-full object-cover border border-hairline mt-0.5" />` : ''}
-                  <div class="max-w-[80%] p-2.5 rounded-lg text-[12px] ${isMe ? 'bg-teal/15 text-teal border border-teal/25' : 'bg-panel border border-hairline text-ink'}">
-                    <div class="text-[10px] font-mono text-muted mb-0.5">${m.author_name}</div>
-                    <div class="break-words">${m.content || '<i class="text-muted">[File đính kèm / Embed]</i>'}</div>
-                  </div>
-                  ${isMe ? `<img src="${m.author_avatar}" class="w-7 h-7 rounded-full object-cover border border-hairline mt-0.5" />` : ''}
-                </div>
-              `;
-            }).join('');
-            detailEl.scrollTop = detailEl.scrollHeight;
+        const detailEl = document.getElementById('inbox-detail');
+        if (!detailEl) return;
+        if (data && data.success && Array.isArray(data.messages)) {
+          if (!data.messages.length) {
+            detailEl.innerHTML = `<div class="text-[12px] text-muted text-center py-10">Chưa có tin nhắn nào trong hội thoại này.</div>`;
+            return;
           }
+          const myDiscordId = mainAcc?.discord_id || SERVER_CONTEXT.discordId || '';
+          detailEl.innerHTML = data.messages.map(m => {
+            const isMe = m.author_id === myDiscordId;
+            return `
+              <div class="flex items-start gap-2.5 ${isMe ? 'justify-end' : ''}">
+                ${!isMe ? `<img src="${m.author_avatar}" class="w-7 h-7 rounded-full object-cover border border-hairline mt-0.5" />` : ''}
+                <div class="max-w-[80%] p-2.5 rounded-lg text-[12px] ${isMe ? 'bg-teal/15 text-teal border border-teal/25' : 'bg-panel border border-hairline text-ink'}">
+                  <div class="text-[10px] font-mono text-muted mb-0.5">${m.author_name}</div>
+                  <div class="break-words">${m.content || '<i class="text-muted">[File đính kèm / Embed]</i>'}</div>
+                </div>
+                ${isMe ? `<img src="${m.author_avatar}" class="w-7 h-7 rounded-full object-cover border border-hairline mt-0.5" />` : ''}
+              </div>
+            `;
+          }).join('');
+          detailEl.scrollTop = detailEl.scrollHeight;
         }
       } catch (err) {
         console.warn('Fetch channel messages note:', err);
+      }
+    }
+
+    async function readAllDiscord(scope = 'all') {
+      const mainAcc = getMainAccount();
+      const accIdParam = mainAcc ? (mainAcc.main ? 'main' : (mainAcc.db_id || mainAcc.id)) : 'main';
+      const labelMap = {
+        dm_group: 'DM & Nhóm chat',
+        guilds: 'tất cả Server',
+        all: 'toàn bộ DM, Nhóm & Server'
+      };
+      showToast(`Đang đánh dấu đã đọc ${labelMap[scope] || 'tất cả'} (theo read.py)...`);
+      try {
+        const res = await fetch('/api/discord/read_all', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scope, account_id: accIdParam })
+        });
+        const data = await res.json();
+        if (data && data.success) {
+          if (scope !== 'guilds') {
+            state.inbox.forEach(m => {
+              if (scope === 'all' || scope === 'dm_group' || (scope === 'dms' && m.type === 'dm') || (scope === 'groups' && m.type === 'group')) {
+                m.unread = false;
+              }
+            });
+            renderInbox();
+          }
+          showToast(data.message || 'Đã đánh dấu đã đọc thành công!');
+        } else {
+          showToast(data.message || 'Lỗi đánh dấu đã đọc');
+        }
+      } catch (err) {
+        showToast('Lỗi kết nối khi gọi Read All');
       }
     }
 
@@ -3201,17 +3346,19 @@ beyond the veil, control returns</textarea>
       }
       inp.value = '';
       showToast('Đang gửi tin nhắn qua Discord...');
+      const mainAcc = getMainAccount();
+      const accIdParam = mainAcc ? (mainAcc.main ? 'main' : (mainAcc.db_id || mainAcc.id)) : 'main';
 
       try {
         const res = await fetch('/api/discord/send_message', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ channel_id: activeId, content: txt })
+          body: JSON.stringify({ channel_id: String(activeId), content: txt, account_id: accIdParam })
         });
         const data = await res.json();
         if (data && data.success) {
           showToast('Đã gửi tin nhắn Discord thành công!');
-          await selectInboxThread(activeId);
+          await selectInboxThread(String(activeId));
         } else {
           showToast(data.message || 'Lỗi gửi tin nhắn');
         }
@@ -4012,52 +4159,54 @@ beyond the veil, control returns</textarea>
       if (!listEl || !detailEl) return;
 
       const filtered = state.inbox.filter((m) => state.inboxFilter === 'all' || m.type === state.inboxFilter);
+      if (!filtered.length) {
+        listEl.innerHTML = `<div class="p-6 text-center text-[12px] text-muted">Không có cuộc trò chuyện thực tế nào. Kết nối Discord Token và bấm làm mới.</div>`;
+        detailEl.innerHTML = `<div class="text-[12px] text-muted text-center py-10">Chưa có tin nhắn nào được chọn.</div>`;
+        return;
+      }
+
       listEl.innerHTML = filtered
         .map(
           (m) => `
-            <button onclick="selectInboxThread(${m.id})" class="w-full text-left p-3.5 transition-colors ${
-            m.id === state.activeInboxId ? 'bg-panel' : 'hover:bg-panel/40'
+            <button onclick="selectInboxThread('${m.id}')" class="w-full text-left p-3 transition-colors flex items-center gap-2.5 ${
+            String(m.id) === String(state.activeInboxId) ? 'bg-panel' : 'hover:bg-panel/40'
           }">
-              <div class="flex items-center justify-between gap-2 mb-1">
-                <span class="text-[12.5px] font-semibold text-ink flex items-center gap-1.5">
-                  ${m.unread ? '<span class="w-1.5 h-1.5 rounded-full bg-teal"></span>' : ''}
-                  ${m.from}
-                </span>
-                <span class="font-mono text-[10px] text-muted">${m.time}</span>
+              ${
+                m.avatar
+                  ? `<img src="${m.avatar}" class="w-7 h-7 rounded-full object-cover border border-hairline shrink-0" onerror="this.style.display='none'" />`
+                  : `<div class="w-7 h-7 rounded-full bg-obsidian border border-hairline flex items-center justify-center text-[10px] font-bold shrink-0">${m.initials || 'DM'}</div>`
+              }
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center justify-between gap-1.5 mb-0.5">
+                  <span class="text-[12.5px] font-semibold text-ink flex items-center gap-1.5 truncate">
+                    ${m.unread ? '<span class="w-1.5 h-1.5 rounded-full bg-teal shrink-0"></span>' : ''}
+                    <span class="truncate">${m.from}</span>
+                    ${m.type === 'group' ? '<span class="font-mono text-[9px] px-1 rounded bg-white/10 text-zinc-300 shrink-0">NHÓM</span>' : ''}
+                  </span>
+                  <span class="font-mono text-[10px] text-muted shrink-0">${m.time}</span>
+                </div>
+                <div class="text-[11px] text-muted truncate">${m.preview}</div>
               </div>
-              <div class="text-[11.5px] text-muted truncate">${m.preview}</div>
             </button>
           `
         )
         .join('');
 
-      const active = state.inbox.find((m) => m.id === state.activeInboxId) || filtered[0];
+      const active = state.inbox.find((m) => String(m.id) === String(state.activeInboxId)) || filtered[0];
       if (!active) {
-        detailEl.innerHTML = `<div class="text-[12px] text-muted text-center py-10">Chọn một hội thoại để xem.</div>`;
+        detailEl.innerHTML = `<div class="text-[12px] text-muted text-center py-10">Chọn một hội thoại để xem tin nhắn thật từ Discord.</div>`;
         return;
       }
-
-      detailEl.innerHTML = `
-        <div class="pb-2.5 border-b border-hairline flex items-center justify-between">
-          <div class="text-[13px] font-semibold text-ink">${active.from}</div>
-          <span class="font-mono text-[10px] uppercase text-muted">${active.type === 'dm' ? 'DIRECT MESSAGE' : 'SYSTEM LOG'}</span>
-        </div>
-        <div class="space-y-2.5">
-          ${active.messages
-            .map(
-              (msg) => `
-                <div class="p-2.5 rounded-md ${msg.self ? 'bg-panel border border-hairline ml-6' : 'bg-carbon border border-hairline mr-4'}">
-                  <div class="flex items-center justify-between text-[10.5px] font-mono text-muted mb-1">
-                    <span class="${msg.self ? 'text-teal' : 'text-zinc-300'}">${msg.sender}</span>
-                    <span>${msg.time}</span>
-                  </div>
-                  <p class="text-[12.5px] text-ink leading-relaxed">${msg.text}</p>
-                </div>
-              `
-            )
-            .join('')}
-        </div>
-      `;
+      if (!active.messages || !active.messages.length) {
+        detailEl.innerHTML = `
+          <div class="pb-2.5 border-b border-hairline flex items-center justify-between">
+            <div class="text-[13px] font-semibold text-ink">${active.from}</div>
+            <span class="font-mono text-[10px] uppercase text-muted">${active.type === 'group' ? 'GROUP DM' : 'DIRECT MESSAGE'}</span>
+          </div>
+          <div class="text-[12px] text-muted text-center py-8">Bấm vào hội thoại ở bên trái để tải toàn bộ tin nhắn thực tế từ Discord.</div>
+        `;
+        return;
+      }
     }
 
     /* ---------- LIVE TIMERS & TOAST ---------- */
