@@ -1,3 +1,4 @@
+import json
 import uuid
 import requests
 from flask import Blueprint, request, jsonify, session
@@ -9,6 +10,7 @@ from core.security import clear_failed_attempts, get_client_ip
 from core.registry import registry, SubModule
 from modules.auth.helpers import login_required
 from modules.account.services import fetch_discord_profile
+from modules.account.discord_effects import resolve_profile_effect
 
 account_bp = Blueprint('account', __name__)
 
@@ -239,6 +241,7 @@ def api_accounts_list():
                 'avatar_decoration': r['avatar_decoration'] or '',
                 'banner': r['banner'] or '',
                 'profile_effect': r['profile_effect'] or '',
+                'profile_effect_data': resolve_profile_effect(r['profile_effect']) if r['profile_effect'] else None,
                 'is_active': 1 if r.get('is_active') == 1 else 0,
                 'main': r.get('is_active') == 1 or len(all_accounts) == 0,
                 'has_token': bool(r.get('token') and len(r['token']) > 20)
@@ -257,6 +260,7 @@ def api_accounts_list():
                 'avatar_decoration': u_row['avatar_decoration'] or '',
                 'banner': u_row['banner'] or '',
                 'profile_effect': u_row['profile_effect'] or '',
+                'profile_effect_data': resolve_profile_effect(u_row['profile_effect']) if u_row['profile_effect'] else None,
                 'is_active': 1 if not any(a.get('is_active') == 1 for a in all_accounts) else 0,
                 'main': True,
                 'has_token': bool(u_row['discord_token'] and len(u_row['discord_token']) > 20)
