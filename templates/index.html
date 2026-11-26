@@ -1845,12 +1845,29 @@ beyond the veil, control returns</textarea>
               <div id="inbox-detail" class="p-4 space-y-3 overflow-y-auto max-h-[325px]">
                 <!-- Rendered by JS -->
               </div>
+              <!-- Ask DIPRE Inbox Assist Panel -->
+              <div id="inbox-ai-panel" class="hidden mx-3 mb-2 p-2.5 rounded-lg bg-[#131318] border border-teal/35 space-y-2">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-[11px] font-mono text-teal flex items-center gap-1.5">
+                    <i data-lucide="sparkles" class="w-3 h-3"></i>
+                    <span>Ask DIPRE Tóm tắt</span>
+                  </span>
+                  <button onclick="document.getElementById('inbox-ai-panel').classList.add('hidden')" class="text-muted hover:text-ink text-[11px]">Đóng</button>
+                </div>
+                <div id="inbox-ai-summary" class="text-[11.5px] text-zinc-200 leading-relaxed"></div>
+                <div id="inbox-ai-suggestions" class="flex flex-wrap gap-1.5"></div>
+              </div>
               <div class="p-3 border-t border-hairline flex items-center gap-2">
                 <input id="inbox-reply-input" type="text" onkeydown="if(event.key==='Enter') sendInboxReply()"
                   placeholder="Trả lời nhanh qua tài khoản chính..."
                   class="studio-input flex-1 h-8 px-3 rounded-md text-[12px]" />
+                <button id="inbox-ai-btn" onclick="runInboxAiAssist()" title="Tóm tắt hội thoại &amp; gợi ý câu trả lời bằng Ask DIPRE"
+                  class="btn-secondary h-8 px-2.5 rounded-md text-[11.5px] font-medium text-teal border-teal/35 hover:bg-teal/15 flex items-center gap-1 shrink-0">
+                  <i data-lucide="sparkles" class="w-3 h-3"></i>
+                  <span class="hidden md:inline">AI Gợi ý</span>
+                </button>
                 <button onclick="sendInboxReply()"
-                  class="btn-primary h-8 px-3 rounded-md text-[12px] font-semibold">Gửi</button>
+                  class="btn-primary h-8 px-3 rounded-md text-[12px] font-semibold shrink-0">Gửi</button>
               </div>
             </div>
           </div>
@@ -4192,6 +4209,9 @@ beyond the veil, control returns</textarea>
         const detailEl = document.getElementById('inbox-detail');
         if (!detailEl) return;
         if (data && data.success && Array.isArray(data.messages)) {
+          state.activeInboxMessages = data.messages;
+          const aiPanel = document.getElementById('inbox-ai-panel');
+          if (aiPanel) aiPanel.classList.add('hidden');
           if (!data.messages.length) {
             detailEl.innerHTML = `<div class="text-[12px] text-muted text-center py-10">Chưa có tin nhắn nào trong hội thoại này.</div>`;
             return;
@@ -5552,9 +5572,109 @@ beyond the veil, control returns</textarea>
       showToast('Đã sao chép câu trả lời DIPRE AI.');
     }
 
-    function buildSmartActionPills(content) {
+    function parseRpcJsonFromText(content) {
+      const blocks = [...String(content || '').matchAll(/```(?:json)?\s*([\s\S]*?)```/gi)].map(m => m[1]);
+      if (!blocks.length) {
+        const inline = String(content || '').match(/\{[\s\S]*\}/);
+        if (inline) blocks.push(inline[0]);
+      }
+      for (const raw of blocks) {
+        try {
+          const obj = JSON.parse(raw.trim());
+          if (obj && typeof obj === 'object' && ('details' in obj || 'state' in obj || 'name' in obj)) {
+            return obj;
+          }
+        } catch (e) {}
+      }
+      return null;
+    }
+
+    function applyAiRpcJson(idx) {
+      const sess = getActiveAiSession();
+      const msg = sess.messages[idx];
+      if (!msg) return;
+      const cfg = parseRpcJsonFromText(msg.content);
+      if (!cfg) {
+        showToast('Không tìm thấy JSON cấu hình RPC hợp lệ.');
+        return;
+      }
+      const setVal = (id, v) => {
+        const el = document.getElementById(id);
+        if (el && v !== undefined && v !== null) el.value = String(v);
+      };
+      setVal('rpc-name', cfg.name);
+      if (cfg.type) {
+        const sel = document.getElementById('rpc-type');
+        const tLow = String(cfg.type).toLowerCase();
+        if (sel && ['playing', 'streaming', 'listening', 'watching', 'competing'].includes(tLow)) sel.value = tLow;
+      }
+      setVal('rpc-details', cfg.details);
+      setVal('rpc-state', cfg.state);
+      setVal('rpc-large-img', cfg.large_image);
+      setVal('rpc-small-img', cfg.small_image);
+      setVal('rpc-btn1', cfg.btn1_text);
+      setVal('rpc-btn1-url', cfg.btn1_url);
+      setVal('rpc-btn2', cfg.btn2_text);
+      setVal('rpc-btn2-url', cfg.btn2_url);
+      if (typeof updateSimulator === 'function') updateSimulator();
+      jumpTo('presence', 'custom');
+      if (!aiState.expanded) closeAiDrawer();
+      showToast('Đã điền cấu hình từ Ask DIPRE vào Presence Studio!');
+    }
+
+    async function runInboxAiAssist() {
+      const msgs = state.activeInboxMessages || [];
+      if (!msgs.length) {
+        showToast('Hãy chọn một hội thoại có tin nhắn trước.');
+        return;
+      }
+      const activeThread = state.inbox.find((m) => String(m.id) === String(state.activeInboxId));
+      const panel = document.getElementById('inbox-ai-panel');
+      const sumEl = document.getElementById('inbox-ai-summary');
+      const sugEl = document.getElementById('inbox-ai-suggestions');
+      const btn = document.getElementById('inbox-ai-btn');
+      if (!panel || !sumEl || !sugEl) return;
+
+      panel.classList.remove('hidden');
+      sumEl.textContent = 'Ask DIPRE đang đọc và tóm tắt hội thoại...';
+      sugEl.innerHTML = '';
+      if (btn) btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/ai/inbox-assist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            thread_name: activeThread ? activeThread.from : 'Hội thoại Discord',
+            messages: msgs.slice(-15).map(m => ({ author_name: m.author_name, content: m.content })),
+          }),
+        });
+        const data = await res.json();
+        if (res.ok && data.ok) {
+          sumEl.textContent = data.summary || '';
+          const sugs = Array.isArray(data.suggestions) ? data.suggestions : [];
+          sugEl.innerHTML = sugs.map(s => `
+            <button onclick="document.getElementById('inbox-reply-input').value=${JSON.stringify(s)}; document.getElementById('inbox-reply-input').focus();"
+              class="px-2 py-1 rounded bg-obsidian hover:bg-panel border border-hairline hover:border-teal/40 text-[11px] text-zinc-200 text-left transition-colors">
+              ${escapeHtmlAi(s)}
+            </button>
+          `).join('');
+        } else {
+          sumEl.textContent = data.error || 'Không tóm tắt được lúc này.';
+        }
+      } catch (e) {
+        sumEl.textContent = 'Lỗi kết nối tới Ask DIPRE.';
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function buildSmartActionPills(content, msgIdx) {
       const low = (content || '').toLowerCase();
       const pills = [];
+      if (typeof msgIdx === 'number' && parseRpcJsonFromText(content)) {
+        pills.push(`<button onclick="applyAiRpcJson(${msgIdx})" class="px-2.5 py-1 rounded-md bg-teal/15 hover:bg-teal/25 border border-teal/40 text-[11px] font-semibold text-teal flex items-center gap-1 transition-colors"><i data-lucide="wand-2" class="w-3 h-3"></i><span>Áp dụng vào Presence</span></button>`);
+      }
       if (low.includes('presence') || low.includes('rpc')) {
         pills.push(`<button onclick="setWorkspace('presence'); if(!aiState.expanded) closeAiDrawer();" class="px-2.5 py-1 rounded-md bg-panel hover:bg-[#232329] border border-hairline text-[11px] font-medium text-teal flex items-center gap-1 transition-colors"><i data-lucide="radio" class="w-3 h-3"></i><span>Mở Presence Studio</span></button>`);
       }
@@ -5626,7 +5746,7 @@ beyond the veil, control returns</textarea>
         const metaStr = cleanMeta
           ? `<span class="inline-flex items-center gap-1 text-[10px] font-mono text-zinc-500">${metaIcon}<span>${escapeHtmlAi(cleanMeta)}</span></span>`
           : '';
-        const actionPills = buildSmartActionPills(m.content);
+        const actionPills = buildSmartActionPills(m.content, idx);
         return `
           <div class="flex items-start gap-2.5">
             <div class="w-7 h-7 rounded-full bg-[#09090D] border border-teal/40 flex items-center justify-center p-1 shrink-0 mt-0.5 overflow-hidden">

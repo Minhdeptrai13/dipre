@@ -892,6 +892,40 @@ def draw_tt_logo_hires(size=44):
     draw_note(0, 0, (255, 255, 255, 255))
     return im.resize((size, size), Image.Resampling.LANCZOS)
 
+
+def draw_dipre_crest_logo_hires(size=44):
+    """Logo DIPRE chính chủ (Cubic Bezier Liquid Mercury D + tâm ngọc #1FCAAD)."""
+    scale = 4
+    cs = size * scale
+    im = Image.new("RGBA", (cs, cs), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+
+    def sc(x, y):
+        return (x / 64.0 * cs, y / 64.0 * cs)
+
+    def cubic(p0, p1, p2, p3, steps=18):
+        pts = []
+        for i in range(1, steps + 1):
+            t = i / steps
+            mt = 1.0 - t
+            pts.append(sc(
+                mt**3 * p0[0] + 3 * mt**2 * t * p1[0] + 3 * mt * t**2 * p2[0] + t**3 * p3[0],
+                mt**3 * p0[1] + 3 * mt**2 * t * p1[1] + 3 * mt * t**2 * p2[1] + t**3 * p3[1],
+            ))
+        return pts
+
+    pad = cs * 0.04
+    d.rounded_rectangle([pad, pad, cs - pad, cs - pad], radius=int(cs * 0.24), fill=(9, 9, 13, 250), outline=(31, 202, 173, 195), width=max(2, int(cs * 0.028)))
+    m_pts = [sc(14, 51.5)] + cubic((14, 51.5), (20.5, 56.2), (33.5, 57.2), (42.8, 53)) + cubic((42.8, 53), (50.5, 49.4), (54.5, 42.2), (54.5, 34.2)) + cubic((54.5, 34.2), (51.6, 41.4), (44.5, 46.8), (34.8, 47.6)) + cubic((34.8, 47.6), (26.5, 48.3), (20, 47.2), (14, 51.5))
+    d.polygon(m_pts, fill=(120, 120, 132, 245))
+    p_pts = [sc(14.5, 47.5)] + cubic((14.5, 47.5), (11.2, 35), (12.5, 16.5), (20.5, 10.5)) + cubic((20.5, 10.5), (26, 6.4), (36, 6.8), (44, 11.5)) + cubic((44, 11.5), (51.5, 16), (55.2, 24), (54.2, 33)) + cubic((54.2, 33), (53.2, 41), (47.5, 46.8), (40, 48.6)) + cubic((40, 48.6), (45.5, 42.8), (46.8, 34), (44.2, 26.5)) + cubic((44.2, 26.5), (41.5, 19.2), (34.2, 15.8), (27, 17.2)) + cubic((27, 17.2), (21.2, 18.4), (19.2, 25), (19.6, 34.8)) + cubic((19.6, 34.8), (19.8, 40.5), (17.5, 45.2), (14.5, 47.5))
+    d.polygon(p_pts, fill=(250, 250, 252, 255))
+    cx, cy = sc(31.5, 32.2)
+    cr = 6.5 / 64.0 * cs
+    d.ellipse([cx - cr * 1.2, cy - cr * 1.2, cx + cr * 1.2, cy + cr * 1.2], fill=(31, 202, 173, 80))
+    d.ellipse([cx - cr, cy - cr, cx + cr, cy + cr], fill=(31, 202, 173, 255))
+    return im.resize((size, size), Image.Resampling.LANCZOS)
+
 def draw_genesis_logo_hires(size=44):
     """Logo GENESIS: lốc xoáy DNA (2 sợi Neon Cyan/Tím + rung ngang) trong badge bo góc."""
     import math

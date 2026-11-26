@@ -242,7 +242,7 @@ _AI_SCHEMA = CardSchema(
     title="DIPRE AI SMART ASSISTANT",
     sub="Tro ly AI 3 bac (Flash / Standard / Pro) & Cau noi du lieu UserBot",
     accent=(31, 202, 173),  # Ngoc luc bao DIPRE
-    logo_fn=MC.draw_genesis_logo_hires,
+    logo_fn=MC.draw_dipre_crest_logo_hires,
     tip="Khi bat AI (ai on), chi can Tag @bot la AI tu rep! Ho tro tag <@user> & gui avatar.",
     items=[
         ("ai",                         "Mo bang huong dan su dung tro ly DIPRE AI nay",            "HELP"),
