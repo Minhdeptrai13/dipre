@@ -58,60 +58,89 @@ SSL_CTX.verify_mode = ssl.CERT_NONE
 
 KILO_GATEWAY_URL = "https://api.kilo.ai/api/gateway/chat/completions"
 
-# Danh bạ 2 bậc DIPRE AI độc quyền (1 cổng Gateway tốc độ cao + auto-fallback):
+# 3 bậc DIPRE AI độc quyền (1 cổng Gateway tốc độ cao + auto-fallback):
 AVAILABLE_MODELS: Dict[str, Dict[str, Any]] = {
     "flash": {
-        "name": "DIPRE Flash ⚡",
-        "creator": "DIPRE Core",
+        "name": "DIPRE Flash",
+        "creator": "DIPRE Fast",
         "brand_color": (31, 202, 173),
-        "gateway_display": "DIPRE CLOUD",
-        "desc": "Phản hồi siêu tốc (~3-6s) cho trò chuyện, tra cứu nhanh & lệnh UserBot (Mặc định).",
+        "gateway_display": "DIPRE FLASH",
+        "desc": "Phản hồi siêu tốc (~2-5s) cho trò chuyện, tra cứu nhanh & lệnh UserBot.",
         "gateway": "dipre",
         "endpoint": KILO_GATEWAY_URL,
         "candidates": [
-            {"model_id": "baidu/ernie-5.5-flash-preview:free", "max_tokens": 1800, "temperature": 0.55, "reasoning": {"effort": "low"}, "timeout": 18.0},
-            {"model_id": "particle-ai/particle-1:free", "max_tokens": 2048, "temperature": 0.55, "reasoning": None, "timeout": 20.0},
-            {"model_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", "max_tokens": 2048, "temperature": 0.5, "reasoning": None, "timeout": 24.0},
+            {"model_id": "baidu/ernie-5.5-flash-preview:free", "max_tokens": 1800, "temperature": 0.5, "supports_effort": True, "timeout": 18.0},
+            {"model_id": "particle-ai/particle-1:free", "max_tokens": 2048, "temperature": 0.5, "supports_effort": False, "timeout": 20.0},
+            {"model_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", "max_tokens": 2200, "temperature": 0.45, "supports_effort": True, "timeout": 22.0},
         ],
-        "headers": {
-            "Content-Type": "application/json",
-            "User-Agent": "DIPRE-UserBot/5.0",
-        },
+        "headers": {"Content-Type": "application/json", "User-Agent": "DIPRE-UserBot/5.0"},
+    },
+    "standard": {
+        "name": "DIPRE Standard",
+        "creator": "DIPRE Core",
+        "brand_color": (56, 189, 248),
+        "gateway_display": "DIPRE CORE",
+        "desc": "Cân bằng (Bình thường) — ổn định cao, phản hồi mạch lạc mọi tác vụ (Mặc định).",
+        "gateway": "dipre",
+        "endpoint": KILO_GATEWAY_URL,
+        "candidates": [
+            {"model_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", "max_tokens": 2200, "temperature": 0.4, "supports_effort": True, "timeout": 24.0},
+            {"model_id": "nvidia/nemotron-3.5-super-vl:free", "max_tokens": 2600, "temperature": 0.4, "supports_effort": True, "timeout": 26.0},
+            {"model_id": "baidu/ernie-5.5-flash-preview:free", "max_tokens": 2000, "temperature": 0.45, "supports_effort": True, "timeout": 20.0},
+        ],
+        "headers": {"Content-Type": "application/json", "User-Agent": "DIPRE-UserBot/5.0"},
     },
     "pro": {
-        "name": "DIPRE Pro 🧠",
-        "creator": "DIPRE Studio",
+        "name": "DIPRE Pro",
+        "creator": "DIPRE Pro",
         "brand_color": (245, 184, 0),
         "gateway_display": "DIPRE PRO",
-        "desc": "Suy luận chuyên sâu, viết code/JSON & xử lý ngữ cảnh dài sắc bén.",
+        "desc": "Chuyên sâu (Flagship) — xử lý code/JSON, RAG dài & bài toán kỹ thuật khó.",
         "gateway": "dipre",
         "endpoint": KILO_GATEWAY_URL,
         "candidates": [
-            {"model_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", "max_tokens": 2200, "temperature": 0.4, "reasoning": None, "timeout": 26.0},
-            {"model_id": "nvidia/nemotron-3-ultra-550b-a55b:free", "max_tokens": 2400, "temperature": 0.4, "reasoning": {"effort": "low"}, "timeout": 30.0},
-            {"model_id": "baidu/ernie-5.5-flash-preview:free", "max_tokens": 2000, "temperature": 0.4, "reasoning": {"effort": "low"}, "timeout": 20.0},
+            {"model_id": "nvidia/nemotron-3-ultra-550b-a55b:free", "max_tokens": 2600, "temperature": 0.35, "supports_effort": True, "cap_effort_medium": True, "timeout": 34.0},
+            {"model_id": "nvidia/nemotron-3.5-super-vl:free", "max_tokens": 2800, "temperature": 0.35, "supports_effort": True, "timeout": 28.0},
+            {"model_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", "max_tokens": 2400, "temperature": 0.35, "supports_effort": True, "timeout": 24.0},
         ],
-        "headers": {
-            "Content-Type": "application/json",
-            "User-Agent": "DIPRE-UserBot/5.0",
-        },
+        "headers": {"Content-Type": "application/json", "User-Agent": "DIPRE-UserBot/5.0"},
     },
 }
 
-DEFAULT_MODEL_KEY = "flash"
+REASONING_LEVELS: Dict[str, Dict[str, Any]] = {
+    "low": {"label": "Nhanh (Low)", "effort": "low", "max_tokens": 1600, "bonus_timeout": 0.0},
+    "medium": {"label": "Cân bằng (Medium)", "effort": "medium", "max_tokens": 2400, "bonus_timeout": 4.0},
+    "high": {"label": "Sâu (High)", "effort": "high", "max_tokens": 3400, "bonus_timeout": 12.0},
+}
+
+DEFAULT_MODEL_KEY = "standard"
+DEFAULT_THINK_KEY = "medium"
 
 
 def _normalize_model_key(key: Optional[str]) -> str:
     k = (key or DEFAULT_MODEL_KEY).strip().lower()
     if k in AVAILABLE_MODELS:
         return k
-    if k in ("pro", "deep", "reasoning", "nemotron", "ultra", "nano"):
+    if k in ("pro", "ultra", "flagship"):
         return "pro"
+    if k in ("standard", "std", "core", "normal", "binhthuong", "nemotron"):
+        return "standard"
+    if k in ("flash", "fast", "qwen"):
+        return "flash"
     return DEFAULT_MODEL_KEY
 
 
+def _normalize_think_key(key: Optional[str]) -> str:
+    k = (key or DEFAULT_THINK_KEY).strip().lower()
+    if k in ("low", "fast", "nhanh"):
+        return "low"
+    if k in ("high", "deep", "sau", "sâu"):
+        return "high"
+    return "medium"
+
+
 def _draw_brand_vector_logo(brand_key: str, size: int = 128):
-    """Vẽ logo vector hi-res cho các bậc DIPRE AI (Flash & Pro)."""
+    """Vẽ logo vector hi-res cho 3 bậc DIPRE AI (Flash, Standard, Pro)."""
     from PIL import Image, ImageDraw
     import math
 
@@ -124,7 +153,6 @@ def _draw_brand_vector_logo(brand_key: str, size: int = 128):
     r = canvas_size * 0.44
 
     if brand == "flash":
-        # Logo DIPRE Flash: Vòng tròn obsidian + tia sét cyan ngọc lục bảo
         d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(10, 26, 28, 245), outline=(31, 202, 173, 210), width=int(canvas_size * 0.035))
         bolt = [
             (cx + r * 0.08, cy - r * 0.56),
@@ -136,8 +164,13 @@ def _draw_brand_vector_logo(brand_key: str, size: int = 128):
         ]
         d.polygon(bolt, fill=(31, 202, 173, 255))
         d.line(bolt + [bolt[0]], fill=(210, 255, 248, 220), width=int(canvas_size * 0.02))
+    elif brand == "standard":
+        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(12, 24, 38, 245), outline=(56, 189, 248, 220), width=int(canvas_size * 0.035))
+        ring_r = r * 0.56
+        d.ellipse([cx - ring_r, cy - ring_r, cx + ring_r, cy + ring_r], outline=(56, 189, 248, 235), width=int(canvas_size * 0.06))
+        core_r = r * 0.22
+        d.ellipse([cx - core_r, cy - core_r, cx + core_r, cy + core_r], fill=(224, 242, 254, 255))
     else:
-        # Logo DIPRE Pro: Lục giác tinh thể vàng hổ phách + lõi phát sáng
         d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(32, 24, 10, 245), outline=(245, 184, 0, 220), width=int(canvas_size * 0.035))
         pts = []
         for i in range(6):
@@ -153,12 +186,12 @@ def _draw_brand_vector_logo(brand_key: str, size: int = 128):
     return im.resize((size, size), Image.Resampling.LANCZOS)
 
 
-def _render_ai_models_card(pfx: str, current_model: str, is_high_admin: bool) -> io.BytesIO:
-    """Vẽ ảnh Liquid Glass danh sách các mô hình AI với logo SVG thương hiệu chính hãng."""
+def _render_ai_models_card(pfx: str, current_model: str, is_high_admin: bool, current_think: str = DEFAULT_THINK_KEY) -> io.BytesIO:
+    """Vẽ ảnh Liquid Glass danh sách 3 bậc DIPRE AI + mức suy luận."""
     if G is None:
         raise RuntimeError("G (glass.py) is not available")
 
-    cv = G.GlassCanvas(860, 410, scale=2, out=1.25, dim=85)
+    cv = G.GlassCanvas(860, 510, scale=2, out=1.25, dim=85)
 
     # 1. Header
     cv.header(
@@ -225,24 +258,34 @@ def _render_ai_models_card(pfx: str, current_model: str, is_high_admin: bool) ->
         y += 94
 
     # Footer bar
-    f_bar_y = 320
-    cv.bar(20, f_bar_y, 840, f_bar_y + 68, r=16)
+    f_bar_y = 415
+    cv.bar(20, f_bar_y, 840, f_bar_y + 74, r=16)
     f_ft1 = cv.font("b", 12.5)
     f_ft2 = cv.font("r", 11)
+    think_lbl = REASONING_LEVELS.get(_normalize_think_key(current_think), REASONING_LEVELS["medium"])["label"]
     if is_high_admin:
-        cv.text(38, f_bar_y + 24, f"💡 Hướng dẫn: Bạn là Admin cấp cao, gõ  {pfx}ai model <tên_model>  để đổi mô hình ngay.", f_ft1, (255, 255, 255), vcenter=True)
+        cv.text(38, f_bar_y + 24, f"Lenh chon: {pfx}ai model <flash|standard|pro>   •   {pfx}ai think <low|medium|high> (Dang bat: {think_lbl})", f_ft1, (255, 255, 255), vcenter=True)
     else:
-        cv.text(38, f_bar_y + 24, f"💡 Hướng dẫn: Gõ  {pfx}ai <câu_hỏi>  để trò chuyện trực tiếp cùng trợ lý ảo.", f_ft1, (255, 255, 255), vcenter=True)
-    cv.text(38, f_bar_y + 48, "🔒 Bảo mật: Quyền thay đổi mô hình được giới hạn cho Admintris & Chủ sở hữu hệ thống.", f_ft2, (180, 195, 215), vcenter=True)
+        cv.text(38, f_bar_y + 24, f"Huong dan: Go {pfx}ai <cau hoi> de tro chuyen • Muc suy luan hien tai: {think_lbl}", f_ft1, (255, 255, 255), vcenter=True)
+    cv.text(38, f_bar_y + 50, "Quyen doi bac AI & muc suy luan duoc gioi han cho Admintris & Chu he thong.", f_ft2, (180, 195, 215), vcenter=True)
 
     return cv.finalize(format="PNG")
 
 
-def _call_llm_gateway(messages: List[Dict[str, str]], max_tokens: int = 1800, model_key: str = DEFAULT_MODEL_KEY) -> Optional[str]:
+def _call_llm_gateway(
+    messages: List[Dict[str, str]],
+    max_tokens: int = 1800,
+    model_key: str = DEFAULT_MODEL_KEY,
+    think_key: str = DEFAULT_THINK_KEY,
+) -> Optional[str]:
     norm_key = _normalize_model_key(model_key)
+    norm_think = _normalize_think_key(think_key)
     tier_info = AVAILABLE_MODELS[norm_key]
-    other_key = "pro" if norm_key == "flash" else "flash"
-    candidate_list = list(tier_info["candidates"]) + list(AVAILABLE_MODELS[other_key]["candidates"])
+    think_info = REASONING_LEVELS[norm_think]
+    other_keys = [k for k in ("standard", "flash", "pro") if k != norm_key]
+    candidate_list = list(tier_info["candidates"])
+    for ok in other_keys:
+        candidate_list.extend(AVAILABLE_MODELS[ok]["candidates"])
     endpoint = tier_info["endpoint"]
     headers = tier_info["headers"]
 
@@ -251,17 +294,21 @@ def _call_llm_gateway(messages: List[Dict[str, str]], max_tokens: int = 1800, mo
             req_payload: Dict[str, Any] = {
                 "model": cand["model_id"],
                 "messages": messages,
-                "max_tokens": max(max_tokens, int(cand.get("max_tokens", 1800))),
-                "temperature": cand.get("temperature", 0.55),
+                "max_tokens": max(max_tokens, int(cand.get("max_tokens", 1800)), int(think_info["max_tokens"])),
+                "temperature": cand.get("temperature", 0.5),
             }
-            if cand.get("reasoning") is not None:
-                req_payload["reasoning"] = cand["reasoning"]
+            if cand.get("supports_effort"):
+                eff = think_info["effort"]
+                if cand.get("cap_effort_medium") and eff == "high":
+                    eff = "medium"
+                req_payload["reasoning"] = {"effort": eff}
             req = urllib.request.Request(
                 endpoint,
                 data=json.dumps(req_payload).encode("utf-8"),
                 headers=headers,
             )
-            with urllib.request.urlopen(req, timeout=float(cand.get("timeout", 22.0)), context=SSL_CTX) as resp:
+            t_out = float(cand.get("timeout", 22.0)) + float(think_info.get("bonus_timeout", 0.0))
+            with urllib.request.urlopen(req, timeout=t_out, context=SSL_CTX) as resp:
                 data = json.loads(resp.read().decode("utf-8", errors="replace"))
                 choices = data.get("choices", [])
                 if choices:
@@ -485,7 +532,8 @@ class AICog(commands.Cog, name="AI"):
                 messages.append({"role": "user", "content": user_msg_content})
 
                 cur_model = _normalize_model_key(self.settings.get("current_model", DEFAULT_MODEL_KEY))
-                reply_text = await asyncio.to_thread(_call_llm_gateway, messages, 1800, cur_model)
+                cur_think = _normalize_think_key(self.settings.get("reasoning_level", DEFAULT_THINK_KEY))
+                reply_text = await asyncio.to_thread(_call_llm_gateway, messages, 1800, cur_model, cur_think)
 
                 if not reply_text:
                     reply_text = f"Mạng hơi lag tí, ông hỏi lại phát xem nào {clean_name}."
@@ -691,18 +739,19 @@ class AICog(commands.Cog, name="AI"):
                     pass
 
             cur_model = _normalize_model_key(self.settings.get("current_model", DEFAULT_MODEL_KEY))
+            cur_think = _normalize_think_key(self.settings.get("reasoning_level", DEFAULT_THINK_KEY))
             cur_info = AVAILABLE_MODELS[cur_model]
+            think_info = REASONING_LEVELS[cur_think]
             ai_status = "ĐANG BẬT" if self._is_ai_on_guild(ctx.guild.id if ctx.guild else None) else "ĐANG TẮT"
             guide = (
                 f"✨ **DIPRE AI ASSISTANT - HƯỚNG DẪN SỬ DỤNG** ✨\n\n"
                 f"• `{p}ai <câu hỏi>` : Đặt câu hỏi trực tiếp cho AI.\n"
-                f"• `{p}ai model` : Xem danh sách & đổi bậc (`flash` / `pro`) (Admin cấp cao).\n"
+                f"• `{p}ai model <flash|standard|pro>` : Xem/đổi bậc AI (Admin cấp cao).\n"
+                f"• `{p}ai think <low|medium|high>` : Đổi mức độ suy luận (Admin cấp cao).\n"
                 f"• `{p}ai clear` : Xoá sạch trí nhớ lịch sử chat tại kênh này.\n"
-                f"• `{p}ai on` : Bật AI tự động tại server này (Admin only).\n"
-                f"• `{p}ai off` : Tắt AI tự động tại server này (Admin only).\n"
-                f"• `{p}ai status` : Xem trạng thái & server đang bật AI.\n"
-                f"• **Tag @bot** : Khi AI bật tại server, chỉ cần tag bot (@bot) là AI rep ngay!\n\n"
-                f"📌 **Trạng thái:** {ai_status}   |   **Bậc đang chạy:** `{cur_model}` ({cur_info['name']})"
+                f"• `{p}ai on` / `off` : Bật/tắt AI tự động tại server này (Admin only).\n"
+                f"• `{p}ai status` : Xem trạng thái & server đang bật AI.\n\n"
+                f"📌 **Trạng thái:** {ai_status} | **Bậc:** `{cur_model}` ({cur_info['name']}) | **Suy luận:** `{cur_think}` ({think_info['label']})"
             )
             sent_msg = await autorep(ctx.message, guide)
             autodelet(sent_msg, delay=45)
@@ -802,6 +851,7 @@ class AICog(commands.Cog, name="AI"):
         is_high_admin, _ = self._check_privilege(ctx.author.id)
 
         cur_model = _normalize_model_key(self.settings.get("current_model", DEFAULT_MODEL_KEY))
+        cur_think = _normalize_think_key(self.settings.get("reasoning_level", DEFAULT_THINK_KEY))
         cur_info = AVAILABLE_MODELS[cur_model]
 
         # Nếu không truyền tên model mới -> Trả về ảnh Liquid Glass danh sách mô hình
@@ -815,7 +865,8 @@ class AICog(commands.Cog, name="AI"):
                         _render_ai_models_card,
                         p,
                         cur_model,
-                        is_high_admin
+                        is_high_admin,
+                        cur_think
                     )
                     file = discord.File(buf, filename="ai_models.png")
                     sent_msg = await autorep(
@@ -880,6 +931,37 @@ class AICog(commands.Cog, name="AI"):
             f"👉 Mọi câu hỏi tiếp theo sẽ được xử lý bằng bậc này!"
         )
         autodelet(msg, delay=30)
+
+    @cmd_ai.command(name="think", aliases=["reasoning", "suyluan", "effort"])
+    async def ai_think(self, ctx: commands.Context, level: Optional[str] = None):
+        """Xem hoặc đổi mức độ suy luận (low / medium / high) cho model hiện tại."""
+        p = self._pfx()
+        is_high_admin, _ = self._check_privilege(ctx.author.id)
+        cur_think = _normalize_think_key(self.settings.get("reasoning_level", DEFAULT_THINK_KEY))
+        if not level:
+            cur_lbl = REASONING_LEVELS[cur_think]["label"]
+            msg = await autorep(
+                ctx.message,
+                f"⚙️ **Mức suy luận hiện tại:** `{cur_think}` ({cur_lbl})\n"
+                f"• `{p}ai think low` : Nhanh (ưu tiên tốc độ)\n"
+                f"• `{p}ai think medium` : Cân bằng (mặc định)\n"
+                f"• `{p}ai think high` : Sâu (phân tích kỹ)"
+            )
+            autodelet(msg, delay=30)
+            return
+        if not is_high_admin:
+            msg = await autorep(ctx.message, "⛔ Lệnh đổi mức suy luận yêu cầu quyền **Admin cấp cao**!")
+            autodelet(msg, delay=15)
+            return
+        lv = _normalize_think_key(level)
+        if level.strip().lower() not in ("low", "fast", "nhanh", "medium", "balanced", "high", "deep", "sau", "sâu"):
+            msg = await autorep(ctx.message, f"❌ Mức `{level}` không hợp lệ! Chọn `low`, `medium` hoặc `high`.")
+            autodelet(msg, delay=15)
+            return
+        self.settings["reasoning_level"] = lv
+        self._save_settings()
+        msg = await autorep(ctx.message, f"✅ **Đã chuyển mức độ suy luận AI sang `{lv}` ({REASONING_LEVELS[lv]['label']})!**")
+        autodelet(msg, delay=25)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):

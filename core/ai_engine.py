@@ -1,6 +1,7 @@
 """
 DIPRE AI Core Engine — Keyless Kilo Gateway + Scoped DIPRE RAG + Rate-Limit Guard.
-Rebranded completely under DIPRE tiers (DIPRE Flash / DIPRE Pro) with zero third-party model leakage.
+Hỗ trợ 3 bậc model (DIPRE Flash / DIPRE Standard / DIPRE Pro) × 3 mức độ suy luận (low / medium / high).
+Ẩn hoàn toàn tên model/nhà cung cấp thứ ba ra ngoài client.
 """
 import json
 import ssl
@@ -16,33 +17,92 @@ _SSL_CTX = ssl.create_default_context()
 _SSL_CTX.check_hostname = False
 _SSL_CTX.verify_mode = ssl.CERT_NONE
 
+REASONING_LEVELS: Dict[str, Dict[str, Any]] = {
+    "low": {
+        "id": "low",
+        "label": "Nhanh",
+        "desc": "Suy luận tối giản, ưu tiên trả lời thẳng và tốc độ.",
+        "effort": "low",
+        "max_tokens": 1600,
+        "timeout_bonus": 0.0,
+        "prompt_hint": "CHẾ ĐỘ SUY LUẬN NHANH: Trả lời trực diện, súc tích nhất có thể, đi thẳng vào bước làm.",
+    },
+    "medium": {
+        "id": "medium",
+        "label": "Cân bằng",
+        "desc": "Cân đối giữa phân tích logic và tốc độ phản hồi (Mặc định).",
+        "effort": "medium",
+        "max_tokens": 2400,
+        "timeout_bonus": 4.0,
+        "prompt_hint": "CHẾ ĐỘ SUY LUẬN CÂN BẰNG: Giải thích rõ ràng, có cấu trúc hợp lý kèm cấu hình/ví dụ khi cần.",
+    },
+    "high": {
+        "id": "high",
+        "label": "Sâu",
+        "desc": "Suy luận đa bước kỹ lưỡng, soi kỹ edge-case và rủi ro Rate-Limit.",
+        "effort": "high",
+        "max_tokens": 3400,
+        "timeout_bonus": 12.0,
+        "prompt_hint": "CHẾ ĐỘ SUY LUẬN SÂU: Phân tích chi tiết từng bước, chỉ rõ rủi ro 429/Anti-Ban, các phương án dự phòng và JSON/code hoàn chỉnh.",
+    },
+}
+
 DIPRE_TIERS: Dict[str, Dict[str, Any]] = {
     "flash": {
         "id": "flash",
         "name": "DIPRE Flash",
         "badge": "FLASH",
-        "tagline": "Phản hồi siêu tốc (~3-6s) cho hỏi đáp nhanh, lệnh UserBot & tinh chỉnh cấu hình.",
+        "tagline": "Tốc độ cao — tối ưu hỏi đáp nhanh, tra lệnh UserBot & chỉnh nhanh thiết lập.",
         "candidates": [
             {
                 "model_id": "baidu/ernie-5.5-flash-preview:free",
-                "max_tokens": 1800,
-                "temperature": 0.45,
-                "reasoning": {"effort": "low"},
-                "timeout": 20.0,
+                "base_max_tokens": 1800,
+                "temperature": 0.5,
+                "supports_effort": True,
+                "timeout": 18.0,
             },
             {
                 "model_id": "particle-ai/particle-1:free",
-                "max_tokens": 2048,
-                "temperature": 0.45,
-                "reasoning": None,  # Do NOT send reasoning.effort (avoids 429 on particle-1)
-                "timeout": 22.0,
+                "base_max_tokens": 2048,
+                "temperature": 0.5,
+                "supports_effort": False,  # Avoids HTTP 429 on effort param
+                "timeout": 20.0,
             },
             {
                 "model_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
-                "max_tokens": 2048,
+                "base_max_tokens": 2200,
                 "temperature": 0.45,
-                "reasoning": None,
+                "supports_effort": True,
+                "timeout": 22.0,
+            },
+        ],
+    },
+    "standard": {
+        "id": "standard",
+        "name": "DIPRE Standard",
+        "badge": "STD",
+        "tagline": "Cân bằng (Bình thường) — ổn định cao, ít 429, hợp mọi tác vụ Studio hằng ngày.",
+        "candidates": [
+            {
+                "model_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+                "base_max_tokens": 2200,
+                "temperature": 0.4,
+                "supports_effort": True,
+                "timeout": 24.0,
+            },
+            {
+                "model_id": "nvidia/nemotron-3.5-super-vl:free",
+                "base_max_tokens": 2600,
+                "temperature": 0.4,
+                "supports_effort": True,
                 "timeout": 26.0,
+            },
+            {
+                "model_id": "baidu/ernie-5.5-flash-preview:free",
+                "base_max_tokens": 2000,
+                "temperature": 0.45,
+                "supports_effort": True,
+                "timeout": 20.0,
             },
         ],
     },
@@ -50,28 +110,29 @@ DIPRE_TIERS: Dict[str, Dict[str, Any]] = {
         "id": "pro",
         "name": "DIPRE Pro",
         "badge": "PRO",
-        "tagline": "Suy luận chuyên sâu (~9-16s) cho kiến trúc RPC, Anti-Ban, gỡ lỗi & JSON cấu hình.",
+        "tagline": "Chuyên sâu (Flagship) — xử lý kiến trúc RPC, JSON payload & bài toán Anti-Ban phức tạp.",
         "candidates": [
             {
-                "model_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
-                "max_tokens": 2200,
-                "temperature": 0.35,
-                "reasoning": None,
-                "timeout": 28.0,
-            },
-            {
                 "model_id": "nvidia/nemotron-3-ultra-550b-a55b:free",
-                "max_tokens": 2400,
+                "base_max_tokens": 2600,
                 "temperature": 0.35,
-                "reasoning": {"effort": "low"},
+                "supports_effort": True,
+                "cap_effort_medium": True,  # Prevents 35s+ timeout on high effort while keeping 550B quality
                 "timeout": 34.0,
             },
             {
-                "model_id": "baidu/ernie-5.5-flash-preview:free",
-                "max_tokens": 2000,
+                "model_id": "nvidia/nemotron-3.5-super-vl:free",
+                "base_max_tokens": 2800,
                 "temperature": 0.35,
-                "reasoning": {"effort": "low"},
-                "timeout": 22.0,
+                "supports_effort": True,
+                "timeout": 28.0,
+            },
+            {
+                "model_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+                "base_max_tokens": 2400,
+                "temperature": 0.35,
+                "supports_effort": True,
+                "timeout": 24.0,
             },
         ],
     },
@@ -137,10 +198,11 @@ DIPRE_RAG_CHUNKS: List[Dict[str, Any]] = [
     {
         "id": "userbot_cogs",
         "title": "UserBot Core & Hệ thống Lệnh",
-        "keywords": ["userbot", "bot", "lệnh", "command", "prefix", "cogs", "ai", "model", "flash", "pro", "clear", "tiktok", "yt", "afk", "menu"],
+        "keywords": ["userbot", "bot", "lệnh", "command", "prefix", "cogs", "ai", "model", "flash", "standard", "pro", "think", "clear", "tiktok", "yt", "afk", "menu"],
         "content": (
             "UserBot Core (`/api/userbot/*`, `apps/user_discord/modules/ai.py`): hỗ trợ quản lý qua Web hoặc gõ trực tiếp trong Discord với prefix riêng (mặc định `!`). "
-            "Nhóm lệnh AI trong UserBot: `<prefix>ai <câu hỏi>`, `<prefix>ai model` (xem bảng bậc AI), `<prefix>ai model flash` hoặc `pro` (Admin cấp cao đổi bậc), "
+            "Nhóm lệnh AI trong UserBot: `<prefix>ai <câu hỏi>`, `<prefix>ai model` (xem 3 bậc `flash` / `standard` / `pro`), "
+            "`<prefix>ai think <low|medium|high>` (đổi mức độ suy luận), "
             "`<prefix>ai clear` (xoá trí nhớ kênh), `<prefix>ai on/off` (bật/tắt tự rep khi tag @bot), `<prefix>ai status`. "
             "Các tiện ích khác: `tiktok`, `yt`, `fb`, `scl` (tải media), `join`/`leave`/`play` (Voice & Lavalink), `quest`, `afk`, `info`, `server`, `crypto`, `weather`, `mail gen`."
         ),
@@ -158,10 +220,23 @@ DIPRE_RAG_CHUNKS: List[Dict[str, Any]] = [
 
 
 def normalize_tier(tier: Optional[str]) -> str:
-    t = (tier or "flash").strip().lower()
-    if t in ("pro", "deep", "reasoning", "ultra", "nano", "nemotron"):
+    t = (tier or "standard").strip().lower()
+    if t in ("flash", "fast", "lite"):
+        return "flash"
+    if t in ("pro", "ultra", "flagship"):
         return "pro"
-    return "flash"
+    if t in ("standard", "std", "core", "normal", "balanced", "binhthuong"):
+        return "standard"
+    return "standard"
+
+
+def normalize_reasoning_level(level: Optional[str]) -> str:
+    lv = (level or "medium").strip().lower()
+    if lv in ("low", "fast", "nhanh", "min"):
+        return "low"
+    if lv in ("high", "deep", "sau", "sâu", "max"):
+        return "high"
+    return "medium"
 
 
 def retrieve_rag_context(query: str, workspace_hint: str = "") -> Tuple[str, List[str]]:
@@ -187,11 +262,18 @@ def retrieve_rag_context(query: str, workspace_hint: str = "") -> Tuple[str, Lis
     return "\n".join(context_lines), topics
 
 
-def build_dipre_web_system_prompt(rag_context: str, workspace_hint: str = "", username: str = "User") -> str:
+def build_dipre_web_system_prompt(
+    rag_context: str,
+    workspace_hint: str = "",
+    username: str = "User",
+    reasoning_level: str = "medium",
+) -> str:
     ws_note = f"Người dùng đang mở tab `{workspace_hint}` trong DIPRE Studio v5.0." if workspace_hint else ""
+    lv = REASONING_LEVELS[normalize_reasoning_level(reasoning_level)]
     return (
         f"Bạn là **DIPRE AI**, trợ lý kỹ thuật độc quyền tích hợp trong **DIPRE Studio v5.0**.\n"
-        f"Người dùng hiện tại: {username}. {ws_note}\n\n"
+        f"Người dùng hiện tại: {username}. {ws_note}\n"
+        f"{lv['prompt_hint']}\n\n"
         f"PHẠM VI HOẠT ĐỘNG (RAG IN-SCOPE):\n"
         f"1. Chỉ tập trung hỗ trợ các tính năng, cấu hình, lệnh UserBot, tối ưu an toàn/anti-ban rate-limit, và giải đáp kỹ thuật xoay quanh DIPRE Studio & Discord.\n"
         f"2. TUYỆT ĐỐI KHÔNG tự nhận là mô hình bên thứ ba (không nhắc tên Baidu, Ernie, NVIDIA, Nemotron, Particle, Kilo, OpenRouter, Qwen). Bạn là DIPRE AI.\n"
@@ -238,27 +320,34 @@ web_ai_guard = WebAIRateGuard()
 
 def call_dipre_ai(
     messages: List[Dict[str, str]],
-    tier: str = "flash",
+    tier: str = "standard",
+    reasoning_level: str = "medium",
     max_tokens_override: Optional[int] = None,
 ) -> Dict[str, Any]:
     """
-    Gọi Kilo Gateway theo bậc DIPRE Flash / DIPRE Pro kèm fallback tự động.
-    Trả về dict: {"ok": bool, "text": str, "tier": str, "latency_ms": int, "error": str}
+    Gọi Kilo Gateway theo 3 bậc DIPRE (flash / standard / pro) × 3 mức suy luận (low / medium / high).
+    Tự động fallback đa tầng nếu model chính bận hoặc dính 429.
     """
     norm_tier = normalize_tier(tier)
+    norm_level = normalize_reasoning_level(reasoning_level)
     tier_cfg = DIPRE_TIERS[norm_tier]
+    level_cfg = REASONING_LEVELS[norm_level]
     t_start = time.perf_counter()
     last_err = ""
 
     for cand in tier_cfg["candidates"]:
+        eff_tok = max_tokens_override or max(int(cand["base_max_tokens"]), int(level_cfg["max_tokens"]))
         payload: Dict[str, Any] = {
             "model": cand["model_id"],
             "messages": messages,
-            "max_tokens": max_tokens_override or cand["max_tokens"],
+            "max_tokens": eff_tok,
             "temperature": cand["temperature"],
         }
-        if cand.get("reasoning") is not None:
-            payload["reasoning"] = cand["reasoning"]
+        if cand.get("supports_effort"):
+            eff_str = level_cfg["effort"]
+            if cand.get("cap_effort_medium") and eff_str == "high":
+                eff_str = "medium"
+            payload["reasoning"] = {"effort": eff_str}
 
         req = urllib.request.Request(
             KILO_GATEWAY_URL,
@@ -269,8 +358,9 @@ def call_dipre_ai(
             },
             method="POST",
         )
+        timeout_sec = float(cand.get("timeout", 22.0)) + float(level_cfg.get("timeout_bonus", 0.0))
         try:
-            with urllib.request.urlopen(req, timeout=float(cand.get("timeout", 22.0)), context=_SSL_CTX) as resp:
+            with urllib.request.urlopen(req, timeout=timeout_sec, context=_SSL_CTX) as resp:
                 data = json.loads(resp.read().decode("utf-8", errors="replace"))
                 choices = data.get("choices") or []
                 if choices:
@@ -283,6 +373,8 @@ def call_dipre_ai(
                             "text": content,
                             "tier": norm_tier,
                             "tier_name": tier_cfg["name"],
+                            "reasoning_level": norm_level,
+                            "reasoning_label": level_cfg["label"],
                             "latency_ms": latency_ms,
                             "error": "",
                         }
@@ -300,6 +392,8 @@ def call_dipre_ai(
         "text": "",
         "tier": norm_tier,
         "tier_name": tier_cfg["name"],
+        "reasoning_level": norm_level,
+        "reasoning_label": level_cfg["label"],
         "latency_ms": latency_ms,
         "error": last_err or "Gateway busy",
     }

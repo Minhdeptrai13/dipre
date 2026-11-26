@@ -2,8 +2,10 @@ from flask import Blueprint, request, jsonify, session
 
 from core.ai_engine import (
     DIPRE_TIERS,
+    REASONING_LEVELS,
     DIPRE_RAG_CHUNKS,
     normalize_tier,
+    normalize_reasoning_level,
     retrieve_rag_context,
     build_dipre_web_system_prompt,
     web_ai_guard,
@@ -13,15 +15,15 @@ from core.discord_guard import discord_guard
 from core.database import track_feature_use
 from modules.auth.helpers import login_required
 
-ai_bp = Blueprint('ai_copilot', __name__)
+ai_bp = Blueprint('ask_dipre', __name__)
 
 
 @ai_bp.route('/api/ai/meta', methods=['GET'])
 @login_required
 def api_ai_meta():
-    """Trả về thông tin các bậc DIPRE AI (đã ẩn model gốc) và trạng thái RAG / Guard."""
+    """Trả về thông tin 3 bậc model DIPRE + 3 mức suy luận + trạng thái RAG / Guard."""
     tiers = []
-    for k in ('flash', 'pro'):
+    for k in ('flash', 'standard', 'pro'):
         t = DIPRE_TIERS[k]
         tiers.append({
             'id': t['id'],
@@ -30,9 +32,18 @@ def api_ai_meta():
             'label': t['name'],
             'tagline': t['tagline'],
         })
+    levels = []
+    for k in ('low', 'medium', 'high'):
+        lv = REASONING_LEVELS[k]
+        levels.append({
+            'id': lv['id'],
+            'label': lv['label'],
+            'desc': lv['desc'],
+        })
     return jsonify({
         'ok': True,
         'tiers': tiers,
+        'reasoning_levels': levels,
         'rag_sources': [c['title'] for c in DIPRE_RAG_CHUNKS],
         'guard_enabled': bool(discord_guard.enabled),
     })
@@ -41,7 +52,7 @@ def api_ai_meta():
 @ai_bp.route('/api/ai/chat', methods=['POST'])
 @login_required
 def api_ai_chat():
-    """Xử lý hội thoại Ask DIPRE (Scoped RAG + Rate-Safe Guard + Flash/Pro routing)."""
+    """Xử lý hội thoại Ask DIPRE (Scoped RAG + Rate-Safe Guard + 3x3 Tier/Reasoning routing)."""
     user_id = session.get('user_id', 'anon')
     username = session.get('discord_username') or session.get('username') or 'Operator'
 
@@ -62,6 +73,7 @@ def api_ai_chat():
         return jsonify({'ok': False, 'error': 'Tin nhắn quá dài (tối đa 3000 ký tự).'}), 400
 
     tier = normalize_tier(data.get('tier'))
+    reasoning_level = normalize_reasoning_level(data.get('reasoning_level'))
     workspace_hint = (data.get('workspace') or '').strip()[:32]
     raw_history = data.get('history') or []
 
@@ -70,6 +82,7 @@ def api_ai_chat():
         rag_context=rag_context,
         workspace_hint=workspace_hint,
         username=str(username),
+        reasoning_level=reasoning_level,
     )
 
     messages = [{'role': 'system', 'content': system_prompt}]
@@ -84,12 +97,13 @@ def api_ai_chat():
 
     messages.append({'role': 'user', 'content': message})
 
-    res = call_dipre_ai(messages, tier=tier)
+    res = call_dipre_ai(messages, tier=tier, reasoning_level=reasoning_level)
     if not res['ok']:
         return jsonify({
             'ok': False,
-            'error': f"DIPRE AI tạm thời quá tải ({res['error']}). Vui lòng thử lại sau vài giây.",
+            'error': f"Ask DIPRE tạm thời quá tải ({res['error']}). Vui lòng thử lại sau vài giây.",
             'tier': res['tier'],
+            'reasoning_level': res['reasoning_level'],
             'latency_ms': res['latency_ms'],
         }), 502
 
@@ -103,6 +117,8 @@ def api_ai_chat():
         'reply': res['text'],
         'tier': res['tier'],
         'tier_name': res['tier_name'],
+        'reasoning_level': res['reasoning_level'],
+        'reasoning_label': res['reasoning_label'],
         'latency_ms': res['latency_ms'],
         'rag_topics': rag_topics,
         'guard_enabled': bool(discord_guard.enabled),
