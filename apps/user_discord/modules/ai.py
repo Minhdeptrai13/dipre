@@ -28,6 +28,7 @@ from discord.ext import commands
 try:
     from apps.user_discord.core.bot_sys import require_permission
     from apps.user_discord.core.alias import alias_declare
+    from apps.user_discord.core.rag_bridge import build_userbot_rag_context
     from apps.user_discord.utils.prefix import fmt, get_prefix
     from apps.user_discord.utils.menu_catalog import menu_entry
     from apps.user_discord.utils.media_card import async_help_card
@@ -37,6 +38,7 @@ try:
 except ImportError:
     from core.bot_sys import require_permission
     from core.alias import alias_declare
+    from core.rag_bridge import build_userbot_rag_context
     from utils.prefix import fmt, get_prefix
     from utils.menu_catalog import menu_entry
     from utils.media_card import async_help_card
@@ -748,32 +750,46 @@ class AICog(commands.Cog, name="AI"):
             return True
         return self._is_bot_on_guild(guild_id)
 
-    def _build_system_prompt(self, user_name: str, guild_name: Optional[str] = None, think_key: str = DEFAULT_THINK_KEY) -> str:
+    def _build_system_prompt(
+        self,
+        user_name: str,
+        guild_id: Optional[int] = None,
+        guild_name: Optional[str] = None,
+        think_key: str = DEFAULT_THINK_KEY,
+        query: str = "",
+    ) -> str:
         bot_user = getattr(self.bot, "user", None) if self.bot else None
         bot_name = getattr(bot_user, "name", "DIPRE AI") if bot_user else "DIPRE AI"
+        bot_uid = getattr(bot_user, "id", 0) or 0
         g_info = f"tại máy chủ '{guild_name}'" if guild_name else "trong tin nhắn riêng (DM)"
         think_lv = _normalize_think_key(think_key)
         think_note = {
             "low": "Trả lời cực ngắn gọn, đi thẳng vào ý chính (1-2 câu cho giao tiếp thường).",
-            "medium": "Trả lời tự nhiên, súc tích 1-3 câu với câu hỏi thường; đủ ý rõ ràng khi hỏi kỹ thuật.",
-            "high": "Phân tích kỹ lưỡng từng bước, nêu rõ cấu hình an toàn, tránh rate-limit khi được hỏi sâu.",
+            "medium": "Trả lời tự nhiên, súc tích 1-3 câu với câu hỏi thường; đủ ý rõ ràng khi hỏi dữ liệu/kỹ thuật.",
+            "high": "Phân tích kỹ lưỡng từng bước, đối chiếu chi tiết dữ liệu UserBot và module liên kết khi được hỏi sâu.",
         }[think_lv]
+
+        rag_snapshot = build_userbot_rag_context(
+            bot_uid=bot_uid,
+            guild_id=guild_id,
+            guild_name=guild_name,
+            query=query,
+        )
+
         return (
-            f"Bạn là **DIPRE AI** (chạy trên tài khoản `{bot_name}`, nói chuyện {g_info} với `{user_name}`).\n\n"
+            f"Bạn là **DIPRE AI** (chạy trên UserBot `{bot_name}`, UID `{bot_uid}`, trò chuyện {g_info} với `{user_name}`).\n\n"
             f"PHONG CÁCH MIỀN BẮC TỰ NHIÊN (BẮT BUỘC):\n"
             f"- Nói chuyện chuẩn vibe người trẻ Hà Nội / miền Bắc ngoài đời trên Discord: thông minh, thân thiện, hoạt ngôn, dí dỏm vừa phải.\n"
             f"- Luôn xưng 'tôi' (hoặc 'mình') và gọi đối phương là 'ông' / 'bà' / '{user_name}'. KHÔNG xưng 'anh/em' khách sáo kiểu bot CSKH.\n"
-            f"- Dùng từ ngữ miền Bắc tự nhiên theo ngữ cảnh ('thế', 'đấy', 'chứ', 'à', 'phát', 'ngon luôn', 'cân được'), TUYỆT ĐỐI KHÔNG dùng từ miền Nam ('nè', 'nha', 'tui', 'nghen', 'hén') và KHÔNG ghép bừa chữ 'nhé' vào câu dịch tiếng Anh kiểu 'Bạn đang làm gì hôm nay nhé?'.\n"
+            f"- Dùng từ ngữ miền Bắc tự nhiên theo ngữ cảnh ('thế', 'đấy', 'chứ', 'à', 'phát', 'ngon luôn', 'cân được'), TUYỆT ĐỐI KHÔNG dùng từ miền Nam ('nè', 'nha', 'tui', 'nghen', 'hén') và KHÔNG ghép bừa chữ 'nhé' vào câu dịch tiếng Anh.\n"
             f"- {think_note}\n"
             f"- TUYỆT ĐỐI KHÔNG tự nhận là mô hình/hãng thứ ba (Baidu, Ernie, NVIDIA, Nemotron, Kilo, Qwen, OpenAI).\n\n"
-            f"VÍ DỤ CÁCH TRẢ LỜI MẪU:\n"
-            f"- Người dùng: 'chào' -> 'Ồ chào ông, nay có kèo gì cần xử lý không?'\n"
-            f"- Người dùng: 'mày biết làm gì' -> 'Cũng đủ món đấy: set Presence RPC, treo voice 24/7, chạy Auto Quest, soi Sniper hay kéo video TikTok/YouTube đều cân hết. Ông cần dùng cái nào?'\n\n"
-            f"KIẾN THỨC HỆ THỐNG DIPRE & USERBOT:\n"
-            f"- Presence Studio: Custom Rich Presence RPC, YouTube/Music Sync, Custom Status Rotator.\n"
-            f"- Voice & Audio: Treo Voice 24/7 (join/leave/play qua Lavalink), bảo vệ chống nhảy kênh gây 429.\n"
-            f"- Automation & Anti-Ban: Auto Quest Completer, Sniper Radar, `DiscordAntiBanGuard` (giới hạn 16 write/phút, jitter ngẫu nhiên, Circuit Breaker tự nghỉ khi gặp 429).\n"
-            f"- Lệnh UserBot chính (`{self._pfx()}`): `ai <câu hỏi>`, `ai model <flash|standard|pro>`, `ai think <low|medium|high>`, `ai clear`, `ai on/off`, `tiktok/yt/fb/scl` (tải media), `quest`, `afk`, `info`, `server`, `crypto`, `weather`, `mail gen`.\n\n"
+            f"QUY TẮC DỮ LIỆU USERBOT & BẢO MẬT (RẤT QUAN TRỌNG):\n"
+            f"- Khi được hỏi về dữ liệu tài khoản/bot (ai bị ban, ai bị mute/block, ai là admin, server nào đang bật, file data nào liên kết với module nào...), CHỈ ĐƯỢC trả lời đúng theo dữ liệu thực tế từ CẦU NỐI DỮ LIỆU bên dưới — tuyệt đối không bịa UID hoặc tên người dùng.\n"
+            f"- CẤM TUYỆT ĐỐI đọc, suy đoán hoặc tiết lộ `config.json`, Discord token, API key, mật khẩu hay dữ liệu kênh chat khác.\n"
+            f"- Prefix lệnh hiện tại của bot là `{self._pfx()}`.\n\n"
+            f"CẦU NỐI DỮ LIỆU USERBOT (LIVE SAFE BRIDGE):\n"
+            f"{rag_snapshot}\n\n"
             f"QUY TẮC NGỮ CẢNH & NỐI TỪ:\n"
             f"- Bám sát lịch sử hội thoại. Nếu đang chơi nối từ tiếng Việt, nối đúng 1 từ ghép 2 tiếng có nghĩa bắt đầu bằng tiếng cuối của đối phương (vd 'biến số' -> 'số phận')."
         )
@@ -789,8 +805,10 @@ class AICog(commands.Cog, name="AI"):
                 cur_think = _normalize_think_key(self.settings.get("reasoning_level", DEFAULT_THINK_KEY))
                 sys_prompt = self._build_system_prompt(
                     user_name=clean_name,
+                    guild_id=target_msg.guild.id if target_msg.guild else None,
                     guild_name=target_msg.guild.name if target_msg.guild else None,
                     think_key=cur_think,
+                    query=prompt_text,
                 )
                 messages: List[Dict[str, str]] = [{"role": "system", "content": sys_prompt}]
 
