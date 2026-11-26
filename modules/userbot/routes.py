@@ -14,11 +14,11 @@ COMMANDS_CATALOG = [
     {
         'category': 'AI & Trí Tuệ Nhân Tạo',
         'icon': 'bot',
-        'description': 'Tích hợp ChatGPT, Gemini và mô hình AI trực tiếp trong tin nhắn chat',
+        'description': 'Tích hợp DIPRE Flash & DIPRE Pro trực tiếp trong tin nhắn chat và Studio',
         'commands': [
-            {'name': 'ai <câu hỏi>', 'desc': 'Trò chuyện và hỏi đáp thông minh với AI'},
-            {'name': 'ask <nội dung>', 'desc': 'Hỏi nhanh AI xử lý dữ liệu'},
-            {'name': 'dich <text>', 'desc': 'Dịch thuật đa ngôn ngữ bằng AI Google/DeepL'}
+            {'name': 'ai <câu hỏi>', 'desc': 'Trò chuyện và hỏi đáp thông minh với DIPRE AI'},
+            {'name': 'ai model <flash|pro>', 'desc': 'Chuyển đổi giữa DIPRE Flash ⚡ (siêu tốc) và DIPRE Pro 🧠 (chuyên sâu)'},
+            {'name': 'ask <nội dung>', 'desc': 'Hỏi nhanh AI xử lý dữ liệu & cấu hình DIPRE'}
         ]
     },
     {

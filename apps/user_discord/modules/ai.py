@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-MODULE: ai (AI Smart Chatbot & Assistant)
-- Tro chuyen thong minh khong can API key (Qwen 3.8 27B / Free Gateway Pool).
-- Tinh cach nhi nhanh, lem linh, dang yeu, thong minh.
-- RAG user context: Nhận diện danh tính người chat để xưng hô thân mật.
-- Huong dan dang anh Help Card + Status dang anh Liquid Glass.
-- Tu dong xoa tin nhan bot qua autodelet.
+MODULE: ai (DIPRE AI Smart Assistant)
+- Hệ thống AI đa bậc DIPRE Flash ⚡ & DIPRE Pro 🧠 (Keyless Gateway Pool).
+- Tính cách tự nhiên, hóm hỉnh hoặc hỗ trợ chuyên sâu về hệ sinh thái DIPRE.
+- RAG context & Anti-Ban Rate Guard chống spam làm rate-limit tài khoản.
+- Hướng dẫn dạng ảnh Help Card + Status dạng ảnh Liquid Glass.
+- Tự động xoá tin nhắn bot qua autodelet.
 """
 from __future__ import annotations
 
@@ -56,92 +56,62 @@ SSL_CTX = ssl.create_default_context()
 SSL_CTX.check_hostname = False
 SSL_CTX.verify_mode = ssl.CERT_NONE
 
-LLMTECH_GATEWAY_URL = "https://api.llmtech.eu/v1/chat/completions"
-LLMTECH_MODEL = "nvidia/Qwen3.8-27B-NVFP4"
-LLMTECH_PUBLIC_KEY = "lt-trial-ba1ef28c6d32ed6980678d8d"
-
 KILO_GATEWAY_URL = "https://api.kilo.ai/api/gateway/chat/completions"
 
-# Danh bạ các AI Models được hỗ trợ (miễn phí, đã test hoạt động):
+# Danh bạ 2 bậc DIPRE AI độc quyền (1 cổng Gateway tốc độ cao + auto-fallback):
 AVAILABLE_MODELS: Dict[str, Dict[str, Any]] = {
-    "qwen": {
-        "name": "Qwen 3.8 27B",
-        "creator": "Alibaba Cloud / Qwen",
-        "brand_color": (168, 85, 247),
-        "gateway_display": "LLMTECH EU",
-        "desc": "Mô hình siêu thông minh, suy luận sâu, phản hồi sắc bén (Mặc định).",
-        "gateway": "llmtech",
-        "endpoint": LLMTECH_GATEWAY_URL,
-        "model_id": "nvidia/Qwen3.8-27B-NVFP4",
+    "flash": {
+        "name": "DIPRE Flash ⚡",
+        "creator": "DIPRE Core",
+        "brand_color": (31, 202, 173),
+        "gateway_display": "DIPRE CLOUD",
+        "desc": "Phản hồi siêu tốc (~3-6s) cho trò chuyện, tra cứu nhanh & lệnh UserBot (Mặc định).",
+        "gateway": "dipre",
+        "endpoint": KILO_GATEWAY_URL,
+        "candidates": [
+            {"model_id": "baidu/ernie-5.5-flash-preview:free", "max_tokens": 1800, "temperature": 0.55, "reasoning": {"effort": "low"}, "timeout": 18.0},
+            {"model_id": "particle-ai/particle-1:free", "max_tokens": 2048, "temperature": 0.55, "reasoning": None, "timeout": 20.0},
+            {"model_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", "max_tokens": 2048, "temperature": 0.5, "reasoning": None, "timeout": 24.0},
+        ],
         "headers": {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {LLMTECH_PUBLIC_KEY}",
-            "User-Agent": "Mozilla/5.0",
+            "User-Agent": "DIPRE-UserBot/5.0",
         },
     },
-    "nemotron": {
-        "name": "NVIDIA Nemotron 3.5",
-        "creator": "NVIDIA Corp",
-        "brand_color": (118, 185, 0),
-        "gateway_display": "KILO GATEWAY",
-        "desc": "Tối ưu siêu tốc độ do NVIDIA phát triển, cực nhạy bén.",
-        "gateway": "kilo",
+    "pro": {
+        "name": "DIPRE Pro 🧠",
+        "creator": "DIPRE Studio",
+        "brand_color": (245, 184, 0),
+        "gateway_display": "DIPRE PRO",
+        "desc": "Suy luận chuyên sâu, viết code/JSON & xử lý ngữ cảnh dài sắc bén.",
+        "gateway": "dipre",
         "endpoint": KILO_GATEWAY_URL,
-        "model_id": "nvidia/nemotron-3.5-lightning:free",
+        "candidates": [
+            {"model_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", "max_tokens": 2200, "temperature": 0.4, "reasoning": None, "timeout": 26.0},
+            {"model_id": "nvidia/nemotron-3-ultra-550b-a55b:free", "max_tokens": 2400, "temperature": 0.4, "reasoning": {"effort": "low"}, "timeout": 30.0},
+            {"model_id": "baidu/ernie-5.5-flash-preview:free", "max_tokens": 2000, "temperature": 0.4, "reasoning": {"effort": "low"}, "timeout": 20.0},
+        ],
         "headers": {
             "Content-Type": "application/json",
-            "User-Agent": "Mozilla/5.0",
-        },
-    },
-    "dots": {
-        "name": "Dots 3 Studio",
-        "creator": "Dots Studio (Rednote)",
-        "brand_color": (255, 45, 85),
-        "gateway_display": "KILO GATEWAY",
-        "desc": "Mô hình đàm thoại cảm xúc, tự nhiên, gần gũi, hóm hỉnh.",
-        "gateway": "kilo",
-        "endpoint": KILO_GATEWAY_URL,
-        "model_id": "dots-studio/dots-3-note-preview:free",
-        "headers": {
-            "Content-Type": "application/json",
-            "User-Agent": "Mozilla/5.0",
-        },
-    },
-    "openrouter": {
-        "name": "OpenRouter Free Cluster",
-        "creator": "OpenRouter AI",
-        "brand_color": (56, 189, 248),
-        "gateway_display": "KILO GATEWAY",
-        "desc": "Cụm mô hình đa năng tối ưu thông minh của OpenRouter.",
-        "gateway": "kilo",
-        "endpoint": KILO_GATEWAY_URL,
-        "model_id": "openrouter/free",
-        "headers": {
-            "Content-Type": "application/json",
-            "User-Agent": "Mozilla/5.0",
-        },
-    },
-    "cohere": {
-        "name": "Cohere North Mini",
-        "creator": "Cohere AI",
-        "brand_color": (218, 119, 86),
-        "gateway_display": "KILO GATEWAY",
-        "desc": "Mô hình logic sắc sảo chuyên xử lý văn bản và lập trình.",
-        "gateway": "kilo",
-        "endpoint": KILO_GATEWAY_URL,
-        "model_id": "cohere/north-mini-code:free",
-        "headers": {
-            "Content-Type": "application/json",
-            "User-Agent": "Mozilla/5.0",
+            "User-Agent": "DIPRE-UserBot/5.0",
         },
     },
 }
 
-DEFAULT_MODEL_KEY = "qwen"
+DEFAULT_MODEL_KEY = "flash"
+
+
+def _normalize_model_key(key: Optional[str]) -> str:
+    k = (key or DEFAULT_MODEL_KEY).strip().lower()
+    if k in AVAILABLE_MODELS:
+        return k
+    if k in ("pro", "deep", "reasoning", "nemotron", "ultra", "nano"):
+        return "pro"
+    return DEFAULT_MODEL_KEY
 
 
 def _draw_brand_vector_logo(brand_key: str, size: int = 128):
-    """Vẽ logo vector SVG hi-res siêu nét (supersampled 4x) của từng hãng sản xuất AI."""
+    """Vẽ logo vector hi-res cho các bậc DIPRE AI (Flash & Pro)."""
     from PIL import Image, ImageDraw
     import math
 
@@ -149,96 +119,36 @@ def _draw_brand_vector_logo(brand_key: str, size: int = 128):
     im = Image.new("RGBA", (canvas_size, canvas_size), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
 
-    brand = brand_key.lower()
+    brand = _normalize_model_key(brand_key)
     cx, cy = canvas_size / 2, canvas_size / 2
     r = canvas_size * 0.44
 
-    if brand in ("qwen", "alibaba"):
-        # Logo Alibaba / Qwen: Khối lập phương lăng kính 3D (Faceted Hexagon / Prism)
-        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(26, 16, 50, 245))
+    if brand == "flash":
+        # Logo DIPRE Flash: Vòng tròn obsidian + tia sét cyan ngọc lục bảo
+        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(10, 26, 28, 245), outline=(31, 202, 173, 210), width=int(canvas_size * 0.035))
+        bolt = [
+            (cx + r * 0.08, cy - r * 0.56),
+            (cx - r * 0.36, cy + r * 0.06),
+            (cx + r * 0.02, cy + r * 0.06),
+            (cx - r * 0.10, cy + r * 0.56),
+            (cx + r * 0.38, cy - r * 0.08),
+            (cx + r * 0.00, cy - r * 0.08),
+        ]
+        d.polygon(bolt, fill=(31, 202, 173, 255))
+        d.line(bolt + [bolt[0]], fill=(210, 255, 248, 220), width=int(canvas_size * 0.02))
+    else:
+        # Logo DIPRE Pro: Lục giác tinh thể vàng hổ phách + lõi phát sáng
+        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(32, 24, 10, 245), outline=(245, 184, 0, 220), width=int(canvas_size * 0.035))
         pts = []
         for i in range(6):
             angle = math.radians(60 * i - 30)
-            pts.append((cx + r * 0.78 * math.cos(angle), cy + r * 0.78 * math.sin(angle)))
-
-        d.polygon([cx, cy, pts[5], pts[0], pts[1]], fill=(168, 85, 247, 255))
-        d.polygon([cx, cy, pts[1], pts[2], pts[3]], fill=(59, 130, 246, 255))
-        d.polygon([cx, cy, pts[3], pts[4], pts[5]], fill=(14, 165, 233, 255))
-
-        d.line([pts[0], pts[1], pts[2], pts[3], pts[4], pts[5], pts[0]], fill=(255, 255, 255, 210), width=int(canvas_size * 0.025))
-        d.line([cx, cy, pts[1][0], pts[1][1]], fill=(255, 255, 255, 230), width=int(canvas_size * 0.02))
-        d.line([cx, cy, pts[3][0], pts[3][1]], fill=(255, 255, 255, 230), width=int(canvas_size * 0.02))
-        d.line([cx, cy, pts[5][0], pts[5][1]], fill=(255, 255, 255, 230), width=int(canvas_size * 0.02))
-        cr = canvas_size * 0.06
-        d.ellipse([cx - cr, cy - cr, cx + cr, cy + cr], fill=(255, 255, 255, 245))
-
-    elif brand in ("nemotron", "nvidia"):
-        # Logo NVIDIA: Mắt rồng xoắn ốc xanh lá đặc trưng
-        nv_green = (118, 185, 0, 255)
-        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(15, 24, 12, 245))
-
-        box_out = [cx - r * 0.8, cy - r * 0.65, cx + r * 0.8, cy + r * 0.75]
-        d.arc(box_out, start=180, end=360, fill=nv_green, width=int(canvas_size * 0.08))
-        d.line([cx - r * 0.8, cy + r * 0.05, cx + r * 0.8, cy + r * 0.05], fill=nv_green, width=int(canvas_size * 0.08))
-
-        box_mid = [cx - r * 0.52, cy - r * 0.42, cx + r * 0.52, cy + r * 0.52]
-        d.arc(box_mid, start=180, end=360, fill=(255, 255, 255, 255), width=int(canvas_size * 0.06))
-        d.line([cx - r * 0.52, cy + r * 0.05, cx + r * 0.52, cy + r * 0.05], fill=(255, 255, 255, 255), width=int(canvas_size * 0.06))
-
-        d.ellipse([cx - r * 0.22, cy - r * 0.1, cx + r * 0.22, cy + r * 0.22], fill=nv_green)
-
-    elif brand in ("dots", "dots-studio"):
-        # Logo Dots Studio: 3 chấm tròn neon liên kết năng động
-        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(34, 15, 22, 245))
-        p1 = (cx, cy - r * 0.48)
-        p2 = (cx - r * 0.48, cy + r * 0.38)
-        p3 = (cx + r * 0.48, cy + r * 0.38)
-
-        d.line([p1, p2], fill=(255, 45, 85, 180), width=int(canvas_size * 0.04))
-        d.line([p2, p3], fill=(255, 45, 85, 180), width=int(canvas_size * 0.04))
-        d.line([p3, p1], fill=(255, 45, 85, 180), width=int(canvas_size * 0.04))
-
-        for pt, col in [(p1, (255, 45, 85)), (p2, (255, 107, 107)), (p3, (255, 159, 67))]:
-            dot_r = canvas_size * 0.13
-            d.ellipse([pt[0] - dot_r, pt[1] - dot_r, pt[0] + dot_r, pt[1] + dot_r], fill=col + (255,))
-            inner_r = canvas_size * 0.05
-            d.ellipse([pt[0] - inner_r, pt[1] - inner_r, pt[0] + inner_r, pt[1] + inner_r], fill=(255, 255, 255, 240))
-
-    elif brand in ("openrouter",):
-        # Logo OpenRouter: Mạng lưới rẽ nhánh Router đa kênh
-        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(12, 24, 38, 245))
-        nr = canvas_size * 0.11
-        d.ellipse([cx - nr, cy - nr, cx + nr, cy + nr], fill=(56, 189, 248, 255))
-        d.ellipse([cx - nr * 0.4, cy - nr * 0.4, cx + nr * 0.4, cy + nr * 0.4], fill=(255, 255, 255, 240))
-
-        nodes = [
-            (cx - r * 0.62, cy - r * 0.5),
-            (cx + r * 0.62, cy - r * 0.5),
-            (cx - r * 0.62, cy + r * 0.5),
-            (cx + r * 0.62, cy + r * 0.5),
-        ]
-        for nx, ny in nodes:
-            d.line([(cx, cy), (nx, ny)], fill=(56, 189, 248, 200), width=int(canvas_size * 0.04))
-            sub_r = canvas_size * 0.075
-            d.ellipse([nx - sub_r, ny - sub_r, nx + sub_r, ny + sub_r], fill=(14, 165, 233, 255))
-            d.ellipse([nx - sub_r * 0.4, ny - sub_r * 0.4, nx + sub_r * 0.4, ny + sub_r * 0.4], fill=(255, 255, 255, 255))
-
-    elif brand in ("cohere",):
-        # Logo Cohere: Khối tế bào / organic shape san hô ấm áp
-        coral = (218, 119, 86, 255)
-        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(36, 22, 18, 245))
-
-        w_box = r * 0.72
-        h_box = r * 0.55
-        d.rounded_rectangle([cx - w_box, cy - h_box, cx + w_box, cy + h_box], radius=int(h_box * 0.9), fill=coral)
-        cut_w = w_box * 0.5
-        cut_h = h_box * 0.5
-        d.ellipse([cx - cut_w * 0.5, cy - cut_h, cx + cut_w * 1.2, cy + cut_h], fill=(36, 22, 18, 255))
-        d.ellipse([cx - w_box * 0.35, cy - h_box * 0.25, cx + w_box * 0.1, cy + h_box * 0.25], fill=(255, 220, 200, 255))
-
-    else:
-        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(30, 41, 59, 245))
-        d.rounded_rectangle([cx - r * 0.5, cy - r * 0.5, cx + r * 0.5, cy + r * 0.5], radius=int(r * 0.15), fill=(99, 102, 241, 255))
+            pts.append((cx + r * 0.62 * math.cos(angle), cy + r * 0.62 * math.sin(angle)))
+        d.polygon([cx, cy, pts[5], pts[0], pts[1]], fill=(250, 204, 21, 255))
+        d.polygon([cx, cy, pts[1], pts[2], pts[3]], fill=(245, 158, 11, 255))
+        d.polygon([cx, cy, pts[3], pts[4], pts[5]], fill=(217, 119, 6, 255))
+        d.line([pts[0], pts[1], pts[2], pts[3], pts[4], pts[5], pts[0]], fill=(255, 248, 220, 230), width=int(canvas_size * 0.025))
+        cr = canvas_size * 0.07
+        d.ellipse([cx - cr, cy - cr, cx + cr, cy + cr], fill=(255, 255, 255, 250))
 
     return im.resize((size, size), Image.Resampling.LANCZOS)
 
@@ -248,25 +158,25 @@ def _render_ai_models_card(pfx: str, current_model: str, is_high_admin: bool) ->
     if G is None:
         raise RuntimeError("G (glass.py) is not available")
 
-    cv = G.GlassCanvas(860, 680, scale=2, out=1.25, dim=85)
+    cv = G.GlassCanvas(860, 410, scale=2, out=1.25, dim=85)
 
     # 1. Header
     cv.header(
         20, 20, 840, 72,
-        "AI INTELLIGENCE MODELS",
-        "Hệ thống mô hình trí tuệ nhân tạo (Hỗ trợ chuyển đổi tức thì)",
-        tag="LLM GATEWAY",
-        tag_grad=((139, 92, 246), (236, 72, 153))
+        "DIPRE AI TIER ENGINE",
+        "Hệ thống phân bậc trí tuệ nhân tạo DIPRE (Chuyển đổi tức thì)",
+        tag="DIPRE CLOUD",
+        tag_grad=((31, 202, 173), (15, 118, 110))
     )
 
-    y = 106
+    y = 112
     f_name = cv.font("b", 16)
     f_creator = cv.font("b", 10.5)
     f_cmd = cv.font("b", 12)
     f_desc = cv.font("r", 11.5)
     f_badge = cv.font("b", 10)
 
-    cur_key = current_model.lower()
+    cur_key = _normalize_model_key(current_model)
 
     for key, info in AVAILABLE_MODELS.items():
         is_active = (key == cur_key)
@@ -315,7 +225,7 @@ def _render_ai_models_card(pfx: str, current_model: str, is_high_admin: bool) ->
         y += 94
 
     # Footer bar
-    f_bar_y = 590
+    f_bar_y = 320
     cv.bar(20, f_bar_y, 840, f_bar_y + 68, r=16)
     f_ft1 = cv.font("b", 12.5)
     f_ft2 = cv.font("r", 11)
@@ -328,29 +238,30 @@ def _render_ai_models_card(pfx: str, current_model: str, is_high_admin: bool) ->
     return cv.finalize(format="PNG")
 
 
-def _call_llm_gateway(messages: List[Dict[str, str]], max_tokens: int = 700, model_key: str = DEFAULT_MODEL_KEY) -> Optional[str]:
-    # 1. Thử gọi model được chỉ định
-    target_info = AVAILABLE_MODELS.get(model_key.lower()) or AVAILABLE_MODELS[DEFAULT_MODEL_KEY]
-    candidate_list = [target_info]
-    # 2. Thêm các model dự phòng nếu model chính bị nghẽn
-    for k, v in AVAILABLE_MODELS.items():
-        if k != model_key.lower():
-            candidate_list.append(v)
+def _call_llm_gateway(messages: List[Dict[str, str]], max_tokens: int = 1800, model_key: str = DEFAULT_MODEL_KEY) -> Optional[str]:
+    norm_key = _normalize_model_key(model_key)
+    tier_info = AVAILABLE_MODELS[norm_key]
+    other_key = "pro" if norm_key == "flash" else "flash"
+    candidate_list = list(tier_info["candidates"]) + list(AVAILABLE_MODELS[other_key]["candidates"])
+    endpoint = tier_info["endpoint"]
+    headers = tier_info["headers"]
 
-    for item in candidate_list:
+    for cand in candidate_list:
         try:
-            req_payload = {
-                "model": item["model_id"],
+            req_payload: Dict[str, Any] = {
+                "model": cand["model_id"],
                 "messages": messages,
-                "max_tokens": max_tokens,
-                "temperature": 0.75,
+                "max_tokens": max(max_tokens, int(cand.get("max_tokens", 1800))),
+                "temperature": cand.get("temperature", 0.55),
             }
+            if cand.get("reasoning") is not None:
+                req_payload["reasoning"] = cand["reasoning"]
             req = urllib.request.Request(
-                item["endpoint"],
+                endpoint,
                 data=json.dumps(req_payload).encode("utf-8"),
-                headers=item["headers"],
+                headers=headers,
             )
-            with urllib.request.urlopen(req, timeout=12.0, context=SSL_CTX) as resp:
+            with urllib.request.urlopen(req, timeout=float(cand.get("timeout", 22.0)), context=SSL_CTX) as resp:
                 data = json.loads(resp.read().decode("utf-8", errors="replace"))
                 choices = data.get("choices", [])
                 if choices:
@@ -432,6 +343,7 @@ class AICog(commands.Cog, name="AI"):
         self.memory = ChatMemory(max_history=20)
         self.settings: Dict[str, Any] = self._load_settings()
         self._cooldowns: Dict[int, float] = {}
+        self._user_rate_window: Dict[int, List[float]] = defaultdict(list)
 
     def _load_settings(self) -> Dict[str, Any]:
         if AI_SETTINGS_FILE.exists():
@@ -572,8 +484,8 @@ class AICog(commands.Cog, name="AI"):
                 user_msg_content = f"{clean_name}: {prompt_text}"
                 messages.append({"role": "user", "content": user_msg_content})
 
-                cur_model = self.settings.get("current_model", DEFAULT_MODEL_KEY)
-                reply_text = await asyncio.to_thread(_call_llm_gateway, messages, 700, cur_model)
+                cur_model = _normalize_model_key(self.settings.get("current_model", DEFAULT_MODEL_KEY))
+                reply_text = await asyncio.to_thread(_call_llm_gateway, messages, 1800, cur_model)
 
                 if not reply_text:
                     reply_text = f"Mạng hơi lag tí, ông hỏi lại phát xem nào {clean_name}."
@@ -658,11 +570,13 @@ class AICog(commands.Cog, name="AI"):
         st_pill_col = G.G_ON if cur_on else G.G_OFF
         st_dot = (167, 255, 214) if cur_on else (255, 170, 170)
 
+        cur_tier = _normalize_model_key(self.settings.get("current_model", DEFAULT_MODEL_KEY))
+        tier_label = AVAILABLE_MODELS[cur_tier]["name"]
         cv.header(
             pad, pad, LW - pad, head_h,
-            "AI CHATBOT MONITOR PANEL",
-            f"Prefix  {pfx}   •   Engine: Qwen 3.8 27B NVFP4   •   {len(on_guilds)} Active Server(s)",
-            tag="AI STATUS",
+            "DIPRE AI MONITOR PANEL",
+            f"Prefix  {pfx}   •   Engine: {tier_label}   •   {len(on_guilds)} Active Server(s)",
+            tag="DIPRE AI",
             right_reserve=180
         )
         cv.glass_pill(
@@ -776,18 +690,19 @@ class AICog(commands.Cog, name="AI"):
                 except Exception:
                     pass
 
-            cur_model = self.settings.get("current_model", DEFAULT_MODEL_KEY)
-            cur_info = AVAILABLE_MODELS.get(cur_model, AVAILABLE_MODELS[DEFAULT_MODEL_KEY])
+            cur_model = _normalize_model_key(self.settings.get("current_model", DEFAULT_MODEL_KEY))
+            cur_info = AVAILABLE_MODELS[cur_model]
+            ai_status = "ĐANG BẬT" if self._is_ai_on_guild(ctx.guild.id if ctx.guild else None) else "ĐANG TẮT"
             guide = (
-                f"✨ **TRỢ LÝ AI THÔNG MINH - HƯỚNG DẪN SỬ DỤNG** ✨\n\n"
+                f"✨ **DIPRE AI ASSISTANT - HƯỚNG DẪN SỬ DỤNG** ✨\n\n"
                 f"• `{p}ai <câu hỏi>` : Đặt câu hỏi trực tiếp cho AI.\n"
-                f"• `{p}ai model` : Xem danh sách & đổi mô hình AI (Admin cấp cao).\n"
+                f"• `{p}ai model` : Xem danh sách & đổi bậc (`flash` / `pro`) (Admin cấp cao).\n"
                 f"• `{p}ai clear` : Xoá sạch trí nhớ lịch sử chat tại kênh này.\n"
                 f"• `{p}ai on` : Bật AI tự động tại server này (Admin only).\n"
                 f"• `{p}ai off` : Tắt AI tự động tại server này (Admin only).\n"
                 f"• `{p}ai status` : Xem trạng thái & server đang bật AI.\n"
                 f"• **Tag @bot** : Khi AI bật tại server, chỉ cần tag bot (@bot) là AI rep ngay!\n\n"
-                f"📌 **Trạng thái:** {ai_status}   |   **Mô hình đang chạy:** `{cur_model}` ({cur_info['name']})"
+                f"📌 **Trạng thái:** {ai_status}   |   **Bậc đang chạy:** `{cur_model}` ({cur_info['name']})"
             )
             sent_msg = await autorep(ctx.message, guide)
             autodelet(sent_msg, delay=45)
@@ -886,8 +801,8 @@ class AICog(commands.Cog, name="AI"):
         p = self._pfx()
         is_high_admin, _ = self._check_privilege(ctx.author.id)
 
-        cur_model = self.settings.get("current_model", DEFAULT_MODEL_KEY)
-        cur_info = AVAILABLE_MODELS.get(cur_model, AVAILABLE_MODELS[DEFAULT_MODEL_KEY])
+        cur_model = _normalize_model_key(self.settings.get("current_model", DEFAULT_MODEL_KEY))
+        cur_info = AVAILABLE_MODELS[cur_model]
 
         # Nếu không truyền tên model mới -> Trả về ảnh Liquid Glass danh sách mô hình
         if not new_model:
@@ -944,8 +859,8 @@ class AICog(commands.Cog, name="AI"):
             avail_keys = ", ".join([f"`{k}`" for k in AVAILABLE_MODELS.keys()])
             msg = await autorep(
                 ctx.message,
-                f"❌ Mô hình `{new_model}` không hợp lệ hoặc hiện chưa được hỗ trợ!\n"
-                f"👉 Các mô hình có sẵn: {avail_keys}\n"
+                f"❌ Bậc AI `{new_model}` không hợp lệ!\n"
+                f"👉 Các bậc khả dụng: {avail_keys}\n"
                 f"💡 Gõ `{p}ai model` để xem chi tiết danh sách."
             )
             autodelet(msg, delay=20)
@@ -958,11 +873,11 @@ class AICog(commands.Cog, name="AI"):
         target_info = AVAILABLE_MODELS[choice]
         msg = await autorep(
             ctx.message,
-            f"✅ **ĐÃ ĐỔI MÔ HÌNH AI THÀNH CÔNG!**\n"
-            f"• Mô hình kích hoạt: **{target_info['name']}** (`{choice}`)\n"
+            f"✅ **ĐÃ ĐỔI BẬC DIPRE AI THÀNH CÔNG!**\n"
+            f"• Bậc kích hoạt: **{target_info['name']}** (`{choice}`)\n"
             f"• Chi tiết: *{target_info['desc']}*\n"
-            f"• Cổng Gateway: `{target_info['gateway'].upper()}` (`{target_info['model_id']}`)\n\n"
-            f"👉 Mọi câu hỏi tiếp theo sẽ được xử lý bằng mô hình này!"
+            f"• Hệ thống: `{target_info['gateway_display']}`\n\n"
+            f"👉 Mọi câu hỏi tiếp theo sẽ được xử lý bằng bậc này!"
         )
         autodelet(msg, delay=30)
 
@@ -1004,8 +919,16 @@ class AICog(commands.Cog, name="AI"):
 
         now = time.time()
         chan_id = message.channel.id
-        if chan_id in self._cooldowns and (now - self._cooldowns[chan_id]) < 1.5:
+        # Anti-Ban Rate-Limit Guard: giãn cách tối thiểu 2.5s/kênh và tối đa 6 req/phút/người (10 ở DM)
+        if chan_id in self._cooldowns and (now - self._cooldowns[chan_id]) < 2.5:
             return
+        win = [ts for ts in self._user_rate_window[sender_id] if now - ts < 60.0]
+        limit_per_min = 10 if guild_id is None else 6
+        if len(win) >= limit_per_min:
+            self._user_rate_window[sender_id] = win
+            return
+        win.append(now)
+        self._user_rate_window[sender_id] = win
         self._cooldowns[chan_id] = now
 
         clean_content = message.content

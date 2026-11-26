@@ -10,6 +10,7 @@ registry.register_category('status', 'Discord Status & Lyric', 'Tùy chỉnh Cus
 registry.register_category('voice', 'Discord Voice 24/7 & Audio', 'Treo voice phòng đàm thoại 24/7 và tiện ích âm thanh')
 registry.register_category('script', 'Automation Scripts', 'Tự động hóa nhiệm vụ Quests và các script Discord tiện ích')
 registry.register_category('userbot', 'UserBot Assistant Engine', 'Hệ thống Discord UserBot tự động hóa toàn diện với hơn 30+ module cogs')
+registry.register_category('ai', 'Ask DIPRE', 'Trợ lý AI đa bậc DIPRE Flash & DIPRE Pro với RAG nội bộ và Rate-Safe Guard')
 
 import modules.auth
 import modules.account
@@ -21,5 +22,6 @@ import modules.lyrics
 import modules.voice
 import modules.template
 import modules.userbot
+import modules.ai
 
 __all__ = ['registry']
