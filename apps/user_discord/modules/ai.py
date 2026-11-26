@@ -239,48 +239,125 @@ def _draw_think_vector_logo(think_key: str, size: int = 128):
 
 
 def _draw_brand_vector_logo(brand_key: str, size: int = 128):
-    """Vẽ logo vector hi-res cho 3 bậc DIPRE AI (Flash, Standard, Pro)."""
+    """Vẽ 3 biến thể của Logo DIPRE chính chủ (Cubic Bezier Liquid Mercury D) cho Flash / Standard / Pro."""
     from PIL import Image, ImageDraw
-    import math
 
-    canvas_size = size * 4
-    im = Image.new("RGBA", (canvas_size, canvas_size), (0, 0, 0, 0))
+    cs = size * 4
+    im = Image.new("RGBA", (cs, cs), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
 
     brand = _normalize_model_key(brand_key)
-    cx, cy = canvas_size / 2, canvas_size / 2
-    r = canvas_size * 0.44
+
+    def sc(x: float, y: float) -> Tuple[float, float]:
+        return (x / 64.0 * cs, y / 64.0 * cs)
+
+    def cubic(p0, p1, p2, p3, steps=20):
+        pts = []
+        for i in range(1, steps + 1):
+            t = i / steps
+            mt = 1.0 - t
+            x = mt**3 * p0[0] + 3 * mt**2 * t * p1[0] + 3 * mt * t**2 * p2[0] + t**3 * p3[0]
+            y = mt**3 * p0[1] + 3 * mt**2 * t * p1[1] + 3 * mt * t**2 * p2[1] + t**3 * p3[1]
+            pts.append(sc(x, y))
+        return pts
+
+    # Bảng màu riêng từng biến thể dựa trên DNA logo DIPRE
+    if brand == "flash":
+        bg_col = (7, 16, 17, 252)
+        rim_col = (31, 202, 173, 225)
+        main_col = (232, 255, 250, 255)     # Bạc ánh ngọc siêu tốc
+        shadow_col = (15, 118, 110, 235)    # Đáy ngọc sâu
+        glow_col = (31, 202, 173, 100)
+        core_col = (31, 202, 173, 255)
+    elif brand == "standard":
+        bg_col = (9, 13, 20, 252)
+        rim_col = (56, 189, 248, 225)
+        main_col = (244, 248, 255, 255)     # Titan trắng lạnh cân bằng
+        shadow_col = (71, 105, 145, 235)    # Đáy thép xanh
+        glow_col = (56, 189, 248, 95)
+        core_col = (56, 189, 248, 255)
+    else:  # pro
+        bg_col = (18, 13, 6, 252)
+        rim_col = (245, 184, 0, 235)
+        main_col = (254, 243, 199, 255)     # Bạch kim ánh vàng hoàng kim
+        shadow_col = (180, 105, 14, 245)    # Đáy hổ phách đậm
+        glow_col = (245, 184, 0, 115)
+        core_col = (245, 184, 0, 255)
+
+    # Khung Squircle chuẩn DIPRE
+    pad = cs * 0.04
+    d.rounded_rectangle(
+        [pad, pad, cs - pad, cs - pad],
+        radius=int(cs * 0.24),
+        fill=bg_col,
+        outline=rim_col,
+        width=max(2, int(cs * 0.028)),
+    )
+
+    # Vệt ánh sáng phụ phân biệt cấp độ
+    if brand == "flash":
+        # 2 vệt tốc độ góc trên trái
+        d.line([sc(8, 18), sc(20, 10)], fill=(31, 202, 173, 120), width=max(1, int(cs * 0.025)))
+        d.line([sc(10, 25), sc(18, 19)], fill=(110, 231, 216, 95), width=max(1, int(cs * 0.02)))
+    elif brand == "pro":
+        # Viền khung phụ mạ vàng bên trong cho bản Flagship
+        p2 = cs * 0.095
+        d.rounded_rectangle(
+            [p2, p2, cs - p2, cs - p2],
+            radius=int(cs * 0.20),
+            outline=(253, 224, 71, 65),
+            width=max(1, int(cs * 0.012)),
+        )
+
+    # Bóng đáy Liquid Mercury D
+    m_pts = [sc(14, 51.5)]
+    m_pts += cubic((14, 51.5), (20.5, 56.2), (33.5, 57.2), (42.8, 53))
+    m_pts += cubic((42.8, 53), (50.5, 49.4), (54.5, 42.2), (54.5, 34.2))
+    m_pts += cubic((54.5, 34.2), (51.6, 41.4), (44.5, 46.8), (34.8, 47.6))
+    m_pts += cubic((34.8, 47.6), (26.5, 48.3), (20, 47.2), (14, 51.5))
+    d.polygon(m_pts, fill=shadow_col)
+
+    # Đường cong Liquid Mercury D chính
+    p_pts = [sc(14.5, 47.5)]
+    p_pts += cubic((14.5, 47.5), (11.2, 35), (12.5, 16.5), (20.5, 10.5))
+    p_pts += cubic((20.5, 10.5), (26, 6.4), (36, 6.8), (44, 11.5))
+    p_pts += cubic((44, 11.5), (51.5, 16), (55.2, 24), (54.2, 33))
+    p_pts += cubic((54.2, 33), (53.2, 41), (47.5, 46.8), (40, 48.6))
+    p_pts += cubic((40, 48.6), (45.5, 42.8), (46.8, 34), (44.2, 26.5))
+    p_pts += cubic((44.2, 26.5), (41.5, 19.2), (34.2, 15.8), (27, 17.2))
+    p_pts += cubic((27, 17.2), (21.2, 18.4), (19.2, 25), (19.6, 34.8))
+    p_pts += cubic((19.6, 34.8), (19.8, 40.5), (17.5, 45.2), (14.5, 47.5))
+    d.polygon(p_pts, fill=main_col)
+
+    # Tâm lõi đặc trưng riêng cho 3 biến thể
+    cx, cy = sc(31.5, 32.2)
+    cr = 6.8 / 64.0 * cs
+    d.ellipse([cx - cr * 1.4, cy - cr * 1.4, cx + cr * 1.4, cy + cr * 1.4], fill=glow_col)
 
     if brand == "flash":
-        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(10, 26, 28, 245), outline=(31, 202, 173, 210), width=int(canvas_size * 0.035))
+        # Flash: Tâm ngọc + tia sét lõi trắng sắc nét
+        d.ellipse([cx - cr, cy - cr, cx + cr, cy + cr], fill=core_col)
         bolt = [
-            (cx + r * 0.08, cy - r * 0.56),
-            (cx - r * 0.36, cy + r * 0.06),
-            (cx + r * 0.02, cy + r * 0.06),
-            (cx - r * 0.10, cy + r * 0.56),
-            (cx + r * 0.38, cy - r * 0.08),
-            (cx + r * 0.00, cy - r * 0.08),
+            sc(32.5, 25.5), sc(28.0, 32.6), sc(31.4, 32.6),
+            sc(30.3, 38.8), sc(35.0, 31.6), sc(31.6, 31.6),
         ]
-        d.polygon(bolt, fill=(31, 202, 173, 255))
-        d.line(bolt + [bolt[0]], fill=(210, 255, 248, 220), width=int(canvas_size * 0.02))
+        d.polygon(bolt, fill=(255, 255, 255, 245))
     elif brand == "standard":
-        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(12, 24, 38, 245), outline=(56, 189, 248, 220), width=int(canvas_size * 0.035))
-        ring_r = r * 0.56
-        d.ellipse([cx - ring_r, cy - ring_r, cx + ring_r, cy + ring_r], outline=(56, 189, 248, 235), width=int(canvas_size * 0.06))
-        core_r = r * 0.22
-        d.ellipse([cx - core_r, cy - core_r, cx + core_r, cy + core_r], fill=(224, 242, 254, 255))
+        # Standard: Quỹ đạo vòng kép cyan + nhân trắng cân bằng
+        rr = cr * 1.15
+        d.ellipse([cx - rr, cy - rr, cx + rr, cy + rr], outline=core_col, width=max(2, int(cs * 0.032)))
+        ir = cr * 0.56
+        d.ellipse([cx - ir, cy - ir, cx + ir, cy + ir], fill=(224, 242, 254, 255))
     else:
-        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(32, 24, 10, 245), outline=(245, 184, 0, 220), width=int(canvas_size * 0.035))
-        pts = []
-        for i in range(6):
-            angle = math.radians(60 * i - 30)
-            pts.append((cx + r * 0.62 * math.cos(angle), cy + r * 0.62 * math.sin(angle)))
-        d.polygon([cx, cy, pts[5], pts[0], pts[1]], fill=(250, 204, 21, 255))
-        d.polygon([cx, cy, pts[1], pts[2], pts[3]], fill=(245, 158, 11, 255))
-        d.polygon([cx, cy, pts[3], pts[4], pts[5]], fill=(217, 119, 6, 255))
-        d.line([pts[0], pts[1], pts[2], pts[3], pts[4], pts[5], pts[0]], fill=(255, 248, 220, 230), width=int(canvas_size * 0.025))
-        cr = canvas_size * 0.07
-        d.ellipse([cx - cr, cy - cr, cx + cr, cy + cr], fill=(255, 255, 255, 250))
+        # Pro: Hào quang hoàng kim + ngôi sao kim cương 4 cánh
+        d.ellipse([cx - cr, cy - cr, cx + cr, cy + cr], fill=core_col)
+        star = [
+            sc(31.5, 23.0), sc(33.5, 30.2),
+            sc(40.7, 32.2), sc(33.5, 34.2),
+            sc(31.5, 41.4), sc(29.5, 34.2),
+            sc(22.3, 32.2), sc(29.5, 30.2),
+        ]
+        d.polygon(star, fill=(255, 251, 235, 255))
 
     return im.resize((size, size), Image.Resampling.LANCZOS)
 
