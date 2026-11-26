@@ -17,7 +17,7 @@ COMMANDS_CATALOG = [
         'description': 'Tích hợp DIPRE Flash & DIPRE Pro trực tiếp trong tin nhắn chat và Studio',
         'commands': [
             {'name': 'ai <câu hỏi>', 'desc': 'Trò chuyện và hỏi đáp thông minh với DIPRE AI'},
-            {'name': 'ai model <flash|pro>', 'desc': 'Chuyển đổi giữa DIPRE Flash ⚡ (siêu tốc) và DIPRE Pro 🧠 (chuyên sâu)'},
+            {'name': 'ai model <flash|pro>', 'desc': 'Chuyển đổi giữa DIPRE Flash (siêu tốc) và DIPRE Pro (chuyên sâu)'},
             {'name': 'ask <nội dung>', 'desc': 'Hỏi nhanh AI xử lý dữ liệu & cấu hình DIPRE'}
         ]
     },

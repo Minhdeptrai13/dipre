@@ -2130,12 +2130,14 @@ beyond the veil, control returns</textarea>
             <!-- ChatGPT-style Segmented Tier Selector -->
             <div class="inline-flex items-center p-0.5 rounded-lg bg-obsidian border border-hairline ml-1">
               <button id="ai-tier-flash" onclick="setAiTier('flash')"
-                class="px-2.5 py-1 rounded-md text-[11.5px] font-semibold transition-all flex items-center gap-1 bg-teal text-[#09090B]">
-                <span>DIPRE Flash</span><span>⚡</span>
+                class="px-2.5 py-1 rounded-md text-[11.5px] font-semibold transition-all flex items-center gap-1.5 bg-teal text-[#09090B]">
+                <svg viewBox="0 0 16 16" fill="none" class="w-3.5 h-3.5 shrink-0"><path d="M9.2 1.5L3.5 9.2h4.2l-.9 5.3L12.5 6.8H8.3l.9-5.3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" fill="currentColor" fill-opacity="0.16"/></svg>
+                <span>DIPRE Flash</span>
               </button>
               <button id="ai-tier-pro" onclick="setAiTier('pro')"
-                class="px-2.5 py-1 rounded-md text-[11.5px] font-semibold transition-all flex items-center gap-1 text-muted hover:text-ink">
-                <span>DIPRE Pro</span><span>🧠</span>
+                class="px-2.5 py-1 rounded-md text-[11.5px] font-semibold transition-all flex items-center gap-1.5 text-muted hover:text-ink">
+                <svg viewBox="0 0 16 16" fill="none" class="w-3.5 h-3.5 shrink-0"><path d="M8 1.5L13.6 4.75v6.5L8 14.5 2.4 11.25v-6.5L8 1.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><circle cx="8" cy="8" r="2.1" fill="currentColor"/></svg>
+                <span>DIPRE Pro</span>
               </button>
             </div>
           </div>
@@ -2228,8 +2230,9 @@ beyond the veil, control returns</textarea>
             <div class="flex items-center justify-between gap-2 pt-1.5">
               <div class="flex items-center gap-2 text-[11px] text-muted">
                 <span id="ai-composer-tier-badge"
-                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-obsidian border border-hairline text-teal font-medium">
-                  Flash ⚡
+                  class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-obsidian border border-hairline text-teal font-medium">
+                  <svg viewBox="0 0 16 16" fill="none" class="w-3.5 h-3.5 shrink-0"><path d="M9.2 1.5L3.5 9.2h4.2l-.9 5.3L12.5 6.8H8.3l.9-5.3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" fill="currentColor" fill-opacity="0.16"/></svg>
+                  <span>Flash</span>
                 </span>
                 <span class="hidden sm:inline text-[10.5px] font-mono text-zinc-500">Enter gửi • Shift+Enter xuống
                   dòng</span>
@@ -5138,6 +5141,8 @@ beyond the veil, control returns</textarea>
 
     /* ==================== ASK DIPRE ENGINE (CHATGPT-GRADE DRAWER) ==================== */
     const DIPRE_CHAT_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" class="w-full h-full"><path d="M14.5 47.5C11.2 35 12.5 16.5 20.5 10.5C26 6.4 36 6.8 44 11.5C51.5 16 55.2 24 54.2 33C53.2 41 47.5 46.8 40 48.6C45.5 42.8 46.8 34 44.2 26.5C41.5 19.2 34.2 15.8 27 17.2C21.2 18.4 19.2 25 19.6 34.8C19.8 40.5 17.5 45.2 14.5 47.5Z" fill="#FAFAFA"/><path d="M14 51.5C20.5 56.2 33.5 57.2 42.8 53C50.5 49.4 54.5 42.2 54.5 34.2C51.6 41.4 44.5 46.8 34.8 47.6C26.5 48.3 20 47.2 14 51.5Z" fill="#6B7280"/><circle cx="31.5" cy="32.2" r="6.4" fill="#1FCAAD"/></svg>`;
+    const DIPRE_FLASH_SVG = `<svg viewBox="0 0 16 16" fill="none" class="w-3.5 h-3.5 shrink-0"><path d="M9.2 1.5L3.5 9.2h4.2l-.9 5.3L12.5 6.8H8.3l.9-5.3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" fill="currentColor" fill-opacity="0.16"/></svg>`;
+    const DIPRE_PRO_SVG = `<svg viewBox="0 0 16 16" fill="none" class="w-3.5 h-3.5 shrink-0"><path d="M8 1.5L13.6 4.75v6.5L8 14.5 2.4 11.25v-6.5L8 1.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><circle cx="8" cy="8" r="2.1" fill="currentColor"/></svg>`;
     const AI_STORAGE_KEY = 'dipre_ai_sessions_v1';
     const AI_WS_LABELS = {
       overview: 'Tổng Quan',
@@ -5256,19 +5261,19 @@ beyond the veil, control returns</textarea>
 
       if (flashBtn && proBtn) {
         flashBtn.className = aiState.tier === 'flash'
-          ? 'px-2.5 py-1 rounded-md text-[11.5px] font-semibold transition-all flex items-center gap-1 bg-teal text-[#09090B]'
-          : 'px-2.5 py-1 rounded-md text-[11.5px] font-semibold transition-all flex items-center gap-1 text-muted hover:text-ink';
+          ? 'px-2.5 py-1 rounded-md text-[11.5px] font-semibold transition-all flex items-center gap-1.5 bg-teal text-[#09090B]'
+          : 'px-2.5 py-1 rounded-md text-[11.5px] font-semibold transition-all flex items-center gap-1.5 text-muted hover:text-ink';
         proBtn.className = aiState.tier === 'pro'
-          ? 'px-2.5 py-1 rounded-md text-[11.5px] font-semibold transition-all flex items-center gap-1 bg-amber text-[#09090B]'
-          : 'px-2.5 py-1 rounded-md text-[11.5px] font-semibold transition-all flex items-center gap-1 text-muted hover:text-ink';
+          ? 'px-2.5 py-1 rounded-md text-[11.5px] font-semibold transition-all flex items-center gap-1.5 bg-amber text-[#09090B]'
+          : 'px-2.5 py-1 rounded-md text-[11.5px] font-semibold transition-all flex items-center gap-1.5 text-muted hover:text-ink';
       }
       if (compBadge) {
         if (aiState.tier === 'pro') {
-          compBadge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-obsidian border border-amber/40 text-amber font-medium';
-          compBadge.textContent = 'Pro 🧠';
+          compBadge.className = 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-obsidian border border-amber/40 text-amber font-medium';
+          compBadge.innerHTML = `${DIPRE_PRO_SVG}<span>Pro</span>`;
         } else {
-          compBadge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-obsidian border border-hairline text-teal font-medium';
-          compBadge.textContent = 'Flash ⚡';
+          compBadge.className = 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-obsidian border border-hairline text-teal font-medium';
+          compBadge.innerHTML = `${DIPRE_FLASH_SVG}<span>Flash</span>`;
         }
       }
     }
@@ -5484,11 +5489,11 @@ beyond the veil, control returns</textarea>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-left max-w-md mx-auto pt-1">
               <button onclick="setAiTier('flash')" class="p-3 rounded-xl bg-[#151519] hover:bg-[#1B1B21] border ${aiState.tier === 'flash' ? 'border-teal/50' : 'border-hairline'} transition-colors">
-                <div class="text-[12.5px] font-semibold text-teal flex items-center gap-1.5">DIPRE Flash ⚡</div>
+                <div class="text-[12.5px] font-semibold text-teal flex items-center gap-1.5">${DIPRE_FLASH_SVG}<span>DIPRE Flash</span></div>
                 <div class="text-[11px] text-muted mt-1 leading-snug">Siêu tốc (~3–6s) để hỏi lệnh nhanh, tra cấu hình &amp; tối ưu thao tác.</div>
               </button>
               <button onclick="setAiTier('pro')" class="p-3 rounded-xl bg-[#151519] hover:bg-[#1B1B21] border ${aiState.tier === 'pro' ? 'border-amber/50' : 'border-hairline'} transition-colors">
-                <div class="text-[12.5px] font-semibold text-amber flex items-center gap-1.5">DIPRE Pro 🧠</div>
+                <div class="text-[12.5px] font-semibold text-amber flex items-center gap-1.5">${DIPRE_PRO_SVG}<span>DIPRE Pro</span></div>
                 <div class="text-[11px] text-muted mt-1 leading-snug">Suy luận sâu (~9–16s) cho kiến trúc RPC, JSON payload &amp; Anti-Ban.</div>
               </button>
             </div>
@@ -5506,7 +5511,14 @@ beyond the veil, control returns</textarea>
             </div>
           `;
         }
-        const metaStr = m.meta ? `<span class="text-[10px] font-mono text-zinc-500">${escapeHtmlAi(m.meta)}</span>` : '';
+        const cleanMeta = (m.meta || '').replace(/[⚡🧠]/g, '').replace(/\s+/g, ' ').trim();
+        const isProMsg = (m.tier === 'pro') || cleanMeta.toLowerCase().includes('pro');
+        const metaIcon = isProMsg
+          ? `<span class="text-amber inline-flex items-center">${DIPRE_PRO_SVG}</span>`
+          : `<span class="text-teal inline-flex items-center">${DIPRE_FLASH_SVG}</span>`;
+        const metaStr = cleanMeta
+          ? `<span class="inline-flex items-center gap-1 text-[10px] font-mono text-zinc-500">${metaIcon}<span>${escapeHtmlAi(cleanMeta)}</span></span>`
+          : '';
         const actionPills = buildSmartActionPills(m.content);
         return `
           <div class="flex items-start gap-2.5">
@@ -5528,7 +5540,10 @@ beyond the veil, control returns</textarea>
       }).join('');
 
       if (aiState.loading) {
-        const tierLabel = aiState.tier === 'pro' ? 'DIPRE Pro 🧠' : 'DIPRE Flash ⚡';
+        const isProLoad = aiState.tier === 'pro';
+        const tierBadge = isProLoad
+          ? `<span class="inline-flex items-center gap-1 text-amber font-medium">${DIPRE_PRO_SVG}<span>DIPRE Pro</span></span>`
+          : `<span class="inline-flex items-center gap-1 text-teal font-medium">${DIPRE_FLASH_SVG}<span>DIPRE Flash</span></span>`;
         html += `
           <div class="flex items-start gap-2.5">
             <div class="w-7 h-7 rounded-full bg-[#09090D] border border-teal/40 flex items-center justify-center p-1 shrink-0 mt-0.5 overflow-hidden">
@@ -5538,7 +5553,7 @@ beyond the veil, control returns</textarea>
               <div class="flex items-center gap-1">
                 <span class="ai-typing-dot"></span><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span>
               </div>
-              <span class="text-[12px] text-muted">${tierLabel} đang xử lý...</span>
+              <span class="text-[12px] text-muted flex items-center gap-1.5">${tierBadge}<span>đang xử lý...</span></span>
             </div>
           </div>
         `;
@@ -5602,8 +5617,9 @@ beyond the veil, control returns</textarea>
           const latSec = ((data.latency_ms || 0) / 1000).toFixed(2);
           sess.messages.push({
             role: 'assistant',
+            tier: data.tier || aiState.tier,
             content: data.reply,
-            meta: `${data.tier_name || 'DIPRE AI'} • ${latSec}s`,
+            meta: `${(data.tier_name || 'DIPRE AI').replace(/[⚡🧠]/g, '').trim()} • ${latSec}s`,
           });
         } else {
           sess.messages.push({

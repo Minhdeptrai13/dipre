@@ -20,7 +20,7 @@ DIPRE_TIERS: Dict[str, Dict[str, Any]] = {
     "flash": {
         "id": "flash",
         "name": "DIPRE Flash",
-        "badge": "⚡",
+        "badge": "FLASH",
         "tagline": "Phản hồi siêu tốc (~3-6s) cho hỏi đáp nhanh, lệnh UserBot & tinh chỉnh cấu hình.",
         "candidates": [
             {
@@ -49,7 +49,7 @@ DIPRE_TIERS: Dict[str, Dict[str, Any]] = {
     "pro": {
         "id": "pro",
         "name": "DIPRE Pro",
-        "badge": "🧠",
+        "badge": "PRO",
         "tagline": "Suy luận chuyên sâu (~9-16s) cho kiến trúc RPC, Anti-Ban, gỡ lỗi & JSON cấu hình.",
         "candidates": [
             {
@@ -282,7 +282,7 @@ def call_dipre_ai(
                             "ok": True,
                             "text": content,
                             "tier": norm_tier,
-                            "tier_name": f"{tier_cfg['name']} {tier_cfg['badge']}",
+                            "tier_name": tier_cfg["name"],
                             "latency_ms": latency_ms,
                             "error": "",
                         }
@@ -299,7 +299,7 @@ def call_dipre_ai(
         "ok": False,
         "text": "",
         "tier": norm_tier,
-        "tier_name": f"{tier_cfg['name']} {tier_cfg['badge']}",
+        "tier_name": tier_cfg["name"],
         "latency_ms": latency_ms,
         "error": last_err or "Gateway busy",
     }

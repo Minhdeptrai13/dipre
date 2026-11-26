@@ -27,7 +27,7 @@ def api_ai_meta():
             'id': t['id'],
             'name': t['name'],
             'badge': t['badge'],
-            'label': f"{t['name']} {t['badge']}",
+            'label': t['name'],
             'tagline': t['tagline'],
         })
     return jsonify({
