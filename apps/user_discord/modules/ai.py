@@ -108,9 +108,9 @@ AVAILABLE_MODELS: Dict[str, Dict[str, Any]] = {
 }
 
 REASONING_LEVELS: Dict[str, Dict[str, Any]] = {
-    "low": {"label": "Nhanh (Low)", "effort": "low", "max_tokens": 1600, "bonus_timeout": 0.0},
-    "medium": {"label": "Cân bằng (Medium)", "effort": "medium", "max_tokens": 2400, "bonus_timeout": 4.0},
-    "high": {"label": "Sâu (High)", "effort": "high", "max_tokens": 3400, "bonus_timeout": 12.0},
+    "low": {"label": "Thấp (Low)", "effort": "low", "max_tokens": 1600, "bonus_timeout": 0.0},
+    "medium": {"label": "Trung bình (Medium)", "effort": "medium", "max_tokens": 2400, "bonus_timeout": 4.0},
+    "high": {"label": "Cao (High)", "effort": "high", "max_tokens": 3400, "bonus_timeout": 12.0},
 }
 
 DEFAULT_MODEL_KEY = "standard"
@@ -132,9 +132,9 @@ def _normalize_model_key(key: Optional[str]) -> str:
 
 def _normalize_think_key(key: Optional[str]) -> str:
     k = (key or DEFAULT_THINK_KEY).strip().lower()
-    if k in ("low", "fast", "nhanh"):
+    if k in ("low", "fast", "nhanh", "thap", "thấp"):
         return "low"
-    if k in ("high", "deep", "sau", "sâu"):
+    if k in ("high", "deep", "sau", "sâu", "cao"):
         return "high"
     return "medium"
 
@@ -942,25 +942,25 @@ class AICog(commands.Cog, name="AI"):
             cur_lbl = REASONING_LEVELS[cur_think]["label"]
             msg = await autorep(
                 ctx.message,
-                f"⚙️ **Mức suy luận hiện tại:** `{cur_think}` ({cur_lbl})\n"
-                f"• `{p}ai think low` : Nhanh (ưu tiên tốc độ)\n"
-                f"• `{p}ai think medium` : Cân bằng (mặc định)\n"
-                f"• `{p}ai think high` : Sâu (phân tích kỹ)"
+                f"⚙️ **Cấp độ tư duy hiện tại:** `{cur_think}` ({cur_lbl})\n"
+                f"• `{p}ai think low` : Thấp (ưu tiên tốc độ)\n"
+                f"• `{p}ai think medium` : Trung bình (mặc định)\n"
+                f"• `{p}ai think high` : Cao (phân tích kỹ)"
             )
             autodelet(msg, delay=30)
             return
         if not is_high_admin:
-            msg = await autorep(ctx.message, "⛔ Lệnh đổi mức suy luận yêu cầu quyền **Admin cấp cao**!")
+            msg = await autorep(ctx.message, "⛔ Lệnh đổi cấp độ tư duy yêu cầu quyền **Admin cấp cao**!")
             autodelet(msg, delay=15)
             return
         lv = _normalize_think_key(level)
-        if level.strip().lower() not in ("low", "fast", "nhanh", "medium", "balanced", "high", "deep", "sau", "sâu"):
-            msg = await autorep(ctx.message, f"❌ Mức `{level}` không hợp lệ! Chọn `low`, `medium` hoặc `high`.")
+        if level.strip().lower() not in ("low", "fast", "nhanh", "thap", "thấp", "medium", "balanced", "trungbinh", "high", "deep", "sau", "sâu", "cao"):
+            msg = await autorep(ctx.message, f"❌ Cấp độ `{level}` không hợp lệ! Chọn `low`, `medium` hoặc `high`.")
             autodelet(msg, delay=15)
             return
         self.settings["reasoning_level"] = lv
         self._save_settings()
-        msg = await autorep(ctx.message, f"✅ **Đã chuyển mức độ suy luận AI sang `{lv}` ({REASONING_LEVELS[lv]['label']})!**")
+        msg = await autorep(ctx.message, f"✅ **Đã chuyển cấp độ tư duy AI sang `{lv}` ({REASONING_LEVELS[lv]['label']})!**")
         autodelet(msg, delay=25)
 
     @commands.Cog.listener()

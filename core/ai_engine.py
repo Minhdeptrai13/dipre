@@ -20,30 +20,30 @@ _SSL_CTX.verify_mode = ssl.CERT_NONE
 REASONING_LEVELS: Dict[str, Dict[str, Any]] = {
     "low": {
         "id": "low",
-        "label": "Nhanh",
-        "desc": "Suy luận tối giản, ưu tiên trả lời thẳng và tốc độ.",
+        "label": "Thấp",
+        "desc": "Tư duy tối giản, ưu tiên trả lời thẳng và tốc độ cao.",
         "effort": "low",
         "max_tokens": 1600,
         "timeout_bonus": 0.0,
-        "prompt_hint": "CHẾ ĐỘ SUY LUẬN NHANH: Trả lời trực diện, súc tích nhất có thể, đi thẳng vào bước làm.",
+        "prompt_hint": "CẤP ĐỘ TƯ DUY THẤP: Trả lời trực diện, súc tích nhất có thể, đi thẳng vào bước làm.",
     },
     "medium": {
         "id": "medium",
-        "label": "Cân bằng",
+        "label": "Trung bình",
         "desc": "Cân đối giữa phân tích logic và tốc độ phản hồi (Mặc định).",
         "effort": "medium",
         "max_tokens": 2400,
         "timeout_bonus": 4.0,
-        "prompt_hint": "CHẾ ĐỘ SUY LUẬN CÂN BẰNG: Giải thích rõ ràng, có cấu trúc hợp lý kèm cấu hình/ví dụ khi cần.",
+        "prompt_hint": "CẤP ĐỘ TƯ DUY TRUNG BÌNH: Giải thích rõ ràng, có cấu trúc hợp lý kèm cấu hình/ví dụ khi cần.",
     },
     "high": {
         "id": "high",
-        "label": "Sâu",
-        "desc": "Suy luận đa bước kỹ lưỡng, soi kỹ edge-case và rủi ro Rate-Limit.",
+        "label": "Cao",
+        "desc": "Tư duy đa bước chuyên sâu, soi kỹ edge-case và rủi ro Rate-Limit.",
         "effort": "high",
         "max_tokens": 3400,
         "timeout_bonus": 12.0,
-        "prompt_hint": "CHẾ ĐỘ SUY LUẬN SÂU: Phân tích chi tiết từng bước, chỉ rõ rủi ro 429/Anti-Ban, các phương án dự phòng và JSON/code hoàn chỉnh.",
+        "prompt_hint": "CẤP ĐỘ TƯ DUY CAO: Phân tích chi tiết từng bước, chỉ rõ rủi ro 429/Anti-Ban, các phương án dự phòng và JSON/code hoàn chỉnh.",
     },
 }
 
@@ -232,9 +232,9 @@ def normalize_tier(tier: Optional[str]) -> str:
 
 def normalize_reasoning_level(level: Optional[str]) -> str:
     lv = (level or "medium").strip().lower()
-    if lv in ("low", "fast", "nhanh", "min"):
+    if lv in ("low", "fast", "nhanh", "min", "thap", "thấp"):
         return "low"
-    if lv in ("high", "deep", "sau", "sâu", "max"):
+    if lv in ("high", "deep", "sau", "sâu", "max", "cao"):
         return "high"
     return "medium"
 
