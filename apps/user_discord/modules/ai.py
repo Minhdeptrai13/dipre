@@ -139,6 +139,105 @@ def _normalize_think_key(key: Optional[str]) -> str:
     return "medium"
 
 
+def _draw_dipre_crest_logo(size: int = 128):
+    """Vẽ Logo Vector DIPRE chính chủ bằng nội suy Cubic Bezier khớp 1:1 SVG Liquid Mercury D."""
+    from PIL import Image, ImageDraw
+
+    cs = size * 4
+    im = Image.new("RGBA", (cs, cs), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+
+    def sc(x: float, y: float) -> Tuple[float, float]:
+        return (x / 64.0 * cs, y / 64.0 * cs)
+
+    def cubic(p0, p1, p2, p3, steps=20):
+        pts = []
+        for i in range(1, steps + 1):
+            t = i / steps
+            mt = 1.0 - t
+            x = mt**3 * p0[0] + 3 * mt**2 * t * p1[0] + 3 * mt * t**2 * p2[0] + t**3 * p3[0]
+            y = mt**3 * p0[1] + 3 * mt**2 * t * p1[1] + 3 * mt * t**2 * p2[1] + t**3 * p3[1]
+            pts.append(sc(x, y))
+        return pts
+
+    pad = cs * 0.04
+    d.rounded_rectangle(
+        [pad, pad, cs - pad, cs - pad],
+        radius=int(cs * 0.24),
+        fill=(9, 9, 13, 250),
+        outline=(31, 202, 173, 185),
+        width=max(2, int(cs * 0.025)),
+    )
+
+    # Path 2 (bóng đáy xám Liquid Mercury): M14 51.5 C20.5 56.2 33.5 57.2 42.8 53 C50.5 49.4 54.5 42.2 54.5 34.2 C51.6 41.4 44.5 46.8 34.8 47.6 C26.5 48.3 20 47.2 14 51.5Z
+    m_pts = [sc(14, 51.5)]
+    m_pts += cubic((14, 51.5), (20.5, 56.2), (33.5, 57.2), (42.8, 53))
+    m_pts += cubic((42.8, 53), (50.5, 49.4), (54.5, 42.2), (54.5, 34.2))
+    m_pts += cubic((54.5, 34.2), (51.6, 41.4), (44.5, 46.8), (34.8, 47.6))
+    m_pts += cubic((34.8, 47.6), (26.5, 48.3), (20, 47.2), (14, 51.5))
+    d.polygon(m_pts, fill=(120, 120, 132, 245))
+
+    # Path 1 (chữ D chính): M14.5 47.5 C11.2 35 12.5 16.5 20.5 10.5 C26 6.4 36 6.8 44 11.5 C51.5 16 55.2 24 54.2 33 C53.2 41 47.5 46.8 40 48.6 C45.5 42.8 46.8 34 44.2 26.5 C41.5 19.2 34.2 15.8 27 17.2 C21.2 18.4 19.2 25 19.6 34.8 C19.8 40.5 17.5 45.2 14.5 47.5Z
+    p_pts = [sc(14.5, 47.5)]
+    p_pts += cubic((14.5, 47.5), (11.2, 35), (12.5, 16.5), (20.5, 10.5))
+    p_pts += cubic((20.5, 10.5), (26, 6.4), (36, 6.8), (44, 11.5))
+    p_pts += cubic((44, 11.5), (51.5, 16), (55.2, 24), (54.2, 33))
+    p_pts += cubic((54.2, 33), (53.2, 41), (47.5, 46.8), (40, 48.6))
+    p_pts += cubic((40, 48.6), (45.5, 42.8), (46.8, 34), (44.2, 26.5))
+    p_pts += cubic((44.2, 26.5), (41.5, 19.2), (34.2, 15.8), (27, 17.2))
+    p_pts += cubic((27, 17.2), (21.2, 18.4), (19.2, 25), (19.6, 34.8))
+    p_pts += cubic((19.6, 34.8), (19.8, 40.5), (17.5, 45.2), (14.5, 47.5))
+    d.polygon(p_pts, fill=(250, 250, 252, 255))
+
+    # Tâm tròn ngọc lục bảo #1FCAAD + vệt sáng
+    cx, cy = sc(31.5, 32.2)
+    cr = 6.5 / 64.0 * cs
+    d.ellipse([cx - cr * 1.18, cy - cr * 1.18, cx + cr * 1.18, cy + cr * 1.18], fill=(31, 202, 173, 75))
+    d.ellipse([cx - cr, cy - cr, cx + cr, cy + cr], fill=(31, 202, 173, 255))
+    hr = cr * 0.56
+    d.arc([cx - hr, cy - hr, cx + hr, cy + hr], start=210, end=310, fill=(255, 255, 255, 215), width=max(1, int(cs * 0.025)))
+
+    return im.resize((size, size), Image.Resampling.LANCZOS)
+
+
+def _draw_think_vector_logo(think_key: str, size: int = 128):
+    """Vẽ icon vector hi-res cho 3 cấp độ tư duy (Thấp, Trung bình, Cao)."""
+    from PIL import Image, ImageDraw
+
+    cs = size * 4
+    im = Image.new("RGBA", (cs, cs), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+
+    lv = _normalize_think_key(think_key)
+    cx, cy = cs / 2, cs / 2
+    r = cs * 0.44
+
+    if lv == "low":
+        bg, rim, active_col, active_bars = (10, 26, 28, 245), (31, 202, 173, 220), (31, 202, 173, 255), 1
+    elif lv == "medium":
+        bg, rim, active_col, active_bars = (12, 24, 38, 245), (56, 189, 248, 220), (56, 189, 248, 255), 2
+    else:
+        bg, rim, active_col, active_bars = (34, 24, 10, 245), (245, 184, 0, 230), (245, 184, 0, 255), 3
+
+    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=bg, outline=rim, width=int(cs * 0.035))
+
+    dim_col = (148, 163, 184, 70)
+    bar_w = cs * 0.115
+    gap = cs * 0.055
+    base_y = cy + r * 0.44
+    start_x = cx - (bar_w * 3 + gap * 2) / 2
+    heights = [r * 0.34, r * 0.58, r * 0.84]
+
+    for i, bh in enumerate(heights):
+        bx1 = start_x + i * (bar_w + gap)
+        bx2 = bx1 + bar_w
+        by1 = base_y - bh
+        col = active_col if (i < active_bars) else dim_col
+        d.rounded_rectangle([bx1, by1, bx2, base_y], radius=int(bar_w * 0.35), fill=col)
+
+    return im.resize((size, size), Image.Resampling.LANCZOS)
+
+
 def _draw_brand_vector_logo(brand_key: str, size: int = 128):
     """Vẽ logo vector hi-res cho 3 bậc DIPRE AI (Flash, Standard, Pro)."""
     from PIL import Image, ImageDraw
@@ -193,13 +292,15 @@ def _render_ai_models_card(pfx: str, current_model: str, is_high_admin: bool, cu
 
     cv = G.GlassCanvas(860, 510, scale=2, out=1.25, dim=85)
 
-    # 1. Header
+    # 1. Header với Logo DIPRE chính chủ
     cv.header(
         20, 20, 840, 72,
         "DIPRE AI TIER ENGINE",
-        "Hệ thống phân bậc trí tuệ nhân tạo DIPRE (Chuyển đổi tức thì)",
-        tag="DIPRE CLOUD",
-        tag_grad=((31, 202, 173), (15, 118, 110))
+        "Hệ thống 3 bậc DIPRE AI (Chuyển đổi tức thì theo tác vụ)",
+        tag="DIPRE AI",
+        tag_grad=((31, 202, 173), (15, 118, 110)),
+        logo=_draw_dipre_crest_logo(128),
+        logo_size=44,
     )
 
     y = 112
@@ -268,6 +369,88 @@ def _render_ai_models_card(pfx: str, current_model: str, is_high_admin: bool, cu
     else:
         cv.text(38, f_bar_y + 24, f"Huong dan: Go {pfx}ai <cau hoi> de tro chuyen • Muc suy luan hien tai: {think_lbl}", f_ft1, (255, 255, 255), vcenter=True)
     cv.text(38, f_bar_y + 50, "Quyen doi bac AI & muc suy luan duoc gioi han cho Admintris & Chu he thong.", f_ft2, (180, 195, 215), vcenter=True)
+
+    return cv.finalize(format="PNG")
+
+
+def _render_ai_think_card(pfx: str, current_think: str, is_high_admin: bool, current_model: str = DEFAULT_MODEL_KEY) -> io.BytesIO:
+    """Vẽ ảnh Liquid Glass danh sách 3 cấp độ tư duy (Thấp / Trung bình / Cao) với logo DIPRE."""
+    if G is None:
+        raise RuntimeError("G (glass.py) is not available")
+
+    cv = G.GlassCanvas(860, 510, scale=2, out=1.25, dim=85)
+
+    cur_model = _normalize_model_key(current_model)
+    cur_model_name = AVAILABLE_MODELS[cur_model]["name"]
+    cv.header(
+        20, 20, 840, 72,
+        "DIPRE THINKING LEVELS",
+        f"Điều chỉnh cấp độ tư duy AI (Model hiện tại: {cur_model_name})",
+        tag="ASK DIPRE",
+        tag_grad=((56, 189, 248), (31, 202, 173)),
+        logo=_draw_dipre_crest_logo(128),
+        logo_size=44,
+    )
+
+    think_cards = [
+        ("low", "Cấp Độ: Thấp (Low)", "FAST", (31, 202, 173), "Tư duy tối giản, ưu tiên tốc độ phản hồi nhanh & trả lời thẳng."),
+        ("medium", "Cấp Độ: Trung Bình (Medium)", "BALANCED", (56, 189, 248), "Cân đối giữa phân tích logic và tốc độ phản hồi (Mặc định)."),
+        ("high", "Cấp Độ: Cao (High)", "DEEP", (245, 184, 0), "Tư duy đa bước chuyên sâu, soi kỹ cấu hình & rủi ro Rate-Limit."),
+    ]
+
+    y = 112
+    f_name = cv.font("b", 16)
+    f_tag = cv.font("b", 10.5)
+    f_cmd = cv.font("b", 12)
+    f_desc = cv.font("r", 11.5)
+    f_badge = cv.font("b", 10)
+    cur_lv = _normalize_think_key(current_think)
+
+    for key, title, badge_txt, col, desc in think_cards:
+        is_active = (key == cur_lv)
+        box_card = (20, y, 840, y + 84)
+        if is_active:
+            cv.glass(box_card, 16, blur=18, tint_grad=(col, (40, 45, 70), 120), rim=(255, 120))
+        else:
+            cv.glass(box_card, 16, blur=18, tint=(15, 20, 32, 60), rim=(150, 40))
+
+        icon_img = _draw_think_vector_logo(key, size=cv.s(54))
+        cv._comp(icon_img, cv.s(36), cv.s(y + 15))
+
+        tx = 106
+        t_w = cv.text(tx, y + 21, title, f_name, (255, 255, 255), vcenter=True)
+        cv.pill(
+            tx + t_w + 12,
+            y + 11,
+            badge_txt,
+            f_tag,
+            (col, (max(0, col[0] - 40), max(0, col[1] - 40), max(0, col[2] - 40))),
+            h=20,
+            padx=8,
+        )
+        if is_active:
+            pill_x = tx + t_w + 12 + cv.tlen(badge_txt, f_tag) + 24
+            cv.pill(pill_x, y + 11, "● ĐANG DÙNG", f_badge, ((34, 197, 94), (16, 185, 129)), h=20, padx=8)
+
+        vn_alias = {"low": "thấp", "medium": "trung bình", "high": "cao"}[key]
+        cv.text(tx, y + 43, f"Lệnh chọn: {pfx}ai think {key}   (hoặc: {pfx}ai think {vn_alias})", f_cmd, (253, 224, 71), vcenter=True)
+        cv.text(tx, y + 64, desc, f_desc, (210, 225, 245), vcenter=True)
+
+        right_tag = f"LEVEL {key.upper()}"
+        gw_w = cv.tlen(right_tag, f_badge) + 20
+        cv.glass_pill(825 - gw_w, y + 27, right_tag, f_badge, grad=((70, 80, 105), (45, 55, 75)), h=28, padx=10, tint_alpha=110)
+
+        y += 94
+
+    f_bar_y = 415
+    cv.bar(20, f_bar_y, 840, f_bar_y + 74, r=16)
+    f_ft1 = cv.font("b", 12.5)
+    f_ft2 = cv.font("r", 11)
+    if is_high_admin:
+        cv.text(38, f_bar_y + 24, f"Lệnh chọn: {pfx}ai think <low|medium|high>   •   Hoặc gõ tiếng Việt: thấp / trung bình / cao", f_ft1, (255, 255, 255), vcenter=True)
+    else:
+        cv.text(38, f_bar_y + 24, f"Hướng dẫn: Gõ {pfx}ai <câu hỏi> để chat với AI ({cur_model_name} • Tư duy {REASONING_LEVELS[cur_lv]['label']})", f_ft1, (255, 255, 255), vcenter=True)
+    cv.text(38, f_bar_y + 50, "Quyền thay đổi cấp độ tư duy AI được giới hạn cho Admintris & Chủ hệ thống.", f_ft2, (180, 195, 215), vcenter=True)
 
     return cv.finalize(format="PNG")
 
@@ -627,12 +810,17 @@ class AICog(commands.Cog, name="AI"):
         st_dot = (167, 255, 214) if cur_on else (255, 170, 170)
 
         cur_tier = _normalize_model_key(self.settings.get("current_model", DEFAULT_MODEL_KEY))
+        cur_think = _normalize_think_key(self.settings.get("reasoning_level", DEFAULT_THINK_KEY))
         tier_label = AVAILABLE_MODELS[cur_tier]["name"]
+        think_short = REASONING_LEVELS[cur_think]["label"].split(" ")[0]
         cv.header(
             pad, pad, LW - pad, head_h,
             "DIPRE AI MONITOR PANEL",
-            f"Prefix  {pfx}   •   Engine: {tier_label}   •   {len(on_guilds)} Active Server(s)",
+            f"Prefix {pfx} • {tier_label} ({think_short}) • {len(on_guilds)} Active Server(s)",
             tag="DIPRE AI",
+            tag_grad=((31, 202, 173), (15, 118, 110)),
+            logo=_draw_dipre_crest_logo(128),
+            logo_size=44,
             right_reserve=180
         )
         cv.glass_pill(
@@ -942,20 +1130,42 @@ class AICog(commands.Cog, name="AI"):
 
     @cmd_ai.command(name="think", aliases=["reasoning", "suyluan", "effort"])
     async def ai_think(self, ctx: commands.Context, *, level: Optional[str] = None):
-        """Xem hoặc đổi mức độ suy luận (low / medium / high) cho model hiện tại."""
+        """Xem (thẻ ảnh Liquid Glass) hoặc đổi cấp độ tư duy (low / medium / high)."""
         p = self._pfx()
         is_high_admin, _ = self._check_privilege(ctx.author.id)
         cur_think = _normalize_think_key(self.settings.get("reasoning_level", DEFAULT_THINK_KEY))
+        cur_model = _normalize_model_key(self.settings.get("current_model", DEFAULT_MODEL_KEY))
         if not level:
             cur_lbl = REASONING_LEVELS[cur_think]["label"]
-            msg = await autorep(
-                ctx.message,
-                f"⚙️ **Cấp độ tư duy hiện tại:** `{cur_think}` ({cur_lbl})\n"
-                f"• `{p}ai think low` (hoặc `thấp`) : Thấp — ưu tiên tốc độ\n"
-                f"• `{p}ai think medium` (hoặc `trung bình`) : Trung bình — mặc định\n"
-                f"• `{p}ai think high` (hoặc `cao`) : Cao — phân tích kỹ"
-            )
-            autodelet(msg, delay=30)
+            sent_msg = None
+            if G is not None:
+                try:
+                    loop = asyncio.get_running_loop()
+                    buf = await loop.run_in_executor(
+                        None,
+                        _render_ai_think_card,
+                        p,
+                        cur_think,
+                        is_high_admin,
+                        cur_model,
+                    )
+                    file = discord.File(buf, filename="ai_think.png")
+                    sent_msg = await autorep(
+                        ctx.message,
+                        content=f"⚙️ **CẤP ĐỘ TƯ DUY DIPRE AI**\n*Đang bật:* **{cur_lbl}** (`{cur_think}`)",
+                        file=file,
+                    )
+                except Exception:
+                    sent_msg = None
+            if not sent_msg:
+                sent_msg = await autorep(
+                    ctx.message,
+                    f"⚙️ **Cấp độ tư duy hiện tại:** `{cur_think}` ({cur_lbl})\n"
+                    f"• `{p}ai think low` (hoặc `thấp`) : Thấp — ưu tiên tốc độ\n"
+                    f"• `{p}ai think medium` (hoặc `trung bình`) : Trung bình — mặc định\n"
+                    f"• `{p}ai think high` (hoặc `cao`) : Cao — phân tích kỹ"
+                )
+            autodelet(sent_msg, delay=60)
             return
         if not is_high_admin:
             msg = await autorep(ctx.message, "⛔ Lệnh đổi cấp độ tư duy yêu cầu quyền **Admin cấp cao**!")
