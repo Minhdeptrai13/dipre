@@ -2098,8 +2098,12 @@ beyond the veil, control returns</textarea>
   <!-- ==================== 5A. FLOATING ASK DIPRE LAUNCHER ==================== -->
   <button id="floating-ai-btn" onclick="openAiDrawer()" title="Mở Ask DIPRE (Flash &amp; Pro)"
     class="fixed bottom-12 right-4 sm:right-5 z-40 h-10 px-3.5 rounded-full bg-[#111114]/95 hover:bg-[#18181E] backdrop-blur-md border border-teal/45 text-[12.5px] font-semibold text-ink flex items-center gap-2 shadow-[0_8px_28px_rgba(0,0,0,0.65),0_0_18px_rgba(31,202,173,0.2)] hover:border-teal transition-all group">
-    <span class="w-5 h-5 rounded-full bg-teal/20 text-teal flex items-center justify-center group-hover:scale-105 transition-transform">
-      <i data-lucide="sparkles" class="w-3 h-3"></i>
+    <span class="w-6 h-6 rounded-full bg-[#09090D] border border-teal/40 flex items-center justify-center p-0.5 overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" class="w-full h-full">
+        <path d="M14.5 47.5C11.2 35 12.5 16.5 20.5 10.5C26 6.4 36 6.8 44 11.5C51.5 16 55.2 24 54.2 33C53.2 41 47.5 46.8 40 48.6C45.5 42.8 46.8 34 44.2 26.5C41.5 19.2 34.2 15.8 27 17.2C21.2 18.4 19.2 25 19.6 34.8C19.8 40.5 17.5 45.2 14.5 47.5Z" fill="#FAFAFA"/>
+        <path d="M14 51.5C20.5 56.2 33.5 57.2 42.8 53C50.5 49.4 54.5 42.2 54.5 34.2C51.6 41.4 44.5 46.8 34.8 47.6C26.5 48.3 20 47.2 14 51.5Z" fill="#6B7280"/>
+        <circle cx="31.5" cy="32.2" r="6.4" fill="#1FCAAD"/>
+      </svg>
     </span>
     <span>Ask DIPRE</span>
     <span class="font-mono text-[9.5px] px-1.5 py-0.5 rounded-full bg-teal/15 text-teal border border-teal/25">Flash / Pro</span>
@@ -2115,8 +2119,12 @@ beyond the veil, control returns</textarea>
         <div class="flex items-center justify-between gap-2">
           <div class="flex items-center gap-2.5 min-w-0">
             <div
-              class="w-7 h-7 rounded-lg bg-teal/15 border border-teal/35 flex items-center justify-center text-teal shrink-0">
-              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+              class="w-7 h-7 rounded-lg bg-[#09090D] border border-teal/40 flex items-center justify-center p-1 overflow-hidden shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" class="w-full h-full">
+                <path d="M14.5 47.5C11.2 35 12.5 16.5 20.5 10.5C26 6.4 36 6.8 44 11.5C51.5 16 55.2 24 54.2 33C53.2 41 47.5 46.8 40 48.6C45.5 42.8 46.8 34 44.2 26.5C41.5 19.2 34.2 15.8 27 17.2C21.2 18.4 19.2 25 19.6 34.8C19.8 40.5 17.5 45.2 14.5 47.5Z" fill="#FAFAFA"/>
+                <path d="M14 51.5C20.5 56.2 33.5 57.2 42.8 53C50.5 49.4 54.5 42.2 54.5 34.2C51.6 41.4 44.5 46.8 34.8 47.6C26.5 48.3 20 47.2 14 51.5Z" fill="#6B7280"/>
+                <circle cx="31.5" cy="32.2" r="6.4" fill="#1FCAAD"/>
+              </svg>
             </div>
             <span class="font-display font-bold text-[15px] tracking-tight text-ink">Ask DIPRE</span>
             <!-- ChatGPT-style Segmented Tier Selector -->
@@ -2270,19 +2278,19 @@ beyond the veil, control returns</textarea>
 
     // --- BINDING SERVER JINJA CONTEXT INTO CLIENT STATE ---
     const SERVER_CONTEXT = {
-      username: {{ username| tojson }},
-    hasToken: { { has_token | tojson } },
-    discordUsername: { { discord_username | tojson } },
-    discordAvatar: { { discord_avatar | tojson } },
-    discordId: { { discord_id |default ('', true) | tojson } },
-    avatarDecoration: { { avatar_decoration |default ('', true) | tojson } },
-    banner: { { banner |default ('', true) | tojson } },
-    profileEffect: { { profile_effect |default ('', true) | tojson } },
-    profileEffectData: { { profile_effect_data | tojson if profile_effect_data else 'null' } },
-    customStatus: { { custom_status |default ('', true) | tojson } },
-    bio: { { bio |default ('', true) | tojson } },
-    badges: { { badges |default ([], true) | tojson } },
-    initials: { { (avatar_info.initials if (avatar_info and avatar_info.initials) else 'MN')| tojson } }
+      username: {{ username | tojson }},
+      hasToken: {{ has_token | tojson }},
+      discordUsername: {{ discord_username | tojson }},
+      discordAvatar: {{ discord_avatar | tojson }},
+      discordId: {{ discord_id | default('', true) | tojson }},
+      avatarDecoration: {{ avatar_decoration | default('', true) | tojson }},
+      banner: {{ banner | default('', true) | tojson }},
+      profileEffect: {{ profile_effect | default('', true) | tojson }},
+      profileEffectData: {{ profile_effect_data | tojson if profile_effect_data else 'null' }},
+      customStatus: {{ custom_status | default('', true) | tojson }},
+      bio: {{ bio | default('', true) | tojson }},
+      badges: {{ badges | default([], true) | tojson }},
+      initials: {{ (avatar_info.initials if (avatar_info and avatar_info.initials) else 'MN') | tojson }}
     };
 
     const state = {
@@ -5129,6 +5137,7 @@ beyond the veil, control returns</textarea>
     }
 
     /* ==================== ASK DIPRE ENGINE (CHATGPT-GRADE DRAWER) ==================== */
+    const DIPRE_CHAT_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" class="w-full h-full"><path d="M14.5 47.5C11.2 35 12.5 16.5 20.5 10.5C26 6.4 36 6.8 44 11.5C51.5 16 55.2 24 54.2 33C53.2 41 47.5 46.8 40 48.6C45.5 42.8 46.8 34 44.2 26.5C41.5 19.2 34.2 15.8 27 17.2C21.2 18.4 19.2 25 19.6 34.8C19.8 40.5 17.5 45.2 14.5 47.5Z" fill="#FAFAFA"/><path d="M14 51.5C20.5 56.2 33.5 57.2 42.8 53C50.5 49.4 54.5 42.2 54.5 34.2C51.6 41.4 44.5 46.8 34.8 47.6C26.5 48.3 20 47.2 14 51.5Z" fill="#6B7280"/><circle cx="31.5" cy="32.2" r="6.4" fill="#1FCAAD"/></svg>`;
     const AI_STORAGE_KEY = 'dipre_ai_sessions_v1';
     const AI_WS_LABELS = {
       overview: 'Tổng Quan',
@@ -5464,8 +5473,8 @@ beyond the veil, control returns</textarea>
       if (!sess.messages.length && !aiState.loading) {
         container.innerHTML = `
           <div class="py-8 text-center space-y-5">
-            <div class="w-12 h-12 mx-auto rounded-2xl bg-teal/15 border border-teal/35 flex items-center justify-center text-teal shadow-[0_0_24px_rgba(31,202,173,0.18)]">
-              <i data-lucide="sparkles" class="w-6 h-6"></i>
+            <div class="w-12 h-12 mx-auto rounded-2xl bg-[#09090D] border border-teal/40 flex items-center justify-center p-2 shadow-[0_0_24px_rgba(31,202,173,0.18)]">
+              ${DIPRE_CHAT_LOGO_SVG}
             </div>
             <div class="space-y-1.5">
               <h3 class="font-display text-lg font-semibold text-ink">Ask DIPRE sẵn sàng</h3>
@@ -5501,8 +5510,8 @@ beyond the veil, control returns</textarea>
         const actionPills = buildSmartActionPills(m.content);
         return `
           <div class="flex items-start gap-2.5">
-            <div class="w-7 h-7 rounded-full bg-teal/15 border border-teal/35 flex items-center justify-center text-teal shrink-0 mt-0.5">
-              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <div class="w-7 h-7 rounded-full bg-[#09090D] border border-teal/40 flex items-center justify-center p-1 shrink-0 mt-0.5 overflow-hidden">
+              ${DIPRE_CHAT_LOGO_SVG}
             </div>
             <div class="min-w-0 flex-1 space-y-2">
               <div class="ai-md text-[13px] text-zinc-200">${renderAiMarkdown(m.content)}</div>
@@ -5522,8 +5531,8 @@ beyond the veil, control returns</textarea>
         const tierLabel = aiState.tier === 'pro' ? 'DIPRE Pro 🧠' : 'DIPRE Flash ⚡';
         html += `
           <div class="flex items-start gap-2.5">
-            <div class="w-7 h-7 rounded-full bg-teal/15 border border-teal/35 flex items-center justify-center text-teal shrink-0 mt-0.5">
-              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <div class="w-7 h-7 rounded-full bg-[#09090D] border border-teal/40 flex items-center justify-center p-1 shrink-0 mt-0.5 overflow-hidden">
+              ${DIPRE_CHAT_LOGO_SVG}
             </div>
             <div class="px-3.5 py-2.5 rounded-xl bg-[#141418] border border-hairline flex items-center gap-2.5">
               <div class="flex items-center gap-1">
