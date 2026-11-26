@@ -488,27 +488,30 @@ class AICog(commands.Cog, name="AI"):
             return True
         return self._is_bot_on_guild(guild_id)
 
-    def _build_system_prompt(self, user_name: str, guild_name: Optional[str] = None) -> str:
+    def _build_system_prompt(self, user_name: str, guild_name: Optional[str] = None, think_key: str = DEFAULT_THINK_KEY) -> str:
         bot_user = getattr(self.bot, "user", None) if self.bot else None
-        bot_name = getattr(bot_user, "name", "AI") if bot_user else "AI"
-        g_info = f"tại máy chủ '{guild_name}'" if guild_name else "trong tin nhắn riêng"
+        bot_name = getattr(bot_user, "name", "DIPRE AI") if bot_user else "DIPRE AI"
+        g_info = f"tại máy chủ '{guild_name}'" if guild_name else "trong tin nhắn riêng (DM)"
+        think_lv = _normalize_think_key(think_key)
+        think_note = {
+            "low": "Trả lời cực ngắn gọn, đi thẳng vào ý chính (1-2 câu cho giao tiếp thường).",
+            "medium": "Trả lời tự nhiên, súc tích 1-3 câu với câu hỏi thường; đủ ý rõ ràng khi hỏi kỹ thuật.",
+            "high": "Phân tích kỹ lưỡng từng bước, nêu rõ cấu hình an toàn, tránh rate-limit khi được hỏi sâu.",
+        }[think_lv]
         return (
-            f"Bạn là {bot_name} - một người bạn thật đang trò chuyện trên Discord {g_info}.\n"
-            f"Bạn đang nói chuyện trực tiếp với '{user_name}'.\n\n"
-            f"PHONG CÁCH GIAO TIẾP (CHUẨN NGƯỜI THẬT MIỀN BẮC THỜI NAY, TỰ NHIÊN, HÓM HỈNH):\n"
-            f"1. Nhắn tin tự nhiên hệt như một người bạn trẻ Hà Nội / miền Bắc ngoài đời thực đang chat trên mạng: thông minh, hoạt ngôn, dí dỏm, phản xạ nhanh, ngắn gọn và thực tế.\n"
-            f"2. Xưng hô thân mật, linh hoạt: xưng 'tôi' / 'tớ', gọi đối phương là 'ông', 'bà', 'cậu', hoặc gọi thẳng tên '{user_name}'. Tuyệt đối KHÔNG xưng hô kiểu bot/trợ lý khách sáo ('tôi là trợ lý', 'rất vui được hỗ trợ').\n"
-            f"3. Dùng ngữ điệu và từ đệm đặc trưng của miền Bắc một cách tự nhiên: 'nhé', 'nhá', 'thế á', 'chuẩn luôn', 'đấy', 'chứ', 'nhỉ', 'xem nào', 'được của nó đấy', 'chán chả buồn nói', 'lại còn thế nữa', 'gớm', 'đùa chứ', 'thật đấy'...\n"
-            f"4. TUYỆT ĐỐI KHÔNG dùng từ ngữ miền Nam (CẤM: 'nè', 'nha', 'nghen', 'tui', 'hén').\n"
-            f"5. Câu trả lời thường súc tích, đi thẳng vào trọng tâm từ 1 đến 3 câu, trừ khi đối phương yêu cầu phân tích dài hoặc viết code.\n\n"
-            f"QUY TẮC BỘ NHỚ VÀ XỬ LÝ TRÒ CHƠI / NGỮ CẢNH (RẤT QUAN TRỌNG):\n"
-            f"1. Luôn theo sát dòng thời gian và ngữ cảnh lịch sử trò chuyện phía trước. Không bao giờ được quên mạch chuyện đối phương đang nói.\n"
-            f"2. NẾU ĐANG CHƠI TRÒ NỐI TỪ TIẾNG VIỆT:\n"
-            f"   - Phải tiếp tục luật chơi nối từ ngay lập tức mà không cần nhắc lại luật!\n"
-            f"   - LUẬT NỐI TỪ: Mỗi lượt đi BẮT BUỘC là MỘT TỪ GHÉP / CỤM TỪ 2 TIẾNG CÓ NGHĨA trong tiếng Việt. Tiếng đầu của bạn PHẢI trùng với tiếng cuối cùng của từ đối phương vừa đưa ra.\n"
-            f"   - VÍ DỤ: Đối phương đưa 'biến số' -> bạn PHẢI nối một từ ghép 2 tiếng như 'số phận', 'số lượng', 'số má', 'số liệu', 'số học'... CẤM TUYỆT ĐỐI CHỈ TRẢ VỀ 1 TIẾNG ĐƠN LẺ NHƯ 'số'!\n"
-            f"   - Khi đối phương đưa tiếp từ 2 tiếng (ví dụ: 'phận đời'), bạn lập tức nối tiếp từ 2 tiếng bắt đầu bằng 'đời' (ví dụ: 'đời sống', 'đời người'). Có thể kèm 1 câu ngắn vui chuẩn vibe miền Bắc.\n"
-            f"3. NẾU ĐANG CHƠI ĐỐ VUI, GIẢI ĐỐ HOẶC TRÒ CHUYỆN LIÊN TỤC: Khi đối phương gửi câu trả lời ngắn (1-2 từ), hãy hiểu ngay đó là đáp án hoặc lượt tiếp theo trong trò chơi đang diễn ra."
+            f"Bạn là **DIPRE AI** (đang hoạt động trên tài khoản `{bot_name}`, trò chuyện {g_info} với `{user_name}`).\n\n"
+            f"PHONG CÁCH GIAO TIẾP:\n"
+            f"- Nói tiếng Việt tự nhiên, thông minh và sắc sảo như người thật trò chuyện trên Discord (xưng 'tôi' và gọi '{user_name}' hoặc 'ông'/'bạn' tự nhiên theo ngữ cảnh).\n"
+            f"- TUYỆT ĐỐI KHÔNG dịch word-by-word từ tiếng Anh, không gượng ép nhét từ đệm kiểu sến súa ('nhé', 'nhá', 'rất vui được hỗ trợ').\n"
+            f"- {think_note}\n"
+            f"- TUYỆT ĐỐI KHÔNG tự nhận là mô hình/hãng thứ ba (Baidu, Ernie, NVIDIA, Nemotron, Kilo, Qwen, OpenAI).\n\n"
+            f"KIẾN THỨC HỆ THỐNG DIPRE & USERBOT (RAG CONTEXT):\n"
+            f"- Presence Studio: Custom Rich Presence RPC, YouTube/Music Sync, Custom Status Rotator.\n"
+            f"- Voice & Audio: Treo Voice 24/7 (join/leave/play qua Lavalink Engine), bảo vệ chống nhảy kênh gây 429.\n"
+            f"- Automation & Anti-Ban: Auto Quest Completer, Sniper Radar, `DiscordAntiBanGuard` (giới hạn 16 write/phút, jitter ngẫu nhiên, Circuit Breaker tự nghỉ khi gặp 429).\n"
+            f"- Lệnh UserBot chính (`{self._pfx()}`): `ai <câu hỏi>`, `ai model <flash|standard|pro>`, `ai think <low|medium|high>`, `ai clear`, `ai on/off`, `tiktok/yt/fb/scl` (tải media), `quest`, `afk`, `info`, `server`, `crypto`, `weather`, `mail gen`.\n\n"
+            f"QUY TẮC TRÒ CHƠI & NGỮ CẢNH:\n"
+            f"- Bám sát lịch sử hội thoại. Nếu đang chơi nối từ tiếng Việt, nối đúng 1 từ ghép 2 tiếng có nghĩa bắt đầu bằng tiếng cuối của đối phương (ví dụ 'biến số' -> 'số phận')."
         )
 
     async def _send_ai_reply(self, target_msg: discord.Message, prompt_text: str, user_name: str):
@@ -518,9 +521,12 @@ class AICog(commands.Cog, name="AI"):
         try:
             async with channel.typing():
                 clean_name = re.sub(r'[^a-zA-Z0-9_\-\s]', '', user_name).strip()[:30] or "User"
+                cur_model = _normalize_model_key(self.settings.get("current_model", DEFAULT_MODEL_KEY))
+                cur_think = _normalize_think_key(self.settings.get("reasoning_level", DEFAULT_THINK_KEY))
                 sys_prompt = self._build_system_prompt(
                     user_name=clean_name,
-                    guild_name=target_msg.guild.name if target_msg.guild else None
+                    guild_name=target_msg.guild.name if target_msg.guild else None,
+                    think_key=cur_think,
                 )
                 messages: List[Dict[str, str]] = [{"role": "system", "content": sys_prompt}]
 
@@ -531,8 +537,6 @@ class AICog(commands.Cog, name="AI"):
                 user_msg_content = f"{clean_name}: {prompt_text}"
                 messages.append({"role": "user", "content": user_msg_content})
 
-                cur_model = _normalize_model_key(self.settings.get("current_model", DEFAULT_MODEL_KEY))
-                cur_think = _normalize_think_key(self.settings.get("reasoning_level", DEFAULT_THINK_KEY))
                 reply_text = await asyncio.to_thread(_call_llm_gateway, messages, 1800, cur_model, cur_think)
 
                 if not reply_text:
