@@ -2135,6 +2135,10 @@ beyond the veil, control returns</textarea>
               class="w-7 h-7 rounded-md text-muted hover:text-ink hover:bg-panel flex items-center justify-center transition-colors">
               <i data-lucide="plus" class="w-4 h-4"></i>
             </button>
+            <button id="ai-delete-cur-btn" onclick="deleteCurrentAiChat()" title="Xoá cuộc trò chuyện hiện tại"
+              class="w-7 h-7 rounded-md text-muted hover:text-rose hover:bg-panel flex items-center justify-center transition-colors">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
             <button onclick="toggleAiHistory()" title="Lịch sử trò chuyện"
               class="w-7 h-7 rounded-md text-muted hover:text-ink hover:bg-panel flex items-center justify-center transition-colors">
               <i data-lucide="history" class="w-4 h-4"></i>
@@ -5375,6 +5379,17 @@ beyond the veil, control returns</textarea>
       renderAiMessages();
       const inp = document.getElementById('ai-input');
       if (inp) inp.focus();
+    }
+
+    function deleteCurrentAiChat() {
+      const cur = getActiveAiSession();
+      if (!cur) return;
+      if (cur.messages.length === 0 && aiState.sessions.length <= 1) {
+        showToast('Cuộc trò chuyện đang trống.');
+        return;
+      }
+      deleteAiSession(cur.id);
+      showToast('Đã xoá cuộc trò chuyện hiện tại.');
     }
 
     function toggleAiHistory() {
