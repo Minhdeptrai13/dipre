@@ -239,19 +239,20 @@ register_card("alis",  _ALIAS_SCHEMA)
 
 # ────────────── AI CHATBOT ──────────────
 _AI_SCHEMA = CardSchema(
-    title="AI SMART CHATBOT ASSISTANT",
-    sub="He thong tro ly AI hoi dap thong minh & tro chuyen nhi nhanh 24/7",
-    accent=(168, 85, 247),  # Tim anh kim hien dai
+    title="DIPRE AI SMART ASSISTANT",
+    sub="Tro ly AI 3 bac (Flash / Standard / Pro) & Cau noi du lieu UserBot",
+    accent=(31, 202, 173),  # Ngoc luc bao DIPRE
     logo_fn=MC.draw_genesis_logo_hires,
-    tip="Khi bat AI (ai on), chi can Tag @bot hoac Reply tin nhan la AI se tu dong phan hoi!",
+    tip="Khi bat AI (ai on), chi can Tag @bot la AI tu rep! Ho tro tag <@user> & gui avatar.",
     items=[
-        ("ai",                  "Mo bang huong dan su dung tro ly AI nay",                     "HELP"),
-        ("ai <cau hoi>",        "Dat cau hoi truc tiep cho AI (AI tu nhan dien ten nguoi hoi)", "ASK AI"),
-        ("ai model [ten]",      "Xem danh sach & doi mo hinh AI hoat dong (Admin cap cao)",    "CHANGE MODEL"),
-        ("ai clear",            "Xoa sach tri nho lich su hoi thoai tai kenh nay",             "CLEAR MEMORY"),
-        ("ai on",               "Bat che do AI tu dong tra loi khi duoc Tag/Reply tai server", "ENABLE"),
-        ("ai off",              "Tat che do AI tu dong tra loi tai server nay",                "DISABLE"),
-        ("ai status",           "Kiem tra danh sach cac server dang bat AI hoat dong",          "STATUS"),
+        ("ai",                         "Mo bang huong dan su dung tro ly DIPRE AI nay",            "HELP"),
+        ("ai <cau hoi>",               "Hoi dap truc tiep voi AI (co cau noi data & gui avatar)",  "ASK AI"),
+        ("ai model [flash|std|pro]",   "Xem & doi bac model AI (Admin cap cao)",                   "CHANGE MODEL"),
+        ("ai think [low|medium|high]", "Xem & doi cap do tu duy AI: Thap / Trung binh / Cao",      "THINK LEVEL"),
+        ("ai clear",                   "Xoa sach tri nho lich su hoi thoai tai kenh nay",          "CLEAR MEMORY"),
+        ("ai on",                      "Bat che do AI tu dong tra loi khi duoc Tag @bot tai server","ENABLE"),
+        ("ai off",                     "Tat che do AI tu dong tra loi tai server nay",             "DISABLE"),
+        ("ai status",                  "Kiem tra trang thai model, tu duy & cac server dang bat",  "STATUS"),
     ]
 )
 register_card("ai", _AI_SCHEMA)
