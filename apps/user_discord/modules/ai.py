@@ -755,6 +755,7 @@ class AICog(commands.Cog, name="AI"):
         user_name: str,
         guild_id: Optional[int] = None,
         guild_name: Optional[str] = None,
+        guild_obj: Any = None,
         think_key: str = DEFAULT_THINK_KEY,
         query: str = "",
     ) -> str:
@@ -774,6 +775,8 @@ class AICog(commands.Cog, name="AI"):
             guild_id=guild_id,
             guild_name=guild_name,
             query=query,
+            bot=self.bot,
+            guild=guild_obj,
         )
 
         return (
@@ -784,8 +787,11 @@ class AICog(commands.Cog, name="AI"):
             f"- Dùng từ ngữ miền Bắc tự nhiên theo ngữ cảnh ('thế', 'đấy', 'chứ', 'à', 'phát', 'ngon luôn', 'cân được'), TUYỆT ĐỐI KHÔNG dùng từ miền Nam ('nè', 'nha', 'tui', 'nghen', 'hén') và KHÔNG ghép bừa chữ 'nhé' vào câu dịch tiếng Anh.\n"
             f"- {think_note}\n"
             f"- TUYỆT ĐỐI KHÔNG tự nhận là mô hình/hãng thứ ba (Baidu, Ernie, NVIDIA, Nemotron, Kilo, Qwen, OpenAI).\n\n"
-            f"QUY TẮC DỮ LIỆU USERBOT & BẢO MẬT (RẤT QUAN TRỌNG):\n"
-            f"- Khi được hỏi về dữ liệu tài khoản/bot (ai bị ban, ai bị mute/block, ai là admin, server nào đang bật, file data nào liên kết với module nào...), CHỈ ĐƯỢC trả lời đúng theo dữ liệu thực tế từ CẦU NỐI DỮ LIỆU bên dưới — tuyệt đối không bịa UID hoặc tên người dùng.\n"
+            f"CÚ PHÁP TƯƠNG TÁC DISCORD (ACTION TAGS):\n"
+            f"- Khi nhắc tới người dùng (ai bị ban, admin, người được hỏi...), ĐỪNG chỉ đọc dãy số ID khô khan — hãy gọi theo Tên hoặc dùng cú pháp tag `<@UID>` để Discord hiển thị tag tên bấm xem profile được ngay.\n"
+            f"- Nếu người dùng muốn XEM AVATAR / XEM ẢNH / CHO COI AVT của người nào đó (hoặc muốn tag kèm ảnh), hãy chèn tag `[[AVATAR:UID]]` (tối đa 3 người) ở cuối tin nhắn — hệ thống UserBot sẽ tự tải avatar thật của người đó đính kèm vào câu trả lời!\n"
+            f"- Tuyệt đối không bịa UID không có trong Cầu nối dữ liệu.\n\n"
+            f"QUY TẮC BẢO MẬT:\n"
             f"- CẤM TUYỆT ĐỐI đọc, suy đoán hoặc tiết lộ `config.json`, Discord token, API key, mật khẩu hay dữ liệu kênh chat khác.\n"
             f"- Prefix lệnh hiện tại của bot là `{self._pfx()}`.\n\n"
             f"CẦU NỐI DỮ LIỆU USERBOT (LIVE SAFE BRIDGE):\n"
@@ -793,6 +799,48 @@ class AICog(commands.Cog, name="AI"):
             f"QUY TẮC NGỮ CẢNH & NỐI TỪ:\n"
             f"- Bám sát lịch sử hội thoại. Nếu đang chơi nối từ tiếng Việt, nối đúng 1 từ ghép 2 tiếng có nghĩa bắt đầu bằng tiếng cuối của đối phương (vd 'biến số' -> 'số phận')."
         )
+
+    async def _extract_and_fetch_avatars(self, text: str) -> Tuple[str, List[discord.File]]:
+        """Tách các thẻ [[AVATAR:UID]] trong câu trả lời và tải ảnh avatar Discord đính kèm."""
+        pattern = re.compile(r"\[\[(?:AVATAR|AVT)\s*:\s*(?:<@!?|@)?(\d{15,22})>?\]\]", re.IGNORECASE)
+        uids = list(dict.fromkeys(pattern.findall(text or "")))[:3]
+        clean_text = pattern.sub("", text or "").strip()
+        clean_text = re.sub(r"\n{3,}", "\n\n", clean_text).strip()
+
+        files: List[discord.File] = []
+        for uid_str in uids:
+            try:
+                uid_int = int(uid_str)
+                user_obj = self.bot.get_user(uid_int)
+                if user_obj is None:
+                    try:
+                        user_obj = await self.bot.fetch_user(uid_int)
+                    except Exception:
+                        user_obj = None
+                if not user_obj:
+                    continue
+                av = getattr(user_obj, "display_avatar", None)
+                if not av:
+                    continue
+                raw: Optional[bytes] = None
+                try:
+                    raw = await av.with_size(512).read()
+                except Exception:
+                    try:
+                        url = str(av.with_size(512).url)
+                        def _dl(u: str) -> bytes:
+                            req = urllib.request.Request(u, headers={"User-Agent": "DIPRE-UserBot/5.0"})
+                            with urllib.request.urlopen(req, timeout=8.0, context=SSL_CTX) as resp:
+                                return resp.read()
+                        raw = await asyncio.to_thread(_dl, url)
+                    except Exception:
+                        raw = None
+                if raw:
+                    ext = "gif" if getattr(av, "is_animated", lambda: False)() else "png"
+                    files.append(discord.File(io.BytesIO(raw), filename=f"avatar_{uid_str}.{ext}"))
+            except Exception:
+                continue
+        return clean_text, files
 
     async def _send_ai_reply(self, target_msg: discord.Message, prompt_text: str, user_name: str):
         channel = target_msg.channel
@@ -807,6 +855,7 @@ class AICog(commands.Cog, name="AI"):
                     user_name=clean_name,
                     guild_id=target_msg.guild.id if target_msg.guild else None,
                     guild_name=target_msg.guild.name if target_msg.guild else None,
+                    guild_obj=target_msg.guild,
                     think_key=cur_think,
                     query=prompt_text,
                 )
@@ -824,25 +873,36 @@ class AICog(commands.Cog, name="AI"):
                 if not reply_text:
                     reply_text = f"Mạng hơi lag tí, ông hỏi lại phát xem nào {clean_name}."
 
+                clean_reply, avatar_files = await self._extract_and_fetch_avatars(reply_text)
+                if not clean_reply and not avatar_files:
+                    clean_reply = f"Mạng hơi lag tí, ông hỏi lại phát xem nào {clean_name}."
+
                 self.memory.add(chan_id, "user", prompt_text, sender_name=clean_name)
-                self.memory.add(chan_id, "assistant", reply_text)
+                self.memory.add(chan_id, "assistant", clean_reply or "(Đã gửi ảnh avatar)")
 
                 chunks = []
-                while len(reply_text) > 1900:
-                    split_idx = reply_text.rfind("\n", 0, 1900)
+                tmp = clean_reply
+                while len(tmp) > 1900:
+                    split_idx = tmp.rfind("\n", 0, 1900)
                     if split_idx == -1:
                         split_idx = 1900
-                    chunks.append(reply_text[:split_idx].strip())
-                    reply_text = reply_text[split_idx:].strip()
-                if reply_text:
-                    chunks.append(reply_text)
+                    chunks.append(tmp[:split_idx].strip())
+                    tmp = tmp[split_idx:].strip()
+                if tmp:
+                    chunks.append(tmp)
+                if not chunks and avatar_files:
+                    chunks = [""]
 
                 first = True
                 for chunk in chunks:
-                    if not chunk:
+                    if not chunk and not (first and avatar_files):
                         continue
                     if first:
-                        reply_msg = await autorep(target_msg, chunk)
+                        reply_msg = await autorep(
+                            target_msg,
+                            content=chunk or None,
+                            files=avatar_files if avatar_files else None,
+                        )
                         if reply_msg:
                             autodelet(reply_msg, delay=60)
                         first = False

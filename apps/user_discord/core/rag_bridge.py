@@ -12,6 +12,7 @@ Nhiệm vụ:
 from __future__ import annotations
 
 import json
+import re
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -108,12 +109,42 @@ def _safe_read_json(path: Path) -> Dict[str, Any]:
         return {}
 
 
-def _format_punish_list(items: Dict[str, Any], temps: List[Dict[str, Any]], ptype: str) -> str:
+def _resolve_display_name(uid_str: str, fallback_name: str = "", bot: Any = None, guild: Any = None) -> str:
+    """Ưu tiên lấy tên hiển thị thật từ Guild/Bot cache thay cho chuỗi ID khô."""
+    try:
+        uid_int = int(str(uid_str).strip())
+    except Exception:
+        return fallback_name or str(uid_str)
+
+    if guild is not None:
+        try:
+            m = guild.get_member(uid_int)
+            if m:
+                return getattr(m, "display_name", None) or getattr(m, "name", None) or fallback_name or str(uid_int)
+        except Exception:
+            pass
+    if bot is not None:
+        try:
+            u = bot.get_user(uid_int)
+            if u:
+                return getattr(u, "display_name", None) or getattr(u, "name", None) or fallback_name or str(uid_int)
+        except Exception:
+            pass
+    return fallback_name or f"User_{uid_str}"
+
+
+def _format_punish_list(
+    items: Dict[str, Any],
+    temps: List[Dict[str, Any]],
+    ptype: str,
+    bot: Any = None,
+    guild: Any = None,
+) -> str:
     if not isinstance(items, dict) or not items:
         return "Trống (0 người)"
     now = time.time()
     out = []
-    for uid_str, name in list(items.items())[:25]:
+    for uid_str, stored_name in list(items.items())[:25]:
         exp = None
         for p in temps or []:
             if isinstance(p, dict) and str(p.get("uid")) == str(uid_str) and p.get("type") == ptype:
@@ -124,9 +155,23 @@ def _format_punish_list(items: Dict[str, Any], temps: List[Dict[str, Any]], ptyp
             dur = f"còn {rem}s" if rem > 0 else "hết hạn/chờ dọn"
         else:
             dur = "Vĩnh viễn"
-        out.append(f"{name} (UID `{uid_str}` — {dur})")
+        disp = _resolve_display_name(str(uid_str), str(stored_name or ""), bot=bot, guild=guild)
+        out.append(f"{disp} — tag: <@{uid_str}>, avatar_cmd: [[AVATAR:{uid_str}]] ({dur})")
     extra = f" ...(+{len(items) - 25} nữa)" if len(items) > 25 else ""
-    return ", ".join(out) + extra
+    return " | ".join(out) + extra
+
+
+def _format_uid_list(uids: List[Any], bot: Any = None, guild: Any = None) -> str:
+    if not uids:
+        return "Trống"
+    out = []
+    for u in uids[:20]:
+        us = str(u).strip()
+        if not us:
+            continue
+        disp = _resolve_display_name(us, "", bot=bot, guild=guild)
+        out.append(f"{disp} (<@{us}>, avt: [[AVATAR:{us}]])")
+    return ", ".join(out) or "Trống"
 
 
 def detect_query_topics(query: str) -> List[str]:
@@ -135,6 +180,8 @@ def detect_query_topics(query: str) -> List[str]:
     for item in DATA_MODULE_LINKS:
         if any(kw in q for kw in item["keywords"]):
             matched.append(item["topic"])
+    if any(w in q for w in ("avatar", "avt", "ảnh", "mặt", "profile", "tag", "mention")):
+        matched.append("avatar_lookup")
     if any(w in q for w in ("config.json", "token", "password", "mật khẩu", "api key", "secret")):
         matched.append("blocked_secret")
     return matched
@@ -145,9 +192,11 @@ def build_userbot_rag_context(
     guild_id: Optional[int] = None,
     guild_name: Optional[str] = None,
     query: str = "",
+    bot: Any = None,
+    guild: Any = None,
 ) -> str:
     """
-    Trích xuất ngữ cảnh dữ liệu sống (đã lọc an toàn) của UserBot + ánh xạ module liên kết.
+    Trích xuất ngữ cảnh dữ liệu sống (đã lọc an toàn) của UserBot + ánh xạ module + tên/tag/avatar.
     """
     topics = detect_query_topics(query)
     setting = _safe_read_json(DATA_DIR / f"{bot_uid}_setting.json") if bot_uid else {}
@@ -198,15 +247,15 @@ def build_userbot_rag_context(
     if not topics or "ban" in topics:
         lines.append(
             f"[CHI TIẾT DANH SÁCH BAN (`data/{bot_uid}_setting.json` → `ban_list`, `temp_punishments` | Module: `core/bot_sys.py` | Lệnh: `bot ban`, `bot unban`, `bot banlist`)]\n"
-            f"- Danh sách đang bị ban ({len(ban_list)}): {_format_punish_list(ban_list, temps, 'ban')}"
+            f"- Danh sách đang bị ban ({len(ban_list)}): {_format_punish_list(ban_list, temps, 'ban', bot=bot, guild=guild)}"
         )
 
     if "moderation" in topics:
         lines.append(
             f"[CHI TIẾT MUTE / CAM / BLOCK / SKIP / BADWORDS (`data/{bot_uid}_setting.json` | Module: `core/bot_sys.py` & `modules/voice.py`)]\n"
-            f"- Mute Voice ({len(mute_list)}): {_format_punish_list(mute_list, temps, 'mute')}\n"
-            f"- Block ({len(block_list)}): {_format_punish_list(block_list, temps, 'block')}\n"
-            f"- Cam ({len(cam_list)}): {_format_punish_list(cam_list, temps, 'cam')} | Skip ({len(skip_list)}): {_format_punish_list(skip_list, temps, 'skip')}\n"
+            f"- Mute Voice ({len(mute_list)}): {_format_punish_list(mute_list, temps, 'mute', bot=bot, guild=guild)}\n"
+            f"- Block ({len(block_list)}): {_format_punish_list(block_list, temps, 'block', bot=bot, guild=guild)}\n"
+            f"- Cam ({len(cam_list)}): {_format_punish_list(cam_list, temps, 'cam', bot=bot, guild=guild)} | Skip ({len(skip_list)}): {_format_punish_list(skip_list, temps, 'skip', bot=bot, guild=guild)}\n"
             f"- Bad words ({len(bad_words)}): {', '.join(map(str, bad_words[:15])) if bad_words else 'Trống'}"
         )
 
@@ -217,10 +266,31 @@ def build_userbot_rag_context(
         ]
         lines.append(
             f"[CHI TIẾT QUYỀN & SERVER (`data/{bot_uid}_setting.json` | Module: `core/bot_sys.py`, `core/alias.py`)]\n"
-            f"- Admintris UIDs: {', '.join(map(str, admintris)) or 'Trống'}\n"
-            f"- Admin UIDs: {', '.join(map(str, admins)) or 'Trống'}\n"
+            f"- Admintris: {_format_uid_list(admintris, bot=bot, guild=guild)}\n"
+            f"- Admins: {_format_uid_list(admins, bot=bot, guild=guild)}\n"
             f"- Server IDs đang bật bot ({len(active_gids)}): {', '.join(active_gids[:12]) or 'Chưa bật server nào'}"
         )
+
+    # 2b. Resolve các UID được mention/nhắc trực tiếp trong câu hỏi để AI xem tên/avt/trạng thái
+    mentioned_uids = list(dict.fromkeys(re.findall(r"(?<!\d)(\d{17,20})(?!\d)", query or "")))[:5]
+    if mentioned_uids:
+        m_lines = []
+        for muid in mentioned_uids:
+            disp = _resolve_display_name(muid, "", bot=bot, guild=guild)
+            flags = []
+            if muid in ban_list:
+                flags.append("ĐANG BỊ BAN")
+            if muid in mute_list:
+                flags.append("MUTE VOICE")
+            if muid in block_list:
+                flags.append("BLOCK")
+            if any(str(x) == muid for x in admintris):
+                flags.append("ADMINTRIS")
+            elif any(str(x) == muid for x in admins):
+                flags.append("ADMIN")
+            st = ", ".join(flags) if flags else "Bình thường"
+            m_lines.append(f"• {disp} — tag: <@{muid}>, avatar_cmd: [[AVATAR:{muid}]] | Trạng thái: {st}")
+        lines.append("[NGƯỜI DÙNG ĐƯỢC NHẮC TRONG CÂU HỎI]\n" + "\n".join(m_lines))
 
     if "afk" in topics:
         afk_summary = json.dumps(afk_cfg, ensure_ascii=False)[:350] if afk_cfg else "Chưa bật AFK hoặc chưa có file `<uid>_afk.json`"
